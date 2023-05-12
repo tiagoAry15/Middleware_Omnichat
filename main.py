@@ -1,16 +1,12 @@
-import json
 import os
 
 from dotenv import load_dotenv
 from flask import Flask, request
-import google.cloud.dialogflow_v2 as dialogflow
-from google.cloud import dialogflow_v2beta1
 from twilio.rest import Client
 
 from analyzePizzaIntent import structurePizza
 from dialogFlowSession import DialogFlowSession
-from utils import extractDictFromBytesRequest, getJsonCredentialsData
-from twilio.twiml.messaging_response import MessagingResponse
+from utils import extractDictFromBytesRequest, sendWebhookCallback
 
 load_dotenv()
 
@@ -19,6 +15,7 @@ auth_token = os.environ["TWILIO_AUTH_TOKEN"]
 twilio_phone_number = f'whatsapp:{os.environ["TWILIO_PHONE_NUMBER"]}'
 client = Client(account_sid, auth_token)
 app = Flask(__name__)
+dialogFlowInstance = DialogFlowSession()
 
 
 @app.route("/twilioSandbox", methods=['POST'])
@@ -27,25 +24,34 @@ def sandbox():
     data = extractDictFromBytesRequest()
     receivedMessage = data.get("Body")[0]
     userNumber = data.get("From")[0]
-    dialogFlowInstance = DialogFlowSession()
-    dialogFlowInstance.sendTwilioMessage(receivedMessage)
+    dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
+    dialogFlowInstance.sendTwilioMessage(dialogflowResponse)
     return str(dialogFlowInstance.twiml), 200
 
 
-@app.route("/dialogFlow", methods=['POST'])
+@app.route("/webhookForIntent", methods=['POST'])
 def send():
     """This is a dialogflow callback endpoint. Everytime a message is sent to the bot, a POST request is sent to this
     endpoint.
     This is under DialogflowEssentials -> Fulfillment"""
-    print("b")
     requestContent = request.get_json()
     parameters = requestContent['queryResult']['parameters']
-    messageContent = requestContent['queryResult']['queryText']
+    flavor = parameters["flavor"][0] if parameters.get("flavor") else None
+    number = parameters["number"][0] if parameters.get("number") else None
+    if not number:
+        return sendWebhookCallback(desiredMessage=f"Só pra confirmar: seria uma pizza inteira de {flavor}, certo?",
+                                   newIntent="Order.pizza - yes")
     fullPizza = structurePizza(parameters)
     botResponse = requestContent['queryResult']['fulfillmentText']
     intent = requestContent['queryResult']['intent']
     sessionId = requestContent['session'].split('/')[-1]
-    return 'OK', 200
+    receivedMessage = requestContent['queryResult']['queryText']
+    return sendWebhookCallback(desiredMessage=f"Maravilha! Uma {fullPizza} então.")
+
+
+@app.route("/staticReply", methods=['POST'])
+def staticReply():
+    return sendWebhookCallback("This is a message from the server!")
 
 
 @app.route("/twilioPreEvent", methods=['POST'])

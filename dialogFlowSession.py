@@ -31,8 +31,7 @@ class DialogFlowSession:
             session=self.session, query_input=queryInput
         )
 
-    def sendTwilioMessage(self, receivedMessage):
-        dialogflowResponse = self.getDialogFlowResponse(receivedMessage)
+    def sendTwilioMessage(self, dialogflowResponse: dialogflow.types.DetectIntentResponse):
         detectedIntent = dialogflowResponse.query_result.intent.display_name
         dialogflowResponses = dialogflowResponse.query_result.fulfillment_messages
         for response in dialogflowResponses:
