@@ -3,16 +3,24 @@ import os
 import openai
 from dotenv import load_dotenv
 
+from timeDecorator import timingDecorator
+
 
 class pizzaGPT:
     def __init__(self):
         load_dotenv()
         openai.api_key = os.environ["OPENAI_API_KEY"]
 
+    @timingDecorator
     def get_response(self, prompt: str):
-        return openai.Completion.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}])
+        completion = openai.Completion.create(
+            model="text-davinci-003",
+            prompt=prompt,
+            temperature=0.9,
+            max_tokens=100,
+        )
+        choice = completion.choices[0]
+        return choice.text
 
 
 def __main():
