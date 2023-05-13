@@ -1,28 +1,23 @@
 import random
 
+from gpt.botDialogue import PizzaBotDialogue
+
 
 class BotDialogue:
     def __init__(self):
-        self.botResponses = [
-            "I'm sorry, I didn't understand that.",
-            "Could you please rephrase your statement?",
-            "Interesting! Tell me more.",
-            "That's a good point.",
-            "I'm here to help. What can I assist you with?"
-        ]
+        self.bot = PizzaBotDialogue()
 
     def start_dialogue(self):
         active = True
         while active:
+            self.printResponse(self.bot.sendGreetingResponse())
             user_input = input("User: ")
-            if user_input != "stop":
-                self.bot_response()
-            else:
+            if user_input == "stop":
                 active = False
 
-    def bot_response(self):
-        random_response = random.choice(self.botResponses)
-        print("Bot:", random_response)
+    @staticmethod
+    def printResponse(response: str):
+        print("Bot:", response)
 
 
 def __main():

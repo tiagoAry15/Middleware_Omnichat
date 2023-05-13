@@ -81,6 +81,12 @@ def handle_whatsapp():
     return 'OK', 200
 
 
+@app.route("/watsonAssistant", methods=['POST'])
+def handle_watson():
+    print("d")
+    return 'OK', 200
+
+
 # Hello World endpoint
 @app.route('/')
 def hello():
