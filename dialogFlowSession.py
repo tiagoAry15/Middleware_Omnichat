@@ -17,6 +17,7 @@ def singleton(cls):
 @singleton
 class DialogFlowSession:
     def __init__(self):
+        self.params = {"pizzas": [], "drinks": []}
         dialogflowJsonFilePath = os.path.join(os.getcwd(), 'dialogflow.json')
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = dialogflowJsonFilePath
         self.sessionClient = dialogflow.SessionsClient()
@@ -24,26 +25,27 @@ class DialogFlowSession:
         self.agentName = self.session.split('/')[1]
         self.twiml = MessagingResponse()
 
-    def getDialogFlowResponse(self, message: str):
+    def getDialogFlowResponse(self, message: str, intent_name: str = None):
+        session = self.session
+        if intent_name:
+            session = f"{self.session}/contexts/{intent_name}"
         textInput = dialogflow.types.TextInput(text=message, language_code='pt-BR')
         queryInput = dialogflow.types.QueryInput(text=textInput)
+        requests = dialogflow.types.DetectIntentRequest(session=session, query_input=queryInput)
+        # return self.sessionClient.detect_intent(request=requests)
         return self.sessionClient.detect_intent(
             session=self.session, query_input=queryInput
         )
 
-    def sendTwilioMessage(self, dialogflowResponse: dialogflow.types.DetectIntentResponse):
-        detectedIntent = dialogflowResponse.query_result.intent.display_name
+    @staticmethod
+    def extractTextFromDialogflowResponse(dialogflowResponse: dialogflow.types.DetectIntentResponse):
         dialogflowResponses = dialogflowResponse.query_result.fulfillment_messages
         for response in dialogflowResponses:
             if response.text.text:
-                text = response.text.text[0]
-                self.twiml.message(text)
-            if response.payload:
-                fields = response.payload.fields
-                message = self.twiml.message()
-                if fields.get('mediaUrl'):
-                    media_url = fields.get('mediaUrl').string_value
-                    message.media(media_url)
-                if fields.get('text'):
-                    text = fields.get('text').string_value
-                    message.body(text)
+                return response.text.text[0]
+
+    def sendTwilioRawMessage(self, desiredMessage: str, image_url: str = None):
+        message = self.twiml.message(desiredMessage)
+        if image_url:
+            message.media(image_url)
+        return self.twiml
