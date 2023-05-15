@@ -20,18 +20,6 @@ class BotDispatcher:
     def __init__(self):
         self.intent = Replies.WELCOME
 
-    @staticmethod
-    def format(reply_pair: dict):
-        text = reply_pair.get("main")
-        media = reply_pair.get("media")
-        choices = [value for key, value in reply_pair.items() if key.isdigit()]
-        menu = '\n'.join([f"{key}-{value}" for key, value in enumerate(choices, start=1)])
-        sentence = f"{text}\n{menu}"
-        r = {"body": sentence}
-        if media is not None:
-            r["media"] = media
-        return r
-
     def reply(self, userMessage):
         message = userMessage.lower()
         if self.intent == Replies.WELCOME:
