@@ -10,6 +10,7 @@ class Intent:
         self.alreadyWelcomed = False
         self.nextIntent: Replies = None
         self.previousIntent: Replies = None
+        self.choice = 0
 
     def _formatOutputMessage(self, sentence: str = None):
         media = self.reply["media"]
@@ -20,7 +21,7 @@ class Intent:
 
     def _produceFirstSentence(self):
         text = self.reply["main"]
-        choices = [value for key, value in self.reply.items() if key.isdigit()]
+        choices = [value["choiceContent"] for key, value in self.reply.items() if key.isdigit()]
         menu = '\n'.join([f"{key}-{value}" for key, value in enumerate(choices, start=1)])
         return f"{text}\n{menu}"
 
@@ -32,10 +33,14 @@ class Intent:
     def parseIncomingMessage(self, message: str):
         if not self.alreadyWelcomed:
             return self.sendFirstMessage()
-        integerChoices = [int(choice) for choice in self.choiceNumbers]
-        if message not in self.choiceNumbers:
+        self.choice = int(message)
+        choiceReply = self.reply[message]
+        integerChoices = [key for key in self.reply.keys() if key.isdigit()]
+        if message not in {"1", "2"}:
             return {"body": f"[{message}] não é uma opção válida. "
                             f"Por favor, selecione uma opção entre {integerChoices}"}
+        newIntent = choiceReply["choiceNextIntent"]
+        return {"changeIntent": newIntent}
 
     def setNextIntent(self, newIntent):
         self.nextIntent = newIntent
@@ -45,8 +50,8 @@ class Intent:
 
 
 def __main():
-    intent = Intent(Replies.WELCOME)
-    intent.chatBotLoop()
+    intent = Intent(Replies.FIRST_FLAVOR)
+    return
     # print(intent.sendFirstMessage())
     # userMessage = "4aaaaa"
     # print(intent.parseIncomingMessage(userMessage))
