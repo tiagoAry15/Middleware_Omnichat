@@ -12,7 +12,7 @@ class pizzaGPT:
         openai.api_key = os.environ["OPENAI_API_KEY"]
 
     @timingDecorator
-    def get_response(self, prompt: str):
+    def get_response_gpt(self, prompt: str):
         completion = openai.Completion.create(
             model="text-davinci-003",
             prompt=prompt,
@@ -22,10 +22,20 @@ class pizzaGPT:
         choice = completion.choices[0]
         return choice.text
 
+    @timingDecorator
+    def get_response_chat_gpt(self, prompt: str):
+        completion = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+        return completion.choices[0]["message"]["content"]
+
 
 def __main():
     p = pizzaGPT()
-    response = p.get_response("What is the difference between Celsius and Fahrenheit?")
+    response = p.get_response_chat_gpt("What is the difference between Celsius and Fahrenheit?")
     print(response)
     return response
 

@@ -20,7 +20,7 @@ app = Flask(__name__)
 dialogFlowInstance = DialogFlowSession()
 
 
-def handleWelcomeMultipleOptions(parameters: dict):
+def __handleWelcomeMultipleOptions(parameters: dict):
     chosenNumber = int(parameters["number"][0])
     if chosenNumber == 1:
         dialogFlowInstance.sendTwilioRawMessage("Qual pizza você vai querer hoje?")
@@ -33,29 +33,40 @@ def handleWelcomeMultipleOptions(parameters: dict):
         return changeDialogflowIntent("Order.pizza")
 
 
-@app.route("/twilioSandbox", methods=['POST'])
-def sandbox():
-    print("a")
-    originalMessage = request.values.get('Body', None)
-    dispatcher = BotDispatcher()
-    botResponse = dispatcher.reply(originalMessage)
-    if botResponse == BotDispatcher.QUIZZ_FLOW:
-        botResponse = {"body": "Not implemented"}
+def _sendTwilioResponse(body: str, media: str = None) -> str:
     response = MessagingResponse()
     message = response.message()
-    message.body(botResponse["body"])
-    if botResponse.get("media"):
-        message.media(botResponse["media"])
+    message.body(body)
+    if media is not None:
+        message.media(media)
     return str(response)
-    # data = extractDictFromBytesRequest()
-    # receivedMessage = data.get("Body")[0]
-    # userNumber = data.get("From")[0]
-    # dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
-    # detectedIntent = dialogflowResponse.query_result.intent.display_name
-    # parameters = dict(dialogflowResponse.query_result.parameters)
-    # mainResponse = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
-    # image_url = "https://shorturl.at/lEFT0"
-    # dialogFlowInstance.sendTwilioRawMessage(mainResponse, image_url=None)
+
+
+@app.route("/twilioSandbox", methods=['POST'])
+def sandbox():
+    # print("a")
+    # originalMessage = request.values.get('Body', None)
+    # dispatcher = BotDispatcher()
+    # botResponse = dispatcher.reply(originalMessage)
+    # if botResponse == BotDispatcher.QUIZZ_FLOW:
+    #     botResponse = {"body": "Not implemented"}
+    # response = MessagingResponse()
+    # message = response.message()
+    # message.body(botResponse["body"])
+    # if botResponse.get("media"):
+    #     message.media(botResponse["media"])
+    # return str(response)
+    data = extractDictFromBytesRequest()
+    receivedMessage = data.get("Body")[0]
+    userNumber = data.get("From")[0]
+
+    dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
+    # dialogflow.changeIntent("order.pizza")
+    detectedIntent = dialogflowResponse.query_result.intent.display_name
+    parameters = dict(dialogflowResponse.query_result.parameters)
+    mainResponse = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
+    image_url = "https://shorturl.at/lEFT0"
+    return _sendTwilioResponse(body="vai se fude", media=None)
     # return str(dialogFlowInstance.twiml), 200
 
 
@@ -78,7 +89,7 @@ def send():
         return sendWebhookCallback(botMessage=f"Maravilha! Uma {fullPizza} então. Você vai querer bebida?")
     elif currentIntent == "Welcome - select.number":
         params = requestContent['queryResult']['parameters']
-        return handleWelcomeMultipleOptions(params)
+        return __handleWelcomeMultipleOptions(params)
     return sendWebhookCallback(botMessage="a")
 
 

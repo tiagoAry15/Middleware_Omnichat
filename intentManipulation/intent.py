@@ -43,12 +43,6 @@ class Intent:
     def setPreviousIntent(self, newIntent):
         self.previousIntent = newIntent
 
-    def chatBotLoop(self):
-        """This function simulates a chatbot loop."""
-        while True:
-            userMessage = input("User: ")
-            print(f"Bot: {self.parseIncomingMessage(userMessage)}")
-
 
 def __main():
     intent = Intent(Replies.WELCOME)
