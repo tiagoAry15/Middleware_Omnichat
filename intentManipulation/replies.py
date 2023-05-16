@@ -3,7 +3,15 @@ class Replies:
                "intent": "Welcome",
                "main": "Olá! Bem-vindo à Pizza do Bill! O que você vai querer hoje?",
                "1": {"choiceContent": "Pedir uma pizza", "choiceNextIntent": "FIRST_FLAVOR"},
-               "2": {"choiceContent": "Pedir uma bebida", "choiceNextIntent": None}}
+               "2": {"choiceContent": "Pedir uma bebida", "choiceNextIntent": "DRINK"}}
+
+    DRINK = {"media": None,
+             "intent": "DRINK",
+             "main": "Qual bebida você deseja?",
+             "1": {"choiceContent": "Coca-cola", "choiceNextIntent": None},
+             "2": {"choiceContent": "Fanta", "choiceNextIntent": None},
+             "3": {"choiceContent": "Guaraná", "choiceNextIntent": None}}
+
     FIRST_FLAVOR = {"media": None,
                     "intent": "FIRST_FLAVOR",
                     "main": "Qual sabor de pizza você deseja?",

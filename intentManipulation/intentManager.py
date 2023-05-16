@@ -40,7 +40,7 @@ class IntentManager:
 
 
 def __main():
-    listOfIntents = [Intent(Replies.WELCOME), Intent(Replies.FIRST_FLAVOR)]
+    listOfIntents = [Intent(Replies.WELCOME), Intent(Replies.DRINK), Intent(Replies.FIRST_FLAVOR)]
     im = IntentManager(listOfIntents)
     im.chatBotLoop()
     return
