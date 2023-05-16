@@ -7,7 +7,7 @@ from twilio.twiml.messaging_response import MessagingResponse
 
 from analyzePizzaIntent import structurePizza
 from dialogFlowSession import DialogFlowSession
-from intents.dispatcher import BotDispatcher
+from intentManipulation.dispatcher import BotDispatcher
 from utils import extractDictFromBytesRequest, sendWebhookCallback, changeDialogflowIntent
 
 load_dotenv()
