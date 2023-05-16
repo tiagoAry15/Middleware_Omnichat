@@ -19,7 +19,6 @@ class Replies:
                     "2": {"choiceContent": "Mussarela", "choiceNextIntent": None},
                     "3": {"choiceContent": "Portuguesa", "choiceNextIntent": None}}
 
-
 def __main():
     print(Replies.WELCOME)
 
