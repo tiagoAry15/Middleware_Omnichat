@@ -4,12 +4,8 @@ from intentManipulation.replies import Replies
 class Intent:
     def __init__(self, coreReply: Replies):
         self.reply = coreReply
-        self.intentName = coreReply["intent"]
         self.coreMessage = coreReply["main"]
-        self.choiceNumbers = [key for key in coreReply.keys() if key.isdigit()]
         self.alreadyWelcomed = False
-        self.nextIntent: Replies = None
-        self.previousIntent: Replies = None
         self.choice = 0
 
     def _formatOutputMessage(self, sentence: str = None):
@@ -41,12 +37,6 @@ class Intent:
         choiceReply = self.reply[message]
         newIntent = choiceReply["choiceNextIntent"]
         return {"changeIntent": newIntent}
-
-    def setNextIntent(self, newIntent):
-        self.nextIntent = newIntent
-
-    def setPreviousIntent(self, newIntent):
-        self.previousIntent = newIntent
 
 
 def __main():

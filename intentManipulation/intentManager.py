@@ -13,7 +13,7 @@ class IntentManager:
 
     def __getIntentByName(self, inputIntentName: str) -> Intent or None:  # sourcery skip: use-next
         for intent in self.intents:
-            currentName = intent.intentName.lower()
+            currentName = intent.reply["intentName"].lower()
             if currentName == inputIntentName.lower():
                 return intent
         return None
