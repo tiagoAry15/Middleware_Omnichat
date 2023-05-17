@@ -1,34 +1,33 @@
 from intentManipulation.replies import Replies, Types
 
 
-class Intent:
+class MultipleChoiceIntent:
     def __init__(self, coreReply: Replies):
+        if coreReply["intentType"] != Types.MULTIPLE_CHOICE:
+            raise TypeError(f"MultipleChoiceIntent can only be instantiated with a MultipleChoiceIntent. "
+                            f"Got {coreReply['intentType']} instead.")
         self.reply = coreReply
+        self.media = coreReply["media"]
         self.coreMessage = coreReply["main"]
         self.intentType = coreReply["intentType"]
         self.alreadyWelcomed = False
         self.choice = 0
 
     def _formatOutputMessage(self, sentence: str = None):
-        media = self.reply["media"]
         r = {"body": sentence}
-        if media is not None:
-            r["media"] = media
+        if self.media is not None:
+            r["media"] = self.media
         return r
 
     def _produceFirstSentence(self):
-        if self.reply["intentType"] == Types.MULTIPLE_CHOICE:
-            text = self.reply["main"]
-            choices = [value["choiceContent"] for key, value in self.reply.items() if key.isdigit()]
-            menu = '\n'.join([f"{key}- {value}" for key, value in enumerate(choices, start=1)])
-            return f"{text}\n{menu}"
-        elif self.reply["intentType"] == Types.FALLBACK:
-            return self.coreMessage
+        text = self.reply["main"]
+        choices = [value["choiceContent"] for key, value in self.reply.items() if key.isdigit()]
+        menu = '\n'.join([f"{key}- {value}" for key, value in enumerate(choices, start=1)])
+        return f"{text}\n{menu}"
 
     def sendFirstMessage(self):
         self.alreadyWelcomed = True
-        firstSentence = self._produceFirstSentence()
-        return self._formatOutputMessage(firstSentence)
+        return self._formatOutputMessage(self._produceFirstSentence())
 
     def parseIncomingMessage(self, message: str):
         if not self.alreadyWelcomed:
@@ -40,14 +39,14 @@ class Intent:
                             f"Por favor, selecione uma opção entre {integerChoices}"}
         choiceReply = self.reply[message]
         newIntent = choiceReply["choiceNextIntent"]
-        return {"changeIntent": newIntent}
+        return {"changeIntent": newIntent, "chosenOption": self.choice,
+                "chosenOptionDetails": choiceReply["choiceContent"]}
 
 
 def __main():
-    intent = Intent(Replies.WELCOME)
-    botResponse = intent.parseIncomingMessage("oii")
-    print(botResponse)
-    return
+    mci = MultipleChoiceIntent(Replies.MENU)
+    print(mci.parseIncomingMessage("oii"))
+    print(mci.parseIncomingMessage("1"))
 
 
 if __name__ == "__main__":

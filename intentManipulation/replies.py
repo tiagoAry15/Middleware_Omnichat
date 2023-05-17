@@ -1,5 +1,5 @@
 class Types:
-    MULTIPLE_CHOICE = "multiple_choice"
+    MULTIPLE_CHOICE = "MULTIPLE_CHOICE"
     FALLBACK = "FALLBACK"
 
 
@@ -16,8 +16,7 @@ class Replies:
             "intentName": "MENU",
             "intentType": Types.FALLBACK,
             "fallBackIntent": "WELCOME",
-            "main": "Hoje temos Calabresa, Mussarela, Portuguesa e Margherita",
-            "1": {"choiceContent": "Voltar", "choiceNextIntent": "WELCOME"}}
+            "main": "Hoje temos Calabresa, Mussarela, Portuguesa e Margherita"}
 
     SIGNUP = {"media": None,
               "intentName": "SIGNUP",
