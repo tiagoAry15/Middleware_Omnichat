@@ -35,8 +35,10 @@ class EntryTextIntent(BaseIntent):
 
 def __main():
     eti = EntryTextIntent(Replies.SIGNUP)
-    print(eti.parseIncomingMessage("oii"))
-    print(eti.parseIncomingMessage("1"))
+    firstResponse = eti.parseIncomingMessage("oii")
+    print(firstResponse)
+    secondResponse = eti.parseIncomingMessage("1")
+    print(secondResponse)
 
 
 if __name__ == "__main__":

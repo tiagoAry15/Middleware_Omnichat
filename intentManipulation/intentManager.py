@@ -40,18 +40,16 @@ class IntentManager:
         # sourcery skip: use-next
         nextIntentName = botResponse["changeIntent"]
         nextIntent = self.__getIntentByName(nextIntentName)
-        nextIntentType = nextIntent.intentType
-        if nextIntentType != Types.FALLBACK:
-            self.currentIntent = nextIntent
+        self.currentIntent = nextIntent
         nextIntentAnswer = nextIntent.sendFirstMessage()["body"]
+
+        if not isinstance(nextIntent, InstantFallbackIntent):
+            return nextIntentAnswer
         previousBotAnswer = ""
         for intentName, botAnswer in reversed(self.intentHistory):
             if intentName != nextIntentName:
                 previousBotAnswer = botAnswer
                 break
-        isNextAnswerSubstringOfPreviousAnswer = nextIntentAnswer in previousBotAnswer
-        if isNextAnswerSubstringOfPreviousAnswer:
-            return previousBotAnswer
         return f"{nextIntentAnswer}\n\n{previousBotAnswer}"
 
     @staticmethod

@@ -31,7 +31,8 @@ class MultipleChoiceIntent(BaseIntent):
 
 def __main():
     mci = MultipleChoiceIntent(Replies.WELCOME)
-    print(mci.parseIncomingMessage("oii"))
+    firstResponse = mci.parseIncomingMessage("oii")
+    print(firstResponse)
     print(mci.parseIncomingMessage("1"))
 
 
