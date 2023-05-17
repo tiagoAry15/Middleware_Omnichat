@@ -3,7 +3,7 @@ from typing import List
 from colorama import Fore, Style
 
 from intentManipulation.intent import Intent
-from intentManipulation.replies import Replies
+from intentManipulation.replies import Replies, Types
 
 
 class IntentManager:
@@ -19,17 +19,21 @@ class IntentManager:
         return None
 
     def _analyzeBotResponse(self, botResponse: dict):
-        botAnswer = ""
-        if "changeIntent" in botResponse:
-            newIntentName = botResponse["changeIntent"]
-            newIntentObject = self.__getIntentByName(newIntentName)
-            if newIntentObject is None:
-                raise ValueError(f"Intent {newIntentName} not found.")
-            self.currentIntent = newIntentObject
-            botAnswer = self.currentIntent.sendFirstMessage()["body"]
-        else:
-            botAnswer = botResponse["body"]
+        botAnswer = self.handleIntentChanges(botResponse)
         print(f"{Fore.YELLOW}Bot:{Style.RESET_ALL} {botAnswer}")
+
+    def handleIntentChanges(self, botResponse):
+        if "changeIntent" not in botResponse:
+            return botResponse["body"]
+        nextIntent = botResponse["changeIntent"]
+        newIntentObject: Intent = self.__getIntentByName(nextIntent)
+        isNextIntentFallback = newIntentObject.intentType == Types.FALLBACK
+        if isNextIntentFallback:
+            return newIntentObject.sendFirstMessage()["body"]
+        if newIntentObject is None:
+            raise ValueError(f"Intent {nextIntent} not found.")
+        self.currentIntent = newIntentObject
+        return self.currentIntent.sendFirstMessage()["body"]
 
     def chatBotLoop(self):
         """This function simulates a chatbot loop."""
@@ -40,7 +44,8 @@ class IntentManager:
 
 
 def __main():
-    listOfIntents = [Intent(Replies.WELCOME), Intent(Replies.DRINK), Intent(Replies.FIRST_FLAVOR)]
+    listOfIntents = [Intent(Replies.WELCOME), Intent(Replies.DRINK), Intent(Replies.FIRST_FLAVOR),
+                     Intent(Replies.SECOND_FLAVOR), Intent(Replies.MENU)]
     im = IntentManager(listOfIntents)
     im.chatBotLoop()
     return

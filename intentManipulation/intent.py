@@ -1,10 +1,11 @@
-from intentManipulation.replies import Replies
+from intentManipulation.replies import Replies, Types
 
 
 class Intent:
     def __init__(self, coreReply: Replies):
         self.reply = coreReply
         self.coreMessage = coreReply["main"]
+        self.intentType = coreReply["intentType"]
         self.alreadyWelcomed = False
         self.choice = 0
 
@@ -16,10 +17,13 @@ class Intent:
         return r
 
     def _produceFirstSentence(self):
-        text = self.reply["main"]
-        choices = [value["choiceContent"] for key, value in self.reply.items() if key.isdigit()]
-        menu = '\n'.join([f"{key}- {value}" for key, value in enumerate(choices, start=1)])
-        return f"{text}\n{menu}"
+        if self.reply["intentType"] == Types.MULTIPLE_CHOICE:
+            text = self.reply["main"]
+            choices = [value["choiceContent"] for key, value in self.reply.items() if key.isdigit()]
+            menu = '\n'.join([f"{key}- {value}" for key, value in enumerate(choices, start=1)])
+            return f"{text}\n{menu}"
+        elif self.reply["intentType"] == Types.FALLBACK:
+            return self.coreMessage
 
     def sendFirstMessage(self):
         self.alreadyWelcomed = True
@@ -40,11 +44,10 @@ class Intent:
 
 
 def __main():
-    intent = Intent(Replies.FIRST_FLAVOR)
+    intent = Intent(Replies.WELCOME)
+    botResponse = intent.parseIncomingMessage("oii")
+    print(botResponse)
     return
-    # print(intent.sendFirstMessage())
-    # userMessage = "4aaaaa"
-    # print(intent.parseIncomingMessage(userMessage))
 
 
 if __name__ == "__main__":
