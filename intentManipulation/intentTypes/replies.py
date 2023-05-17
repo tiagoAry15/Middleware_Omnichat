@@ -1,6 +1,7 @@
 class Types:
     MULTIPLE_CHOICE = "MULTIPLE_CHOICE"
     FALLBACK = "FALLBACK"
+    ENTRY_TEXT = "ENTRY_TEXT"
 
 
 class Replies:
@@ -10,7 +11,7 @@ class Replies:
                "main": "Olá! Bem-vindo à Pizza do Bill! O que você vai querer hoje?",
                "1": {"choiceContent": "Fazer um pedido", "choiceNextIntent": "FIRST_FLAVOR"},
                "2": {"choiceContent": "Ver o cardápio", "choiceNextIntent": "MENU"},
-               "3": {"choiceContent": "Ver bebidas", "choiceNextIntent": "DRINK"}}
+               "3": {"choiceContent": "Fazer cadastro", "choiceNextIntent": "SIGNUP"}}
 
     MENU = {"media": None,
             "intentName": "MENU",
@@ -20,9 +21,16 @@ class Replies:
 
     SIGNUP = {"media": None,
               "intentName": "SIGNUP",
-              "intentType": Types.MULTIPLE_CHOICE,
+              "intentType": Types.ENTRY_TEXT,
+              "nextIntent": "SIGNUP_EMAIL",
               "main": "Qual o seu nome?",
-              "1": {"choiceContent": "Voltar", "choiceNextIntent": "WELCOME"}}
+              "validators": None}
+
+    SIGNUP_EMAIL = {"media": None,
+                    "intentName": "SIGNUP_EMAIL",
+                    "intentType": Types.MULTIPLE_CHOICE,
+                    "main": "Qual o seu email?",
+                    "1": {"choiceContent": "Voltar", "choiceNextIntent": "SIGNUP"}}
 
     DRINK = {"media": None,
              "intentName": "DRINK",

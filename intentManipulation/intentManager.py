@@ -2,13 +2,15 @@ from typing import List
 
 from colorama import Fore, Style
 
+from intentManipulation.intentTypes.intentEntryText import EntryTextIntent
 from intentManipulation.intentTypes.intentFallback import InstantFallbackIntent
 from intentManipulation.intentTypes.intentMultipleChoice import MultipleChoiceIntent
 from intentManipulation.intentTypes.replies import Replies, Types
 
 
 def getIntentPot():
-    return [MultipleChoiceIntent(Replies.WELCOME), InstantFallbackIntent(Replies.MENU)]
+    return [MultipleChoiceIntent(Replies.WELCOME), InstantFallbackIntent(Replies.MENU),
+            EntryTextIntent(Replies.SIGNUP)]
 
 
 class IntentManager:
@@ -26,7 +28,6 @@ class IntentManager:
         return None
 
     def _analyzeBotResponse(self, botResponse: dict):
-        botAnswer = ""
         if self.isDefaultIntent(botResponse):
             botAnswer = botResponse["body"]
         else:
@@ -39,6 +40,9 @@ class IntentManager:
         # sourcery skip: use-next
         nextIntentName = botResponse["changeIntent"]
         nextIntent = self.__getIntentByName(nextIntentName)
+        nextIntentType = nextIntent.intentType
+        if nextIntentType != Types.FALLBACK:
+            self.currentIntent = nextIntent
         nextIntentAnswer = nextIntent.sendFirstMessage()["body"]
         previousBotAnswer = ""
         for intentName, botAnswer in reversed(self.intentHistory):
