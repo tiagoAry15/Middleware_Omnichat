@@ -2,23 +2,23 @@ from typing import List
 
 from colorama import Fore, Style
 
-from intentManipulation.intentTypes.intentFallback import FallbackIntent
+from intentManipulation.intentTypes.intentFallback import InstantFallbackIntent
 from intentManipulation.intentTypes.intentMultipleChoice import MultipleChoiceIntent
 from intentManipulation.intentTypes.replies import Replies, Types
 
 
 def getIntentPot():
-    return [MultipleChoiceIntent(Replies.WELCOME), FallbackIntent(Replies.MENU)]
+    return [MultipleChoiceIntent(Replies.WELCOME), InstantFallbackIntent(Replies.MENU)]
 
 
 class IntentManager:
     def __init__(self, intents: List):
         self.intents = intents
         self.currentIntent = intents[0]
-        self.intentHistory = []
-        self.botResponseHistory = []
+        self.intentHistory = []  # Will store tuples (intent, messageContent)
+        self.count = 0
 
-    def __getIntentByName(self, inputIntentName: str):  # sourcery skip: use-next
+    def __getIntentByName(self, inputIntentName: str):
         for intent in self.intents:
             currentName = intent.reply["intentName"].lower()
             if currentName == inputIntentName.lower():
@@ -31,16 +31,23 @@ class IntentManager:
             botAnswer = botResponse["body"]
         else:
             botAnswer = self.__handleIntentTransition(botResponse)
-        self.intentHistory.append(self.currentIntent)
-        self.botResponseHistory.append(botAnswer)
+        # store intent name along with its message in the history
+        self.intentHistory.append((self.currentIntent.reply["intentName"], botAnswer))
         print(f"{Fore.YELLOW}Bot:{Style.RESET_ALL} {botAnswer}")
 
     def __handleIntentTransition(self, botResponse: dict):
+        # sourcery skip: use-next
         nextIntentName = botResponse["changeIntent"]
         nextIntent = self.__getIntentByName(nextIntentName)
-        self.intentHistory.append(nextIntent)
         nextIntentAnswer = nextIntent.sendFirstMessage()["body"]
-        previousBotAnswer = self.botResponseHistory[-1]
+        previousBotAnswer = ""
+        for intentName, botAnswer in reversed(self.intentHistory):
+            if intentName != nextIntentName:
+                previousBotAnswer = botAnswer
+                break
+        isNextAnswerSubstringOfPreviousAnswer = nextIntentAnswer in previousBotAnswer
+        if isNextAnswerSubstringOfPreviousAnswer:
+            return previousBotAnswer
         return f"{nextIntentAnswer}\n\n{previousBotAnswer}"
 
     @staticmethod
@@ -50,32 +57,11 @@ class IntentManager:
     def chatBotLoop(self):
         """This function simulates a chatbot loop."""
         while True:
+            self.count += 1
+            print(f"-------------- [{self.count}]")
             userMessage = input(f"{Fore.RED}User: {Style.RESET_ALL}")
             botResponse = self.currentIntent.parseIncomingMessage(userMessage)
             self._analyzeBotResponse(botResponse)
-
-
-"""The approach presented in the code can work for handling fallback intents. However, depending on the complexity 
-of your chatbot and the desired behavior for fallbacks, there may be alternative approaches that offer more flexibility
-or better organization. Here are a few suggestions:
-  
-    1. Fallback as a separate Intent class: Instead of handling fallbacks within the IntentManager class, you could 
-create a separate FallbackIntent class inheriting from the Intent class. This can help keep the code  modular and make
-it easier to add or modify fallback behavior in the future.
-  
-    2. Implement a stack-based approach: Instead of relying on the botResponsesHistory list, you could use a stack to 
-manage the conversation flow. Each time a new intent is triggered, you push it onto the stack. When a fallback occurs,
-you pop the stack to return to the previous intent. This can handle nested fallbacks more effectively and provide 
-a clearer mechanism for managing intent transitions.
-   
-    3. Use a state machine design: Consider implementing a state machine to model the chatbot's behavior. 
-Each intent can represent a state, and the transitions between intents can be defined explicitly. This approach provides
-a more structured way to handle fallbacks and allows for more complex conversation flows.
-
-    4. Implement a natural language understanding (NLU) system: For more sophisticated chatbots, consider incorporating
-a natural language understanding system that can analyze user input and determine the intent automatically. This can
-handle fallbacks and intent recognition more effectively, enabling more dynamic conversation handling.
-"""
 
 
 def __main():

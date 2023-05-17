@@ -2,7 +2,7 @@ from intentManipulation.intentTypes.baseIntent import BaseIntent
 from intentManipulation.intentTypes.replies import Replies, Types
 
 
-class FallbackIntent(BaseIntent):
+class InstantFallbackIntent(BaseIntent):
     def getIntentType(self):
         return Types.FALLBACK
 
@@ -20,7 +20,7 @@ class FallbackIntent(BaseIntent):
 
 
 def __main():
-    fbi = FallbackIntent(Replies.MENU)
+    fbi = InstantFallbackIntent(Replies.MENU)
     return
 
 
