@@ -2,17 +2,23 @@ from typing import List
 
 from colorama import Fore, Style
 
-from intentManipulation.intent import Intent
-from intentManipulation.replies import Replies, Types
+from intentManipulation.intentTypes.intentFallback import FallbackIntent
+from intentManipulation.intentTypes.intentMultipleChoice import MultipleChoiceIntent
+from intentManipulation.intentTypes.replies import Replies, Types
+
+
+def getIntentPot():
+    return [MultipleChoiceIntent(Replies.WELCOME), FallbackIntent(Replies.MENU)]
 
 
 class IntentManager:
-    def __init__(self, intents: List[Intent]):
+    def __init__(self, intents: List):
         self.intents = intents
         self.currentIntent = intents[0]
-        self.botResponsesHistory = []
+        self.intentHistory = []
+        self.botResponseHistory = []
 
-    def __getIntentByName(self, inputIntentName: str) -> Intent or None:  # sourcery skip: use-next
+    def __getIntentByName(self, inputIntentName: str):  # sourcery skip: use-next
         for intent in self.intents:
             currentName = intent.reply["intentName"].lower()
             if currentName == inputIntentName.lower():
@@ -20,18 +26,32 @@ class IntentManager:
         return None
 
     def _analyzeBotResponse(self, botResponse: dict):
-        botAnswer = self.handleIntentChanges(botResponse)
-        if isinstance(botAnswer, tuple):
-            botAnswer = "\n".join(list(botAnswer))
+        botAnswer = ""
+        if self.isDefaultIntent(botResponse):
+            botAnswer = botResponse["body"]
         else:
-            self.botResponsesHistory.append(botResponse["body"])
+            botAnswer = self.__handleIntentTransition(botResponse)
+        self.intentHistory.append(self.currentIntent)
+        self.botResponseHistory.append(botAnswer)
         print(f"{Fore.YELLOW}Bot:{Style.RESET_ALL} {botAnswer}")
+
+    def __handleIntentTransition(self, botResponse: dict):
+        nextIntentName = botResponse["changeIntent"]
+        nextIntent = self.__getIntentByName(nextIntentName)
+        self.intentHistory.append(nextIntent)
+        nextIntentAnswer = nextIntent.sendFirstMessage()["body"]
+        previousBotAnswer = self.botResponseHistory[-1]
+        return f"{nextIntentAnswer}\n\n{previousBotAnswer}"
+
+    @staticmethod
+    def isDefaultIntent(botResponse):
+        return list(botResponse.keys()) == ["body"]
 
     def handleIntentChanges(self, botResponse):
         if "changeIntent" not in botResponse:
             return botResponse["body"]
         nextIntent = botResponse["changeIntent"]
-        newIntentObject: Intent = self.__getIntentByName(nextIntent)
+        newIntentObject = self.__getIntentByName(nextIntent)
         isNextIntentFallback = newIntentObject.intentType == Types.FALLBACK
         if isNextIntentFallback:
             return newIntentObject.sendFirstMessage()["body"], self.botResponsesHistory[-1]
@@ -72,8 +92,7 @@ handle fallbacks and intent recognition more effectively, enabling more dynamic 
 
 
 def __main():
-    listOfIntents = [Intent(Replies.WELCOME), Intent(Replies.DRINK), Intent(Replies.FIRST_FLAVOR),
-                     Intent(Replies.SECOND_FLAVOR), Intent(Replies.MENU)]
+    listOfIntents = getIntentPot()
     im = IntentManager(listOfIntents)
     im.chatBotLoop()
     return

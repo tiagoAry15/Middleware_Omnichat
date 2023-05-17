@@ -49,6 +49,7 @@ class Replies:
                      "3": {"choiceContent": "Portuguesa", "choiceNextIntent": None}}
 
 
+
 def __main():
     print(Replies.WELCOME)
 

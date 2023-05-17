@@ -1,4 +1,4 @@
-from intentManipulation.replies import Replies
+from intentManipulation.intentTypes.replies import Replies
 
 
 class BotOptions:

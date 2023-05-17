@@ -1,10 +1,10 @@
-from intentManipulation.replies import Replies
+from intentManipulation.intentTypes.replies import Replies
 
 
 class FallbackIntent:
     def __init__(self, coreReply: Replies):
-        if coreReply["intentType"] != "fallback":
-            raise TypeError(f"MultipleChoiceIntent can only be instantiated with a MultipleChoiceIntent. "
+        if coreReply["intentType"].upper() != "FALLBACK":
+            raise TypeError(f"FallbackIntent can only be instantiated with a Fallback. "
                             f"Got {coreReply['intentType']} instead.")
         self.reply = coreReply
         self.media = coreReply["media"]
@@ -33,7 +33,6 @@ class FallbackIntent:
 
 def __main():
     fbi = FallbackIntent(Replies.MENU)
-
 
 
 if __name__ == "__main__":
