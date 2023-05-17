@@ -47,19 +47,6 @@ class IntentManager:
     def isDefaultIntent(botResponse):
         return list(botResponse.keys()) == ["body"]
 
-    def handleIntentChanges(self, botResponse):
-        if "changeIntent" not in botResponse:
-            return botResponse["body"]
-        nextIntent = botResponse["changeIntent"]
-        newIntentObject = self.__getIntentByName(nextIntent)
-        isNextIntentFallback = newIntentObject.intentType == Types.FALLBACK
-        if isNextIntentFallback:
-            return newIntentObject.sendFirstMessage()["body"], self.botResponsesHistory[-1]
-        if newIntentObject is None:
-            raise ValueError(f"Intent {nextIntent} not found.")
-        self.currentIntent = newIntentObject
-        return self.currentIntent.sendFirstMessage()["body"]
-
     def chatBotLoop(self):
         """This function simulates a chatbot loop."""
         while True:
