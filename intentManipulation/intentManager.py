@@ -24,11 +24,14 @@ class IntentManager:
         self.intents = intents
         self.currentIntent = intents[0]
         self.intentHistory = []  # Will store tuples (intent, messageContent)
+        self.userHistory = []
+        self.botHistory = []
         self.count = 0
 
     def __getIntentByName(self, inputIntentName: str):
         for intent in self.intents:
             currentName = intent.reply["intentName"].lower()
+            check = isinstance(inputIntentName, str)
             if currentName == inputIntentName.lower():
                 return intent
         raise IntentNotFoundException(inputIntentName)
@@ -36,9 +39,9 @@ class IntentManager:
     def _analyzeBotResponse(self, botResponse: dict):
         if self.isDefaultIntent(botResponse):
             botAnswer = botResponse["body"]
+            self.botHistory.append(botAnswer)
         else:
             botAnswer = self.__handleIntentTransition(botResponse)
-        # store intent name along with its message in the history
         self.intentHistory.append((self.currentIntent.reply["intentName"], botAnswer))
         print(f"{Fore.YELLOW}Bot:{Style.RESET_ALL} {botAnswer}")
 
@@ -50,13 +53,16 @@ class IntentManager:
         nextIntentAnswer = nextIntent.sendFirstMessage()["body"]
 
         if not isinstance(nextIntent, InstantFallbackIntent):
+            self.botHistory.append(nextIntentAnswer)
             return nextIntentAnswer
         previousBotAnswer = ""
         for intentName, botAnswer in reversed(self.intentHistory):
             if intentName != nextIntentName:
                 previousBotAnswer = botAnswer
                 break
-        return f"{nextIntentAnswer}\n\n{previousBotAnswer}"
+        finalAnswer = f"{nextIntentAnswer}\n\n{previousBotAnswer}"
+        self.botHistory.append(nextIntentAnswer)
+        return finalAnswer
 
     @staticmethod
     def isDefaultIntent(botResponse):
@@ -68,8 +74,10 @@ class IntentManager:
             self.count += 1
             print(f"-------------- [{self.count}]")
             userMessage = input(f"{Fore.RED}User: {Style.RESET_ALL}")
+            self.userHistory.append(userMessage)
             botResponse = self.currentIntent.parseIncomingMessage(userMessage)
             self._analyzeBotResponse(botResponse)
+            print(list(zip(self.userHistory, self.botHistory)))
 
 
 def __main():

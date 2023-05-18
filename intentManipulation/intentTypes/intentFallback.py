@@ -16,7 +16,7 @@ class InstantFallbackIntent(BaseIntent):
         # sourcery skip: assign-if-exp, swap-if-expression
         if not self.alreadyWelcomed:
             return self.sendFirstMessage()
-        return {"changeIntent": Replies.MENU}
+        return {"changeIntent": "MENU", 'chosenOption': message}
 
 
 def __main():
