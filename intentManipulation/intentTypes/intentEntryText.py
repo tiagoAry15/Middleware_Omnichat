@@ -34,10 +34,10 @@ class EntryTextIntent(BaseIntent):
 
 
 def __main():
-    eti = EntryTextIntent(Replies.SIGNUP)
+    eti = EntryTextIntent(Replies.SIGNUP_NAME)
     firstResponse = eti.parseIncomingMessage("oii")
     print(firstResponse)
-    secondResponse = eti.parseIncomingMessage("1")
+    secondResponse = eti.parseIncomingMessage("Ronald")
     print(secondResponse)
 
 

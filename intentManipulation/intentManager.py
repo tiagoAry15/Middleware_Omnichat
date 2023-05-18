@@ -8,9 +8,15 @@ from intentManipulation.intentTypes.intentMultipleChoice import MultipleChoiceIn
 from intentManipulation.intentTypes.replies import Replies, Types
 
 
+class IntentNotFoundException(Exception):
+    def __init__(self, intent_name):
+        self.intent_name = intent_name
+        super().__init__(f"Intent '{intent_name}' not found.")
+
+
 def getIntentPot():
     return [MultipleChoiceIntent(Replies.WELCOME), InstantFallbackIntent(Replies.MENU),
-            EntryTextIntent(Replies.SIGNUP)]
+            EntryTextIntent(Replies.SIGNUP_NAME), EntryTextIntent(Replies.SIGNUP_EMAIL)]
 
 
 class IntentManager:
@@ -25,7 +31,7 @@ class IntentManager:
             currentName = intent.reply["intentName"].lower()
             if currentName == inputIntentName.lower():
                 return intent
-        return None
+        raise IntentNotFoundException(inputIntentName)
 
     def _analyzeBotResponse(self, botResponse: dict):
         if self.isDefaultIntent(botResponse):

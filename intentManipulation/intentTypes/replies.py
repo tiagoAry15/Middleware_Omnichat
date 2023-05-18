@@ -11,7 +11,7 @@ class Replies:
                "main": "Olá! Bem-vindo à Pizza do Bill! O que você vai querer hoje?",
                "1": {"choiceContent": "Fazer um pedido", "choiceNextIntent": "FIRST_FLAVOR"},
                "2": {"choiceContent": "Ver o cardápio", "choiceNextIntent": "MENU"},
-               "3": {"choiceContent": "Fazer cadastro", "choiceNextIntent": "SIGNUP"}}
+               "3": {"choiceContent": "Fazer cadastro", "choiceNextIntent": "SIGNUP_NAME"}}
 
     MENU = {"media": None,
             "intentName": "MENU",
@@ -19,18 +19,18 @@ class Replies:
             "fallBackIntent": "WELCOME",
             "main": "Hoje temos Calabresa, Mussarela, Portuguesa e Margherita"}
 
-    SIGNUP = {"media": None,
-              "intentName": "SIGNUP",
-              "intentType": Types.ENTRY_TEXT,
-              "nextIntent": "SIGNUP_EMAIL",
-              "main": "Qual o seu nome?",
-              "validators": None}
+    SIGNUP_NAME = {"media": None,
+                   "intentName": "SIGNUP_NAME",
+                   "intentType": Types.ENTRY_TEXT,
+                   "nextIntent": "SIGNUP_EMAIL",
+                   "main": "Qual o seu nome?",
+                   "validators": None}
 
     SIGNUP_EMAIL = {"media": None,
                     "intentName": "SIGNUP_EMAIL",
-                    "intentType": Types.MULTIPLE_CHOICE,
+                    "intentType": Types.ENTRY_TEXT,
                     "main": "Qual o seu email?",
-                    "1": {"choiceContent": "Voltar", "choiceNextIntent": "SIGNUP"}}
+                    "validators": ["email"]}
 
     DRINK = {"media": None,
              "intentName": "DRINK",
@@ -55,7 +55,6 @@ class Replies:
                      "1": {"choiceContent": "Calabresa", "choiceNextIntent": None},
                      "2": {"choiceContent": "Mussarela", "choiceNextIntent": None},
                      "3": {"choiceContent": "Portuguesa", "choiceNextIntent": None}}
-
 
 
 def __main():
