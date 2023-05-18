@@ -78,13 +78,13 @@ class IntentManager:
         """This function simulates a chatbot loop."""
         while True:
             self.count += 1
-            # print(f"---- [{self.count}]")
-            print(f"                                  Parâmetros extraídos: {self.extractedParameters}\n")
+            print(f"---- [{self.count}]")
             userMessage = input(f"{Fore.RED}User: {Style.RESET_ALL}")
             self.userHistory.append(userMessage)
-            # print(self.currentIntent.reply["intentName"])
+            print(f"Intent → {self.currentIntent.reply['intentName']}")
             botResponse = self.currentIntent.parseIncomingMessage(userMessage)
             self._analyzeBotResponse(botResponse)
+            print(f"                                  Parâmetros extraídos: {self.extractedParameters}\n")
 
 
 def __main():

@@ -44,7 +44,8 @@ class Replies:
                         "intentName": "SIGNUP_BIRTHDATE",
                         "intentType": Types.ENTRY_TEXT,
                         "main": "Qual a sua data de nascimento?",
-                        "validators": ["birthdate"]}
+                        "validators": ["birthdate"],
+                        "nextIntent": "WELCOME"}
 
 
 def __main():
