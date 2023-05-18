@@ -24,7 +24,7 @@ class Replies:
                    "intentType": Types.ENTRY_TEXT,
                    "nextIntent": "SIGNUP_EMAIL",
                    "main": "Qual o seu nome?",
-                   "validators": None}
+                   "validators": ["name"]}
 
     SIGNUP_EMAIL = {"media": None,
                     "intentName": "SIGNUP_EMAIL",
