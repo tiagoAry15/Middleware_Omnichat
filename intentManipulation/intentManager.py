@@ -16,13 +16,15 @@ class IntentNotFoundException(Exception):
 
 def getIntentPot():
     return [MultipleChoiceIntent(Replies.WELCOME), InstantFallbackIntent(Replies.MENU),
-            EntryTextIntent(Replies.SIGNUP_NAME), EntryTextIntent(Replies.SIGNUP_EMAIL)]
+            EntryTextIntent(Replies.SIGNUP_NAME), EntryTextIntent(Replies.SIGNUP_EMAIL),
+            EntryTextIntent(Replies.SIGNUP_ADDRESS), EntryTextIntent(Replies.SIGNUP_BIRTHDATE)]
 
 
 class IntentManager:
     def __init__(self, intents: List):
         self.intents = intents
         self.currentIntent = intents[0]
+        self.extractedParameters = {}
         self.intentHistory = []  # Will store tuples (intent, messageContent)
         self.userHistory = []
         self.botHistory = []
@@ -48,8 +50,12 @@ class IntentManager:
     def __handleIntentTransition(self, botResponse: dict):
         # sourcery skip: use-next
         nextIntentName = botResponse["changeIntent"]
+        keyParameters = botResponse.get("parameters", {})
+        self.extractedParameters.update(keyParameters)
         nextIntent = self.__getIntentByName(nextIntentName)
-        self.currentIntent = nextIntent
+        nextIntentType = nextIntent.intentType
+        if nextIntentType != "INSTANT_FALLBACK":
+            self.currentIntent = nextIntent
         nextIntentAnswer = nextIntent.sendFirstMessage()["body"]
 
         if not isinstance(nextIntent, InstantFallbackIntent):
@@ -75,9 +81,10 @@ class IntentManager:
             print(f"-------------- [{self.count}]")
             userMessage = input(f"{Fore.RED}User: {Style.RESET_ALL}")
             self.userHistory.append(userMessage)
+            print(self.currentIntent.reply["intentName"])
             botResponse = self.currentIntent.parseIncomingMessage(userMessage)
             self._analyzeBotResponse(botResponse)
-            print(list(zip(self.userHistory, self.botHistory)))
+            print(self.extractedParameters)
 
 
 def __main():

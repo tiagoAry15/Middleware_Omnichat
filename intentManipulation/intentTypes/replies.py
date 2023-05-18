@@ -1,6 +1,6 @@
 class Types:
     MULTIPLE_CHOICE = "MULTIPLE_CHOICE"
-    FALLBACK = "FALLBACK"
+    INSTANT_FALLBACK = "INSTANT_FALLBACK"
     ENTRY_TEXT = "ENTRY_TEXT"
 
 
@@ -15,7 +15,7 @@ class Replies:
 
     MENU = {"media": None,
             "intentName": "MENU",
-            "intentType": Types.FALLBACK,
+            "intentType": Types.INSTANT_FALLBACK,
             "fallBackIntent": "WELCOME",
             "main": "Hoje temos Calabresa, Mussarela, Portuguesa e Margherita"}
 
@@ -29,32 +29,22 @@ class Replies:
     SIGNUP_EMAIL = {"media": None,
                     "intentName": "SIGNUP_EMAIL",
                     "intentType": Types.ENTRY_TEXT,
+                    "nextIntent": "SIGNUP_ADDRESS",
                     "main": "Qual o seu email?",
                     "validators": ["email"]}
 
-    DRINK = {"media": None,
-             "intentName": "DRINK",
-             "intentType": Types.MULTIPLE_CHOICE,
-             "main": "Qual bebida você deseja?",
-             "1": {"choiceContent": "Coca-cola", "choiceNextIntent": "FIRST_FLAVOR"},
-             "2": {"choiceContent": "Fanta", "choiceNextIntent": "FIRST_FLAVOR"},
-             "3": {"choiceContent": "Guaraná", "choiceNextIntent": "FIRST_FLAVOR"}}
+    SIGNUP_ADDRESS = {"media": None,
+                      "intentName": "SIGNUP_ADDRESS",
+                      "intentType": Types.ENTRY_TEXT,
+                      "nextIntent": "SIGNUP_BIRTHDATE",
+                      "main": "Qual o seu endereço?",
+                      "validators": ["address"]}
 
-    FIRST_FLAVOR = {"media": None,
-                    "intentName": "FIRST_FLAVOR",
-                    "intentType": Types.MULTIPLE_CHOICE,
-                    "main": "Qual o primeiro sabor de pizza que você deseja?",
-                    "1": {"choiceContent": "Calabresa", "choiceNextIntent": "SECOND_FLAVOR"},
-                    "2": {"choiceContent": "Mussarela", "choiceNextIntent": "SECOND_FLAVOR"},
-                    "3": {"choiceContent": "Portuguesa", "choiceNextIntent": "SECOND_FLAVOR"}}
-
-    SECOND_FLAVOR = {"media": None,
-                     "intentName": "SECOND_FLAVOR",
-                     "intentType": Types.MULTIPLE_CHOICE,
-                     "main": "Qual o segundo sabor de pizza que você deseja?",
-                     "1": {"choiceContent": "Calabresa", "choiceNextIntent": None},
-                     "2": {"choiceContent": "Mussarela", "choiceNextIntent": None},
-                     "3": {"choiceContent": "Portuguesa", "choiceNextIntent": None}}
+    SIGNUP_BIRTHDATE = {"media": None,
+                        "intentName": "SIGNUP_BIRTHDATE",
+                        "intentType": Types.ENTRY_TEXT,
+                        "main": "Qual a sua data de nascimento?",
+                        "validators": ["birthdate"]}
 
 
 def __main():

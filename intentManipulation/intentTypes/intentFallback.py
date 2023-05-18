@@ -4,7 +4,7 @@ from intentManipulation.intentTypes.replies import Replies, Types
 
 class InstantFallbackIntent(BaseIntent):
     def getIntentType(self):
-        return Types.FALLBACK
+        return Types.INSTANT_FALLBACK
 
     def getChangeIntent(self):
         return self.reply["fallbackIntent"]
@@ -21,6 +21,8 @@ class InstantFallbackIntent(BaseIntent):
 
 def __main():
     fbi = InstantFallbackIntent(Replies.MENU)
+    firstResponse = fbi.parseIncomingMessage("oii")
+    firstResponse = fbi.parseIncomingMessage("eae")
     return
 
 
