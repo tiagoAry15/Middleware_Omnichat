@@ -27,14 +27,15 @@ class EntryTextIntent(BaseIntent):
         return re.match(pattern, name)
 
     @staticmethod
-    def _validateAddress(name: str):
+    def _validateAddress(address: str):
+        formattedAddress = ' '.join(word.title() if word.isalpha() else word for word in address.split())
         pattern = r'^(Rua|Avenida|Travessa)\s[^\d]*\d+$'
-        match = re.match(pattern, name)
+        match = re.match(pattern, formattedAddress)
 
         if not match:
-            if not re.match(r'^(Rua|Avenida|Travessa)', name):
+            if not re.match(r'^(Rua|Avenida|Travessa)', formattedAddress):
                 return "Tipo de endereço inválido (rua, avenida, travessa)"
-            elif not re.search(r'\d', name):
+            elif not re.search(r'\d', formattedAddress):
                 return "Endereço inválido. Está faltando o número da casa."
             else:
                 return False
@@ -49,37 +50,40 @@ class EntryTextIntent(BaseIntent):
             return self.sendFirstMessage()
 
         validators = self.reply["validators"] if self.reply["validators"] is not None else []
+        keyName = ""
         if "name" in validators:
+            keyName = "name"
             nameMatch = self._validateName(message)
             if not nameMatch:
                 return {"body": f'"{message}" não é um nome válido. Por favor, insira um nome válido.'}
         if "email" in validators:
+            keyName = "email"
             emailMatch = self._validateEmail(message)
             if not emailMatch:
                 return {"body": f'"{message}" não é um email válido. Por favor, insira um e-mail válido.'}
         if "address" in validators:
+            keyName = "address"
             addressMatch = self._validateAddress(message)
             if addressMatch is False:
                 return {"body": f'"{message}" não é um endereço válido. Por favor, insira um endereço válido.'}
             elif isinstance(addressMatch, str):
                 return {"body": addressMatch}
         if "birthdate" in validators:
+            keyName = "birthdate"
             birthdateMatch = self._validateBirthdate(message)
             if not birthdateMatch:
                 return {"body": f'"{message}" não é uma data de nascimento válida. Por favor, insira uma data válida. '
                                 f'Por exemplo: 30/01/1990'}
 
-        return {"changeIntent": self.reply["nextIntent"], "parameters": {"name": message}}
+        return {"changeIntent": self.reply["nextIntent"], "parameters": {keyName: message}}
 
 
 def __testSignupName():
-    et1 = EntryTextIntent(Replies.SIGNUP_NAME)
+    et1 = EntryTextIntent(Replies.SIGNUP_ADDRESS)
     firstResponse = et1.parseIncomingMessage("oii")
     print(firstResponse)
-    secondResponse = et1.parseIncomingMessage("45")
+    secondResponse = et1.parseIncomingMessage("rua osvaldo cruz 900")
     print(secondResponse)
-    thirdResponse = et1.parseIncomingMessage("João")
-    print(thirdResponse)
 
 
 def __main():
