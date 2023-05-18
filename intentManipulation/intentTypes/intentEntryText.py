@@ -39,13 +39,15 @@ class EntryTextIntent(BaseIntent):
     def _validateEmail(email: str):
         pattern = EMAIL_REGEX
         match = re.match(pattern, email)
-        return True if match else "Email inválido. Por favor, insira um email válido."
+        failMessage = "Email inválido. Por favor, insira um email válido."
+        return True if match else {"failMessage": failMessage}
 
     @staticmethod
     def _validateName(name: str):
         pattern = NAME_REGEX
         match = re.match(pattern, name)
-        return True if match else "Nome inválido. Por favor, insira um nome válido."
+        failMessage = "Nome inválido. Por favor, insira um nome válido."
+        return True if match else {"failMessage": failMessage}
 
     @staticmethod
     def _validateAddress(address: str):
@@ -56,12 +58,14 @@ class EntryTextIntent(BaseIntent):
         if not match:
             if not re.match(r'^(Rua|Avenida|Travessa)', formattedAddress):
                 addressType = formattedAddress.split(' ')[0]
-                return f"{addressType} é um tipo de endereço inválido. Por favor, use um tipo válido " \
-                       f"(por exemplo Rua, Avenida, Travessa, etc)"
+                failMessage = f"{addressType} é um tipo de endereço inválido. Por favor, use um tipo válido " \
+                              f"por exemplo Rua, Avenida, Travessa, etc)"
+                return {"failMessage": failMessage}
             elif not re.search(r'\d', formattedAddress):
-                return "Endereço inválido. Está faltando o número da casa."
+                failMessage = "Endereço inválido. Está faltando o número da casa."
+                return {"failMessage": failMessage}
             else:
-                return "Endereço inválido. Por favor, insira um endereço válido."
+                return {"failMessage": "Endereço inválido. Por favor, insira um endereço válido."}
         return True
 
     @staticmethod
@@ -82,10 +86,11 @@ class EntryTextIntent(BaseIntent):
         for validator in validators:
             validateFunction = self.validators[validator]
             matchResult = validateFunction(message)
+            failMessage = matchResult["failMessage"] if isinstance(matchResult, dict) else None
             if matchResult is True:
                 return {"changeIntent": self.reply["nextIntent"], "parameters": {validator: message}}
             else:
-                return {"body": matchResult}
+                return {"body": failMessage}
 
 
 def __testSignupName():
