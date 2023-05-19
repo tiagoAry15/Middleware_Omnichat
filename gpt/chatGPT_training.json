@@ -1,0 +1,39 @@
+{
+    "intents": {
+        "welcome_intent": {
+           "user_examples": [
+                "Olá. Gostaria de fazer um pedido.",
+                "Oi, eu quero pedir uma pizza.",
+                "Boa noite, vocês estão abertos para pedidos?",
+                "Bom dia",
+                "Boa tarde"
+            ]
+        },
+        "order_start_intent": {
+            "user_example": ["Eu gostaria de fazer um pedido.",
+            "sim, quero fazer um pedido",
+              "fazer pedido",
+              "quero iniciar um pedido",
+              "eu gostaria de fazer um pedido"]
+        },
+
+      "see_menu_intent": {
+        "user_example": [
+          "quero ver o cardápio",
+          "gostaria de ver as opções, antes",
+          "cardápio, por favor",
+          "quais opções vocês possuem?",
+          "poderia me mandar o cardápio de vocês, por gentileza?"
+        ]
+      },
+        "pizza_quantity_intent": {
+           "user_examples": [
+            "2 pizzas",
+             "gostaria de 3 pizzas",
+             "quero uma pizza apenas",
+             "4 pizzas, por favor",
+             "só uma pizza"
+            ]
+        }
+    }
+}

@@ -9,7 +9,7 @@ from analyzePizzaIntent import structurePizza
 from dialogFlowSession import DialogFlowSession
 from intentManipulation.dispatcher import BotDispatcher
 from utils import extractDictFromBytesRequest, sendWebhookCallback, changeDialogflowIntent
-
+from concurrent.futures import ThreadPoolExecutor
 load_dotenv()
 
 account_sid = os.environ["TWILIO_ACCOUNT_SID"]
@@ -56,6 +56,7 @@ def sandbox():
     # if botResponse.get("media"):
     #     message.media(botResponse["media"])
     # return str(response)
+    data = request.form
     data = extractDictFromBytesRequest()
     receivedMessage = data.get("Body")[0]
     userNumber = data.get("From")[0]
