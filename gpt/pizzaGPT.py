@@ -43,6 +43,7 @@ class pizzaGPT:
 
 
 def __main():
+
     p = pizzaGPT()
     p.read_json_and_convert_to_string('./chatGPT_training.json')
 
