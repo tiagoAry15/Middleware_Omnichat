@@ -28,6 +28,7 @@ class IntentManager:
         self.intentHistory = []  # Will store tuples (intent, messageContent)
         self.userHistory = []
         self.botHistory = []
+        self.signupDetails = {}
         self.count = 0
 
     def __getIntentByName(self, inputIntentName: str):
@@ -51,6 +52,7 @@ class IntentManager:
         # sourcery skip: use-next
         nextIntentName = botResponse["changeIntent"]
         keyParameters = botResponse.get("parameters", {})
+        action = botResponse.get("action")
         self.extractedParameters.update(keyParameters)
         nextIntent = self.__getIntentByName(nextIntentName)
         nextIntentType = nextIntent.intentType
@@ -73,6 +75,11 @@ class IntentManager:
     @staticmethod
     def isDefaultIntent(botResponse):
         return list(botResponse.keys()) == ["body"]
+
+    def _handleBotAction(self, inputAction: str):
+        if inputAction == "ASSEMBLY_SIGNUP":
+            print("Cadastrando usuário...")
+            self.signupDetails.update(self.extractedParameters)
 
     def chatBotLoop(self):
         """This function simulates a chatbot loop."""

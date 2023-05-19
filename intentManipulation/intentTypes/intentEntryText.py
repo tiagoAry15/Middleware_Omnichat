@@ -94,7 +94,11 @@ class EntryTextIntent(BaseIntent):
         matchResult = validateFunction(message)
         output = matchResult["output"] if isinstance(matchResult, dict) else None
         outputDetails = matchResult.get("outputDetails", None)
-        action = outputDetails.split("_")[2:] if output == "success" else None
+        if outputDetails is not None and "ACTION" in outputDetails:
+            rawAction = outputDetails.split("_")[1:]
+            action = '_'.join(rawAction)
+        else:
+            action = None
         return (
             {
                 "changeIntent": self.reply["nextIntent"],
