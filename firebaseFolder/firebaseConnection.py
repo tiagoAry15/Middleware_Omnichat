@@ -12,26 +12,33 @@ class FirebaseConnection:
         load_dotenv()
         cred = credentials.Certificate(getFirebaseSDKPath())
         self.app = firebase_admin.initialize_app(cred, {"databaseURL": os.getenv("FIREBASE_DATABASE_URL")})
+        self.connection = db.reference('/', app=self.app)
 
-    def connect_to_database(self):
-        # Connect to the Firebase Realtime Database
-        return db.reference('/', app=self.app)
+    def changeDatabaseConnection(self, path: str) -> db.reference:
+        self.connection = db.reference(f'/{path}', app=self.app)
 
-    def read_data(self, path):
-        # Read data from the specified path in the database
-        ref = self.connect_to_database().child(path)
+    def readData(self, path: str = None) -> db.reference:
+        ref = self.connection.child(path) if path is not None else self.connection
         return ref.get()
 
-    def write_data(self, path, data):
-        # Write data to the specified path in the database
-        ref = self.connect_to_database().child(path)
+    def writeData(self, path: str = None, data=None) -> bool:
+        if data is None:
+            data = {"dummyData": 5}
+        ref = self.connection.child(path) if path is not None else self.connection
+        ref.push(data)
+        return True
+
+    def overWriteData(self, path: str = None, data=None) -> bool:
+        if data is None:
+            data = {"dummyData": 5}
+        ref = self.connection.child(path) if path is not None else self.connection
         ref.set(data)
         return True
 
 
 def __main():
     fc = FirebaseConnection()
-    data = fc.read_data("core_messages")
+    data = fc.readData("core_messages")
     return
 
 
