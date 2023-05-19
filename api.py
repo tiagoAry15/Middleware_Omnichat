@@ -56,7 +56,7 @@ def sandbox():
     # if botResponse.get("media"):
     #     message.media(botResponse["media"])
     # return str(response)
-    data = request.form
+
     data = extractDictFromBytesRequest()
     receivedMessage = data.get("Body")[0]
     userNumber = data.get("From")[0]
