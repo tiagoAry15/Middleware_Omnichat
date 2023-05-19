@@ -99,6 +99,10 @@ def __main():
     listOfIntents = getIntentPot()
     im = IntentManager(listOfIntents)
     im.chatBotLoop()
+    d1 = {"action": "get", "items": [{"itemType": "pizza", "itemFlavor": "calabresa", "itemSize": "grande",
+                                      "itemQuantity": 1},
+                                     {"itemType": "pizza", "itemFlavor": "mussarela", "itemSize": "grande",
+                                      "itemQuantity": 1}]}
     return
 
 

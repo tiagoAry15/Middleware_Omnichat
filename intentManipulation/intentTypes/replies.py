@@ -8,7 +8,7 @@ class Replies:
     WELCOME = {"media": None,
                "intentName": "WELCOME",
                "intentType": Types.MULTIPLE_CHOICE,
-               "main": "Olá! Bem-vindo à Pizza do Bill! O que você vai querer hoje?",
+               "main": "Olá! Bem-vindo à Pizza do Bill! {'Cardápio'} {'Horários'}. O que você vai querer hoje?",
                "1": {"choiceContent": "Fazer um pedido", "choiceNextIntent": "FIRST_FLAVOR"},
                "2": {"choiceContent": "Ver o cardápio", "choiceNextIntent": "MENU"},
                "3": {"choiceContent": "Fazer cadastro", "choiceNextIntent": "SIGNUP_NAME"}}
