@@ -53,6 +53,7 @@ class IntentManager:
         nextIntentName = botResponse["changeIntent"]
         keyParameters = botResponse.get("parameters", {})
         action = botResponse.get("action")
+        self._handleBotAction(action)
         self.extractedParameters.update(keyParameters)
         nextIntent = self.__getIntentByName(nextIntentName)
         nextIntentType = nextIntent.intentType

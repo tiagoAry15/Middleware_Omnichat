@@ -13,7 +13,7 @@ class pizzaGPT:
         self.intents_dictionary = {}
 
     @timingDecorator
-    def get_response_gpt(self, prompt: str):
+    def get_response_default_gpt(self, prompt: str):
         completion = openai.Completion.create(
             model="text-davinci-003",
             prompt=self.get_response(prompt),
@@ -39,7 +39,11 @@ class pizzaGPT:
             self.intents_dictionary = json.dumps(json_content)
 
     def get_response(self, prompt: str):
-        return "Dada a seguinte mensagem: "  + prompt + ", qual é a intenção do usuário com base nos exemplos de intenções no arquivo JSON abaixo?\n\n" + self.intents_dictionary
+        return (
+            f"Dada a seguinte mensagem: {prompt}"
+            + ", qual é a intenção do usuário com base nos exemplos de intenções no arquivo JSON abaixo?\n\n"
+            + str(self.intents_dictionary)
+        )
 
 
 def __main():
@@ -47,13 +51,13 @@ def __main():
     p = pizzaGPT()
     p.read_json_and_convert_to_string('./chatGPT_training.json')
 
-    response = p.get_response_gpt("Boa noite")
+    response = p.get_response_default_gpt("Boa noite")
     print(response)
-    response = p.get_response_gpt("quero ver as opções")
+    response = p.get_response_default_gpt("quero ver as opções")
     print(response)
-    response = p.get_response_gpt("quero fazer um pedido")
+    response = p.get_response_default_gpt("quero fazer um pedido")
     print(response)
-    response = p.get_response_gpt("quero 3 pizzas")
+    response = p.get_response_default_gpt("quero 3 pizzas")
     print(response)
     return response
 
