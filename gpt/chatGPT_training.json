@@ -18,15 +18,6 @@
               "eu gostaria de fazer um pedido"]
         },
 
-      "see_menu_intent": {
-        "user_example": [
-          "quero ver o cardápio",
-          "gostaria de ver as opções, antes",
-          "cardápio, por favor",
-          "quais opções vocês possuem?",
-          "poderia me mandar o cardápio de vocês, por gentileza?"
-        ]
-      },
         "pizza_quantity_intent": {
            "user_examples": [
             "2 pizzas",

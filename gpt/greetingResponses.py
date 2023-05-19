@@ -1,7 +1,7 @@
 import random
 
 
-class PizzaBotDialogue:
+class PizzaGreetingResponses:
     def __init__(self):
         self.greetingResponses = [
             "Bem-vindo à Pizza do Bill! Como posso ajudá-lo?",
