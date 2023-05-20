@@ -35,10 +35,25 @@ class FirebaseConnection:
         ref.set(data)
         return True
 
+    def deleteData(self, path: str = None, data=None) -> bool:
+        user_id = self.getUniqueIdByData(path, data)
+        if user_id is None:
+            raise ValueError("User ID cannot be None")
+        ref = self.connection.child(path) if path is not None else self.connection
+        user_ref = ref.child(user_id)
+        user_ref.delete()
+        return True
+
+    def getUniqueIdByData(self, path: str = None, data=None):
+        if data is None:
+            raise ValueError("Data cannot be None")
+        ref = self.connection.child(path) if path is not None else self.connection
+        return ref.push(data).key
+
 
 def __main():
     fc = FirebaseConnection()
-    data = fc.readData("core_messages")
+    data = fc.deleteData("users", {"email": "user@example.com", "password": "password"})
     return
 
 
