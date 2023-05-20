@@ -22,7 +22,7 @@ class Replies:
     SIGNUP_NAME = {"media": None,
                    "intentName": "SIGNUP_NAME",
                    "intentType": Types.ENTRY_TEXT,
-                   "nextIntent": "SIGNUP_EMAIL",
+                   "nextIntent": "SIGNUP_ADDRESS",
                    "main": "Qual o seu nome?",
                    "validators": ["name"]}
 

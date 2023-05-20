@@ -63,7 +63,7 @@ class EntryTextIntent(BaseIntent):
                 return {"output": "failure", "outputDetails": failMessage}
             elif not re.search(r'\d', formattedAddress):
                 failMessage = "Endereço inválido. Está faltando o número da casa."
-                return {"outputDetails": failMessage}
+                return {"output": "failure", "outputDetails": failMessage}
             else:
                 return {"output": "failure",
                         "outputDetails": "Endereço inválido. Por favor, insira um endereço válido."}
