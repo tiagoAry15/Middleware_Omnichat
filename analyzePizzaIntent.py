@@ -1,4 +1,3 @@
-
 def structurePizza(parameters: dict):
     flavors = parameters.get('flavor', [])
     numbers = parameters.get('number', [])
@@ -11,17 +10,14 @@ def structurePizza(parameters: dict):
     return " ".join(formatted_flavors)
 
 
-def getRandomUserOrderExamples():
-    pool = ["uma pizza de calabresa e outra meia queijo meio bacon",
-            "uma calabresa uma mussarela",
-            "uma pizza de calabresa e uma de mussarela",
-            "meia frango catupiri meia calabresa",
-            "uma pizza de calabresa e uma de mussarela"]
-    return random.choice(pool)
+def getParameterExamples():
+    parameterPot = [{"input": "vou querer uma pizza de calabresa",
+                     "output": {'flavor': ['calabresa'], 'number': [1.0]}},
+                    {"input": "vou querer uma pizza meia calabresa meia frango",
+                     "output": {'flavor': ['calabresa', 'frango'], 'number': [0.5, 0.5]}}]
 
 
 def __main():
-    randomOrder = getRandomUserOrderExamples()
     return
 
 

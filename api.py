@@ -62,7 +62,7 @@ def sandbox():
     userNumber = data.get("From")[0]
 
     dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
-    # dialogflow.changeIntent("order.pizza")
+    secret = dialogFlowInstance.params.get("secret")
     detectedIntent = dialogflowResponse.query_result.intent.display_name
     parameters = dict(dialogflowResponse.query_result.parameters)
     mainResponse = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
@@ -76,6 +76,8 @@ def send():
     """This is a dialogflow callback endpoint. Everytime a message is sent to the bot, a POST request is sent to this
     endpoint.
     This is under DialogflowEssentials -> Fulfillment"""
+    print('FULFILLMENT ATIVADO')
+    dialogFlowInstance.params["secret"] = "Mensagem secreta"
     requestContent = request.get_json()
     userMessage = requestContent['queryResult']['queryText']
     currentIntent = requestContent['queryResult']['intent']['displayName']
@@ -84,10 +86,10 @@ def send():
         flavor = parameters["flavor"][0] if parameters.get("flavor") else None
         number = parameters["number"][0] if parameters.get("number") else None
         if not number:
-            return sendWebhookCallback(botMessage=f"Só pra confirmar: seria uma pizza inteira de {flavor}, certo?")
+            parameters["number"] = [1.0]
         fullPizza = structurePizza(parameters)
         dialogFlowInstance.params["pizzas"].append(fullPizza)
-        return sendWebhookCallback(botMessage=f"Maravilha! Uma {fullPizza} então. Você vai querer bebida?")
+        return sendWebhookCallback(botMessage=f"Maravilha! Uma {fullPizza} então. Você vai querer mais alguma coisa?")
     elif currentIntent == "Welcome - select.number":
         params = requestContent['queryResult']['parameters']
         return __handleWelcomeMultipleOptions(params)
