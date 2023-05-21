@@ -2,7 +2,7 @@ import os
 import google.cloud.dialogflow_v2 as dialogflow
 from twilio.twiml.messaging_response import MessagingResponse
 
-from data.speisekarteExtraction import loadSpeisekarte, createMenuString
+from data.speisekarteExtraction import loadSpeisekarte, createMenuString, analyzeTotalPrice
 
 
 def singleton(cls):
@@ -58,3 +58,6 @@ class DialogFlowSession:
 
     def getPizzasString(self):
         return createMenuString(menu=self.speisekarte["Pizzas"], category="pizzas")
+
+    def analyzeTotalPrice(self, structuredOrder: dict):
+        return analyzeTotalPrice(structuredOrder=structuredOrder, menu=self.speisekarte)

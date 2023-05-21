@@ -18,24 +18,29 @@ def structureDrink(parameters: dict):
 
 
 def structureFullOrder(parameters: dict):
-    drink = parameters["drinks"][0]
+    drink = parameters["drinks"][0] if parameters.get("drinks") else None
     pizza = parameters["pizzas"][0]
     fractionConverter = {"um": 1, "meia": 0.5, "inteira": 1}
-    # Convert drink string to dict
-    drink_quantity, drink_item = drink.split(' ', 1)
-    drink_quantity = fractionConverter[drink_quantity.lower()]
-    drink_dict = {"item": drink_item.capitalize(), "quantity": drink_quantity}
+
+    if drink is not None:
+        # Convert drink string to dict
+        drink_quantity, drink_item = drink.split(' ', 1)
+        drink_quantity = fractionConverter[drink_quantity.lower()]
+        drink_dict = {"item": drink_item.capitalize(), "quantity": drink_quantity}
+    else:
+        drink_dict = {}
 
     # Convert pizza string to dict
     pizza_quantity, pizza_item = pizza.split(' ', 1)
     pizza_quantity = fractionConverter[pizza_quantity.lower()]
-    pizza_dict = {"item": f"pizza de {pizza_item}".capitalize(), "quantity": pizza_quantity}
+    pizza_dict = {"item": f"{pizza_item}".capitalize(), "quantity": pizza_quantity}
 
-    return {"drink": drink_dict, "pizza": pizza_dict}
+    return {"Bebida": drink_dict, "Pizza": pizza_dict}
 
 
 def __main():
-    parameterInput = {'drinks': ['Um suco de laranja'], 'pizzas': ['inteira calabresa'], 'secret': 'Mensagem secreta'}
+    # parameterInput = {'drinks': ['Um suco de laranja'], 'pizzas': ['inteira calabresa'], 'secret': 'Mensagem secreta'}
+    parameterInput = {'drinks': [], 'pizzas': ['inteira calabresa'], 'secret': 'Mensagem secreta'}
     output = structureFullOrder(parameterInput)
     return
 

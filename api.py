@@ -97,7 +97,15 @@ def send():
         drink = structureDrink(params)
         dialogFlowInstance.params["drinks"].append(drink)
         fullOrder = structureFullOrder(dialogFlowInstance.params)
-        return sendWebhookCallback(f"Maravilha! {drink} então.")
+        totalPriceDict = dialogFlowInstance.analyzeTotalPrice(fullOrder)
+        finalMessage = totalPriceDict["finalMessage"]
+        return sendWebhookCallback(finalMessage)
+    elif currentIntent == "Order.pizza - drink no":
+        params = dialogFlowInstance.params
+        fullOrder = structureFullOrder(dialogFlowInstance.params)
+        totalPriceDict = dialogFlowInstance.analyzeTotalPrice(fullOrder)
+        finalMessage = totalPriceDict["finalMessage"]
+        return sendWebhookCallback(finalMessage)
     elif currentIntent == "Order.pizza":
         parameters = requestContent['queryResult']['parameters']
         flavor = parameters["flavor"][0] if parameters.get("flavor") else None
