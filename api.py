@@ -79,7 +79,9 @@ def send():
     print('FULFILLMENT ATIVADO')
     dialogFlowInstance.params["secret"] = "Mensagem secreta"
     requestContent = request.get_json()
-    userMessage = requestContent['queryResult']['queryText']
+    contexts = [item['name'].split("/")[-1] for item in requestContent['queryResult']['outputContexts']]
+    queryText = requestContent['queryResult']['queryText']
+    userMessage = [item["name"] for item in queryText] if isinstance(queryText, list) else queryText
     currentIntent = requestContent['queryResult']['intent']['displayName']
     if currentIntent == "Order.pizza":
         parameters = requestContent['queryResult']['parameters']
@@ -89,7 +91,7 @@ def send():
             parameters["number"] = [1.0]
         fullPizza = structurePizza(parameters)
         dialogFlowInstance.params["pizzas"].append(fullPizza)
-        return sendWebhookCallback(botMessage=f"Maravilha! Uma {fullPizza} então. Você vai querer mais alguma coisa?")
+        return sendWebhookCallback(botMessage=f"Maravilha! Uma {fullPizza} então. Você vai querer alguma bebida?")
     elif currentIntent == "Welcome - select.number":
         params = requestContent['queryResult']['parameters']
         return __handleWelcomeMultipleOptions(params)
