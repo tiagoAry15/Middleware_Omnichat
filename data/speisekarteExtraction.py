@@ -9,10 +9,12 @@ def loadSpeisekarte() -> dict:
         return json.load(file)
 
 
-def createMenuString(menu):
-    menuString = "Cardápio de bebidas:\n"
+def createMenuString(menu: dict, category: str = None) -> str:
+    if category is None:
+        raise ValueError("Category cannot be None")
+    menuString = f"Cardápio de {category}:\n"
 
-    for item in menu["Bebidas"]:
+    for item in menu:
         name = item['nome']
         price = item['preço']
         size = item['tamanho']

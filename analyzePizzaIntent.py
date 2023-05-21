@@ -10,14 +10,33 @@ def structurePizza(parameters: dict):
     return " ".join(formatted_flavors)
 
 
-def getParameterExamples():
-    parameterPot = [{"input": "vou querer uma pizza de calabresa",
-                     "output": {'flavor': ['calabresa'], 'number': [1.0]}},
-                    {"input": "vou querer uma pizza meia calabresa meia frango",
-                     "output": {'flavor': ['calabresa', 'frango'], 'number': [0.5, 0.5]}}]
+def structureDrink(parameters: dict):
+    number = int(parameters.get('number', []))
+    drink = parameters.get('Drinks', [])
+    drink_string = 'um' if number == 1 else f'{number}'
+    return f'{drink_string.capitalize()} {drink}'
+
+
+def structureFullOrder(parameters: dict):
+    drink = parameters["drinks"][0]
+    pizza = parameters["pizzas"][0]
+    fractionConverter = {"um": 1, "meia": 0.5, "inteira": 1}
+    # Convert drink string to dict
+    drink_quantity, drink_item = drink.split(' ', 1)
+    drink_quantity = fractionConverter[drink_quantity.lower()]
+    drink_dict = {"item": drink_item.capitalize(), "quantity": drink_quantity}
+
+    # Convert pizza string to dict
+    pizza_quantity, pizza_item = pizza.split(' ', 1)
+    pizza_quantity = fractionConverter[pizza_quantity.lower()]
+    pizza_dict = {"item": f"pizza de {pizza_item}".capitalize(), "quantity": pizza_quantity}
+
+    return {"drink": drink_dict, "pizza": pizza_dict}
 
 
 def __main():
+    parameterInput = {'drinks': ['Um suco de laranja'], 'pizzas': ['inteira calabresa'], 'secret': 'Mensagem secreta'}
+    output = structureFullOrder(parameterInput)
     return
 
 

@@ -5,7 +5,7 @@ from flask import Flask, request
 from twilio.rest import Client
 from twilio.twiml.messaging_response import MessagingResponse
 
-from analyzePizzaIntent import structurePizza
+from analyzePizzaIntent import structurePizza, structureDrink, structureFullOrder
 from dialogFlowSession import DialogFlowSession
 from intentManipulation.dispatcher import BotDispatcher
 from utils import extractDictFromBytesRequest, sendWebhookCallback, changeDialogflowIntent
@@ -83,7 +83,22 @@ def send():
     queryText = requestContent['queryResult']['queryText']
     userMessage = [item["name"] for item in queryText] if isinstance(queryText, list) else queryText
     currentIntent = requestContent['queryResult']['intent']['displayName']
-    if currentIntent == "Order.pizza":
+    print(f"current Intent: {currentIntent}")
+    if currentIntent == "Order.pizza - drink yes":
+        drinkString = dialogFlowInstance.getDrinksString()
+        return sendWebhookCallback(drinkString)
+    elif currentIntent == "Welcome":
+        pizzaMenu = dialogFlowInstance.getPizzasString()
+        welcomeString = f"Olá! Bem-vindo à Pizza do Bill! Funcionamos das 17h às 22h.\n [{pizzaMenu}]." \
+                        f" Vai querer alguma pizza?"
+        return sendWebhookCallback(welcomeString)
+    elif currentIntent == "Order.drink":
+        params = requestContent['queryResult']['parameters']
+        drink = structureDrink(params)
+        dialogFlowInstance.params["drinks"].append(drink)
+        fullOrder = structureFullOrder(dialogFlowInstance.params)
+        return sendWebhookCallback(f"Maravilha! {drink} então.")
+    elif currentIntent == "Order.pizza":
         parameters = requestContent['queryResult']['parameters']
         flavor = parameters["flavor"][0] if parameters.get("flavor") else None
         number = parameters["number"][0] if parameters.get("number") else None
@@ -92,9 +107,6 @@ def send():
         fullPizza = structurePizza(parameters)
         dialogFlowInstance.params["pizzas"].append(fullPizza)
         return sendWebhookCallback(botMessage=f"Maravilha! Uma {fullPizza} então. Você vai querer alguma bebida?")
-    elif currentIntent == "Welcome - select.number":
-        params = requestContent['queryResult']['parameters']
-        return __handleWelcomeMultipleOptions(params)
     return sendWebhookCallback(botMessage="a")
 
 

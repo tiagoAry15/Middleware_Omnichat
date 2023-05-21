@@ -2,6 +2,8 @@ import os
 import google.cloud.dialogflow_v2 as dialogflow
 from twilio.twiml.messaging_response import MessagingResponse
 
+from data.speisekarteExtraction import loadSpeisekarte, createMenuString
+
 
 def singleton(cls):
     instances = {}
@@ -17,6 +19,7 @@ def singleton(cls):
 @singleton
 class DialogFlowSession:
     def __init__(self):
+        self.speisekarte = loadSpeisekarte()
         self.params = {"pizzas": [], "drinks": []}
         dialogflowJsonFilePath = os.path.join(os.getcwd(), 'dialogflow.json')
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = dialogflowJsonFilePath
@@ -49,3 +52,9 @@ class DialogFlowSession:
         if image_url:
             message.media(image_url)
         return self.twiml
+
+    def getDrinksString(self):
+        return createMenuString(menu=self.speisekarte["Bebidas"], category="bebidas")
+
+    def getPizzasString(self):
+        return createMenuString(menu=self.speisekarte["Pizzas"], category="pizzas")
