@@ -10,6 +10,10 @@ def getFirebaseSDKPath() -> Path:
     return getMainFolderPath() / 'firebaseFolder/firebase_sdk.json'
 
 
+def getSpeisekartePath() -> Path:
+    return getMainFolderPath() / "data/speisekarte.json"
+
+
 def __main():
     mainFolder = getFirebaseSDKPath()
     print(mainFolder)
