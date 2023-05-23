@@ -6,6 +6,7 @@ import json
 
 from gpt import phraseEnum
 from gpt.phraseEnum import PhraseEnum
+from intentManipulation.intentManagerTiago import IntentManager
 
 
 def get_response_default_gpt(prompt: str):
@@ -42,7 +43,9 @@ class PizzaGPT:
         except openai.error.RateLimitError as e:
             return "Estamos com muita mensagens no momento, repita a mensagem dentro de instantes"
 
-        return self.completion.choices[-1]["message"]["content"]
+        gpt_response = json.loads(self.completion.choices[-1]["message"]["content"])
+        refactored_response = IntentManager.process_intent(gpt_response)
+        return refactored_response
 
     def read_json_and_convert_to_string(self, filepath: str):
         with open(filepath, "r") as file:

@@ -157,9 +157,9 @@ def handle_whatsapp():
 def handle_response():
     data = extractDictFromBytesRequest()
     receivedMessage = data.get("Body")[0]
-    mainResponse = GPT.get_response_chat_gpt(receivedMessage)
-    image_url = "https://shorturl.at/lEFT0"
-    return _sendTwilioResponse(body=mainResponse)
+    Response = GPT.get_response_chat_gpt(receivedMessage)
+
+    return _sendTwilioResponse(body=Response.content, media=Response.media)
 
 
 # Hello World endpoint
