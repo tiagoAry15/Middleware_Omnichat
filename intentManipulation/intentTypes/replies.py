@@ -22,30 +22,37 @@ class Replies:
     SIGNUP_NAME = {"media": None,
                    "intentName": "SIGNUP_NAME",
                    "intentType": Types.ENTRY_TEXT,
-                   "nextIntent": "SIGNUP_ADDRESS",
                    "main": "Qual o seu nome?",
-                   "validators": ["name"]}
+                   "validators": ["name"],
+                   "nextIntent": "SIGNUP_ADDRESS",}
 
     SIGNUP_EMAIL = {"media": None,
                     "intentName": "SIGNUP_EMAIL",
                     "intentType": Types.ENTRY_TEXT,
-                    "nextIntent": "SIGNUP_ADDRESS",
                     "main": "Qual o seu email?",
-                    "validators": ["email"]}
+                    "validators": ["email"],
+                    "nextIntent": "SIGNUP_ADDRESS"}
 
     SIGNUP_ADDRESS = {"media": None,
                       "intentName": "SIGNUP_ADDRESS",
                       "intentType": Types.ENTRY_TEXT,
-                      "nextIntent": "SIGNUP_BIRTHDATE",
                       "main": "Qual o seu endereço?",
-                      "validators": ["address"]}
+                      "validators": ["address"],
+                      "nextIntent": "SIGNUP_CPF"}
+
+    SIGNUP_CPF = {"media": None,
+                  "intentName": "SIGNUP_CPF",
+                  "intentType": Types.ENTRY_TEXT,
+                  "main": "Qual o seu CPF?",
+                  "validators": ["cpf"],
+                  "nextIntent": "SIGNUP_NAME"}
 
     SIGNUP_BIRTHDATE = {"media": None,
                         "intentName": "SIGNUP_BIRTHDATE",
                         "intentType": Types.ENTRY_TEXT,
                         "main": "Qual a sua data de nascimento?",
                         "validators": ["birthdate"],
-                        "nextIntent": "WELCOME"}
+                        "nextIntent": "SIGNUP_NAME"}
 
 
 def __main():

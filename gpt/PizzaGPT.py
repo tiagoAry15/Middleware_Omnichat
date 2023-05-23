@@ -49,10 +49,10 @@ class PizzaGPT:
         self.init_phrase = PhraseEnum.FRASE_INICIAL.value
         self.messages = [{"role": "user", "content": self.init_phrase}]
         self.intents_dictionary = {}
-        # self.completion = openai.ChatCompletion.create(
-        #     model="gpt-3.5-turbo",
-        #     messages=self.messages
-        # )
+        self.completion = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=self.messages
+        )
 
     def getResponseChatGPT(self, prompt: str):
         try:

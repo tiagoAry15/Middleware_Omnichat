@@ -15,9 +15,8 @@ class IntentNotFoundException(Exception):
 
 
 def getIntentPot():
-    return [MultipleChoiceIntent(Replies.WELCOME), InstantFallbackIntent(Replies.MENU),
-            EntryTextIntent(Replies.SIGNUP_NAME), EntryTextIntent(Replies.SIGNUP_EMAIL),
-            EntryTextIntent(Replies.SIGNUP_ADDRESS), EntryTextIntent(Replies.SIGNUP_BIRTHDATE)]
+    return [EntryTextIntent(Replies.SIGNUP_NAME), EntryTextIntent(Replies.SIGNUP_EMAIL),
+            EntryTextIntent(Replies.SIGNUP_ADDRESS), EntryTextIntent(Replies.SIGNUP_CPF)]
 
 
 class IntentManager:
@@ -30,6 +29,7 @@ class IntentManager:
         self.botHistory = []
         self.signupDetails = {}
         self.count = 0
+        self.finished = False
 
     def __getIntentByName(self, inputIntentName: str):
         for intent in self.intents:
@@ -46,7 +46,8 @@ class IntentManager:
         else:
             botAnswer = self.__handleIntentTransition(botResponse)
         self.intentHistory.append((self.currentIntent.reply["intentName"], botAnswer))
-        print(f"{Fore.YELLOW}Bot:{Style.RESET_ALL} {botAnswer}")
+        if not self.finished:
+            print(f"{Fore.YELLOW}Bot:{Style.RESET_ALL} {botAnswer}")
 
     def __handleIntentTransition(self, botResponse: dict):
         # sourcery skip: use-next
@@ -81,6 +82,7 @@ class IntentManager:
         if inputAction == "ASSEMBLY_SIGNUP":
             print("Cadastrando usuário...")
             self.signupDetails.update(self.extractedParameters)
+            self.finished = True
 
     def chatBotLoop(self):
         """This function simulates a chatbot loop."""
@@ -93,6 +95,8 @@ class IntentManager:
             botResponse = self.currentIntent.parseIncomingMessage(userMessage)
             self._analyzeBotResponse(botResponse)
             print(f"                                  Parâmetros extraídos: {self.extractedParameters}\n")
+            if self.finished:
+                break
 
 
 def __main():
@@ -104,8 +108,6 @@ def __main():
                                      {"itemType": "pizza", "itemFlavor": "mussarela", "itemSize": "grande",
                                       "itemQuantity": 1}]}
     return
-
-
 
 
 if __name__ == "__main__":

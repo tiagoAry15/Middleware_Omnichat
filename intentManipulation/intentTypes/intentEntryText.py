@@ -9,12 +9,14 @@ EMAIL_REGEX = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
 NAME_REGEX = r'\b[A-Za-záàâãéèêíïóôõöúçñ._%+-]+\b'
 ADDRESS_REGEX = r'^(Rua|Avenida|Travessa)\s[^\d]*\d+$'
 DATE_REGEX = r'\b\d{2}\/\d{2}\/\d{4}\b'
+CPF_REGEX = r'^(\d{3}\.\d{3}\.\d{3}-\d{2}|\d{11})$'
 
 # Constants for field names
 NAME = "name"
 EMAIL = "email"
 ADDRESS = "address"
 BIRTHDATE = "birthdate"
+CPF = "cpf"
 
 
 class EntryTextIntent(BaseIntent):
@@ -27,6 +29,7 @@ class EntryTextIntent(BaseIntent):
             EMAIL: self._validateEmail,
             ADDRESS: self._validateAddress,
             BIRTHDATE: self._validateBirthdate,
+            CPF: self._validateCPF
         }
 
     def getIntentType(self) -> str:
@@ -81,6 +84,18 @@ class EntryTextIntent(BaseIntent):
             return {"output": "failure", "outputDetails": f"{birthdate} é uma data inválida. "
                                                           f"Por favor, insira uma data de nascimento válida."}
 
+    @staticmethod
+    def _validateCPF(cpf: str) -> bool or dict:
+        return (
+            {"output": "success", "outputDetails": "ACTION_ASSEMBLY_SIGNUP"}
+            if re.match(CPF_REGEX, cpf)
+            else {
+                "output": "failure",
+                "outputDetails": f"{cpf} é um CPF inválido. "
+                f"Por favor, insira um CPF válido.",
+            }
+        )
+
     def parseIncomingMessage(self, message: str) -> dict:
         if not self.alreadyWelcomed:
             return self.sendFirstMessage()
@@ -111,7 +126,7 @@ class EntryTextIntent(BaseIntent):
 
 
 def __testSignupName():
-    et1 = EntryTextIntent(Replies.SIGNUP_ADDRESS)
+    et1 = EntryTextIntent(Replies.SIGNUP_CPF)
     firstResponse = et1.parseIncomingMessage("oii")
     print(firstResponse)
     secondResponse = et1.parseIncomingMessage("rua osvaldo cruz 900")

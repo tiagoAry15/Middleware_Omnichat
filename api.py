@@ -18,7 +18,6 @@ twilio_phone_number = f'whatsapp:{os.environ["TWILIO_PHONE_NUMBER"]}'
 client = Client(account_sid, auth_token)
 app = Flask(__name__)
 dialogFlowInstance = DialogFlowSession()
-GPT = PizzaGPT()
 
 
 def __handleWelcomeMultipleOptions(parameters: dict):
