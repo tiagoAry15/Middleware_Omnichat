@@ -7,8 +7,7 @@ from twilio.twiml.messaging_response import MessagingResponse
 
 from analyzePizzaIntent import structurePizza, structureDrink, structureFullOrder
 from dialogFlowSession import DialogFlowSession
-from gpt.PizzaGPT import PizzaGPT, get_response_default_gpt
-from intentManipulation.intentManagerTiago import IntentManager
+from gpt.PizzaGPT import PizzaGPT, getResponseDefaultGPT
 from utils import extractDictFromBytesRequest, sendWebhookCallback, changeDialogflowIntent
 
 load_dotenv()
@@ -20,6 +19,7 @@ client = Client(account_sid, auth_token)
 app = Flask(__name__)
 dialogFlowInstance = DialogFlowSession()
 GPT = PizzaGPT()
+
 
 def __handleWelcomeMultipleOptions(parameters: dict):
     chosenNumber = int(parameters["number"][0])
@@ -93,7 +93,7 @@ def send():
     elif currentIntent == "Welcome":
         pizzaMenu = dialogFlowInstance.getPizzasString()
         welcomeString = f"Olá! Bem-vindo à Pizza do Bill! Funcionamos das 17h às 22h.\n [{pizzaMenu}]." \
-                        f" Vai querer alguma pizza?"
+                        f" Qual pizza você vai querer?"
         return sendWebhookCallback(welcomeString)
     elif currentIntent == "Order.drink":
         params = requestContent['queryResult']['parameters']
@@ -157,9 +157,9 @@ def handle_whatsapp():
 def handle_response():
     data = extractDictFromBytesRequest()
     receivedMessage = data.get("Body")[0]
-    Response = GPT.get_response_chat_gpt(receivedMessage)
-
-    return _sendTwilioResponse(body=Response.content, media=Response.media)
+    mainResponse = getResponseDefaultGPT(receivedMessage)
+    image_url = "https://shorturl.at/lEFT0"
+    return _sendTwilioResponse(body=mainResponse)
 
 
 # Hello World endpoint

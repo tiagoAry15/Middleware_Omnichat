@@ -6,10 +6,26 @@ import json
 
 from gpt import phraseEnum
 from gpt.phraseEnum import PhraseEnum
+from gpt.timeDecorator import timingDecorator
 from intentManipulation.intentManagerTiago import IntentManager
 
 
-def get_response_default_gpt(prompt: str):
+def readTxtAndConvertToString(filepath: str):
+    try:
+        with open(filepath, 'r', encoding='utf-8') as file:
+            content = file.read()
+        return content
+    except IOError:
+        return "Error: Could not read the file."
+
+
+def getPizzaGPTPrompt(prompt: str):
+    baseString = readTxtAndConvertToString('./chatGPTPrompt.txt')
+    return f'{baseString} "{prompt}"?'
+
+
+@timingDecorator
+def getResponseDefaultGPT(prompt: str):
     completion = openai.Completion.create(
         model="text-davinci-003",
         prompt=prompt,
@@ -20,6 +36,11 @@ def get_response_default_gpt(prompt: str):
     return choice.text
 
 
+def parseGPTAnswer(gptAnswer: str):
+    cleanedAnswer = gptAnswer.replace("\n", "")
+    return json.loads(cleanedAnswer)
+
+
 class PizzaGPT:
     def __init__(self):
         load_dotenv()
@@ -28,12 +49,12 @@ class PizzaGPT:
         self.init_phrase = PhraseEnum.FRASE_INICIAL.value
         self.messages = [{"role": "user", "content": self.init_phrase}]
         self.intents_dictionary = {}
-        self.completion = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=self.messages
-        )
+        # self.completion = openai.ChatCompletion.create(
+        #     model="gpt-3.5-turbo",
+        #     messages=self.messages
+        # )
 
-    def get_response_chat_gpt(self, prompt: str):
+    def getResponseChatGPT(self, prompt: str):
         try:
             self.messages.append({"role": "user", "content": prompt})
             self.completion = openai.ChatCompletion.create(
@@ -44,29 +65,23 @@ class PizzaGPT:
             return "Estamos com muita mensagens no momento, repita a mensagem dentro de instantes"
 
         gpt_response = json.loads(self.completion.choices[-1]["message"]["content"])
-        refactored_response = IntentManager.process_intent(gpt_response)
-        return refactored_response
+        return IntentManager.process_intent(gpt_response)
 
-    def read_json_and_convert_to_string(self, filepath: str):
+    def readJsonAndConvertToString(self, filepath: str):
         with open(filepath, "r") as file:
             json_content = json.load(file)
             self.intents_dictionary = json.dumps(json_content)
 
 
+def gptPipeline(prompt: str = "Vou querer duas pizzas calabresas, e uma pizza meio pepperoni meio portuguesa"):
+    load_dotenv()
+    fullPrompt = getPizzaGPTPrompt(prompt)
+    output = getResponseDefaultGPT(fullPrompt)
+    return parseGPTAnswer(output)
+
 
 def __main():
-    p = PizzaGPT()
-    p.read_json_and_convert_to_string('./chatGPT_training.json')
-
-    response = get_response_default_gpt("Boa noite")
-    print(response)
-    response = get_response_default_gpt("quero ver as opções")
-    print(response)
-    response = get_response_default_gpt("quero fazer um pedido")
-    print(response)
-    response = get_response_default_gpt("quero 3 pizzas")
-    print(response)
-    return response
+    return gptPipeline()
 
 
 if __name__ == '__main__':
