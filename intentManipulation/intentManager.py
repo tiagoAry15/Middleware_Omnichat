@@ -46,8 +46,6 @@ class IntentManager:
         else:
             botAnswer = self.__handleIntentTransition(botResponse)
         self.intentHistory.append((self.currentIntent.reply["intentName"], botAnswer))
-        if not self.finished:
-            print(f"{Fore.YELLOW}Bot:{Style.RESET_ALL} {botAnswer}")
         return botAnswer
 
     def __handleIntentTransition(self, botResponse: dict):
@@ -96,7 +94,9 @@ class IntentManager:
             userMessage = input(f"{Fore.RED}User: {Style.RESET_ALL}")
             self.userHistory.append(userMessage)
             botResponse = self.currentIntent.parseIncomingMessage(userMessage)
-            self._analyzeBotResponse(botResponse)
+            botAnswer = self._analyzeBotResponse(botResponse)
+            if not self.finished:
+                print(f"{Fore.YELLOW}Bot:{Style.RESET_ALL} {botAnswer}")
             print(f"                                  Parâmetros extraídos: {self.extractedParameters}\n")
             if self.finished:
                 break
@@ -105,17 +105,22 @@ class IntentManager:
         self.count += 1
         self.userHistory.append(userMessage)
         botResponse = self.currentIntent.parseIncomingMessage(userMessage)
-        return self._analyzeBotResponse(botResponse)
+        action = botResponse.get("action")
+        return self._analyzeBotResponse(botResponse) if action != "ASSEMBLY_SIGNUP" else "Cadastrando usuário..."
 
 
 def __main():
     listOfIntents = getIntentPot()
     im = IntentManager(listOfIntents)
-    im.chatBotLoop()
-    d1 = {"action": "get", "items": [{"itemType": "pizza", "itemFlavor": "calabresa", "itemSize": "grande",
-                                      "itemQuantity": 1},
-                                     {"itemType": "pizza", "itemFlavor": "mussarela", "itemSize": "grande",
-                                      "itemQuantity": 1}]}
+    answers = []
+    answers.append(im.twilioSingleStep("Oii"))
+    print(answers[-1])
+    answers.append(im.twilioSingleStep("João"))
+    print(answers[-1])
+    answers.append(im.twilioSingleStep("Rua das Flores 2542"))
+    print(answers[-1])
+    answers.append(im.twilioSingleStep("19574430239"))
+    print(answers)
     return
 
 
