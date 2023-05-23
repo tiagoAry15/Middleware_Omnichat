@@ -7,9 +7,10 @@ from twilio.twiml.messaging_response import MessagingResponse
 
 from analyzePizzaIntent import structurePizza, structureDrink, structureFullOrder
 from dialogFlowSession import DialogFlowSession
-from intentManipulation.dispatcher import BotDispatcher
+from gpt.PizzaGPT import PizzaGPT, get_response_default_gpt
+from intentManipulation.intentManagerTiago import IntentManager
 from utils import extractDictFromBytesRequest, sendWebhookCallback, changeDialogflowIntent
-from concurrent.futures import ThreadPoolExecutor
+
 load_dotenv()
 
 account_sid = os.environ["TWILIO_ACCOUNT_SID"]
@@ -18,7 +19,7 @@ twilio_phone_number = f'whatsapp:{os.environ["TWILIO_PHONE_NUMBER"]}'
 client = Client(account_sid, auth_token)
 app = Flask(__name__)
 dialogFlowInstance = DialogFlowSession()
-
+GPT = PizzaGPT()
 
 def __handleWelcomeMultipleOptions(parameters: dict):
     chosenNumber = int(parameters["number"][0])
@@ -64,10 +65,12 @@ def sandbox():
     dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
     secret = dialogFlowInstance.params.get("secret")
     detectedIntent = dialogflowResponse.query_result.intent.display_name
+    # IntentManager.process_intent(detectedIntent)
     parameters = dict(dialogflowResponse.query_result.parameters)
     mainResponse = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
     image_url = "https://shorturl.at/lEFT0"
-    return _sendTwilioResponse(body="vai se fude", media=None)
+
+    return _sendTwilioResponse(body=mainResponse, media=image_url)
     # return str(dialogFlowInstance.twiml), 200
 
 
@@ -148,6 +151,15 @@ def handle_whatsapp():
     content = data['Body'][0]
     print(f'Received message from {sender}: {content}')
     return 'OK', 200
+
+
+@app.route('/twilioSandboxGPT', methods=['POST'])
+def handle_response():
+    data = extractDictFromBytesRequest()
+    receivedMessage = data.get("Body")[0]
+    mainResponse = GPT.get_response_chat_gpt(receivedMessage)
+    image_url = "https://shorturl.at/lEFT0"
+    return _sendTwilioResponse(body=mainResponse)
 
 
 # Hello World endpoint
