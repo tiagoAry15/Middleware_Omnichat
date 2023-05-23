@@ -48,6 +48,7 @@ class IntentManager:
         self.intentHistory.append((self.currentIntent.reply["intentName"], botAnswer))
         if not self.finished:
             print(f"{Fore.YELLOW}Bot:{Style.RESET_ALL} {botAnswer}")
+        return botAnswer
 
     def __handleIntentTransition(self, botResponse: dict):
         # sourcery skip: use-next
@@ -86,17 +87,25 @@ class IntentManager:
 
     def chatBotLoop(self):
         """This function simulates a chatbot loop."""
+        self.consoleLoop()
+
+    def consoleLoop(self):
         while True:
             self.count += 1
             print(f"---- [{self.count}]")
             userMessage = input(f"{Fore.RED}User: {Style.RESET_ALL}")
             self.userHistory.append(userMessage)
-            # print(f"Intent → {self.currentIntent.reply['intentName']}")
             botResponse = self.currentIntent.parseIncomingMessage(userMessage)
             self._analyzeBotResponse(botResponse)
             print(f"                                  Parâmetros extraídos: {self.extractedParameters}\n")
             if self.finished:
                 break
+
+    def twilioSingleStep(self, userMessage: str):
+        self.count += 1
+        self.userHistory.append(userMessage)
+        botResponse = self.currentIntent.parseIncomingMessage(userMessage)
+        return self._analyzeBotResponse(botResponse)
 
 
 def __main():

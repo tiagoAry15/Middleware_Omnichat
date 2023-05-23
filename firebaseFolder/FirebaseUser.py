@@ -14,7 +14,7 @@ class FirebaseUser:
         if allUsers is None:
             return False
         for uniqueId, userData in allUsers.items():
-            if userData["email"] == inputUserData["email"]:
+            if userData["phoneNumber"] == inputUserData["phoneNumber"]:
                 return True
         return False
 
@@ -45,18 +45,18 @@ class FirebaseUser:
 def __createDummyUsers():
     fc = FirebaseConnection()
     fu = FirebaseUser(fc)
-    dummyPot = [{"email": "user@example.com", "password": "password"},
-                {"email": "test@example.com", "password": "password"},
-                {"email": "yes@example.com", "password": "password"}]
+    dummyPot = [{"phoneNumber": "+558597648593", "name": "Pedro"},
+                {"phoneNumber": "+558576481232", "name": "Ana Oliveira"},
+                {"phoneNumber": "+558549854871", "name": "Carolina Lima"}]
     for user in dummyPot:
         fu.createUser(user)
 
 
 def __main():
-    # __createDummyUsers()
-    fc = FirebaseConnection()
-    fu = FirebaseUser(fc)
-    fu.deleteUser({"email": "user@example.com", "password": "password"})
+    __createDummyUsers()
+    # fc = FirebaseConnection()
+    # fu = FirebaseUser(fc)
+    # fu.deleteUser({"email": "user@example.com", "password": "password"})
     return
 
 
