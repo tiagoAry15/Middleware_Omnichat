@@ -53,9 +53,10 @@ def __createDummyUsers():
 
 
 def __main():
-    __createDummyUsers()
-    # fc = FirebaseConnection()
-    # fu = FirebaseUser(fc)
+    # __createDummyUsers()
+    fc = FirebaseConnection()
+    fu = FirebaseUser(fc)
+    print(fu.existingUser({"phoneNumber": "+558597648593"}))
     # fu.deleteUser({"email": "user@example.com", "password": "password"})
     return
 

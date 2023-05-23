@@ -2,6 +2,8 @@ from typing import List
 
 from colorama import Fore, Style
 
+from firebaseFolder.FirebaseUser import FirebaseUser
+from firebaseFolder.firebaseConnection import FirebaseConnection
 from intentManipulation.intentTypes.intentEntryText import EntryTextIntent
 from intentManipulation.intentTypes.intentFallback import InstantFallbackIntent
 from intentManipulation.intentTypes.intentMultipleChoice import MultipleChoiceIntent
@@ -20,9 +22,11 @@ def getIntentPot():
 
 
 class IntentManager:
-    def __init__(self, intents: List):
-        self.intents = intents
-        self.currentIntent = intents[0]
+    def __init__(self):
+        self.fc = FirebaseConnection()
+        self.fu = FirebaseUser(self.fc)
+        self.intents = getIntentPot()
+        self.currentIntent = self.intents[0]
         self.extractedParameters = {}
         self.intentHistory = []  # Will store tuples (intent, messageContent)
         self.userHistory = []
@@ -82,6 +86,7 @@ class IntentManager:
             print("Cadastrando usuário...")
             self.signupDetails.update(self.extractedParameters)
             self.finished = True
+            self.registerWhatsapp(self.signupDetails)
 
     def chatBotLoop(self):
         """This function simulates a chatbot loop."""
@@ -106,21 +111,27 @@ class IntentManager:
         self.userHistory.append(userMessage)
         botResponse = self.currentIntent.parseIncomingMessage(userMessage)
         action = botResponse.get("action")
-        return self._analyzeBotResponse(botResponse) if action != "ASSEMBLY_SIGNUP" else "Cadastrando usuário..."
+        return self._analyzeBotResponse(botResponse) if action != "ASSEMBLY_SIGNUP" else\
+            "Usuário cadastrado com sucesso!"
+
+    def existingWhatsapp(self, whatsappNumber: str):
+        return self.fu.existingUser({"phoneNumber": whatsappNumber})
+
+    def registerWhatsapp(self, userDetails: dict):
+        return self.fu.createUser(userDetails)
 
 
 def __main():
-    listOfIntents = getIntentPot()
-    im = IntentManager(listOfIntents)
+    im = IntentManager()
     answers = []
     answers.append(im.twilioSingleStep("Oii"))
-    print(answers[-1])
+    print(answers[-1], im.extractedParameters)
     answers.append(im.twilioSingleStep("João"))
-    print(answers[-1])
+    print(answers[-1], im.extractedParameters)
     answers.append(im.twilioSingleStep("Rua das Flores 2542"))
-    print(answers[-1])
+    print(answers[-1], im.extractedParameters)
     answers.append(im.twilioSingleStep("19574430239"))
-    print(answers)
+    print(answers[-1], im.extractedParameters)
     return
 
 
