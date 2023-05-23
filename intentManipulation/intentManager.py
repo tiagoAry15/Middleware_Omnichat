@@ -110,6 +110,7 @@ class IntentManager:
         self.count += 1
         self.userHistory.append(userMessage)
         botResponse = self.currentIntent.parseIncomingMessage(userMessage)
+        self.extractedParameters.update(botResponse.get("parameters", {}))
         action = botResponse.get("action")
         return self._analyzeBotResponse(botResponse) if action != "ASSEMBLY_SIGNUP" else\
             "Usuário cadastrado com sucesso!"

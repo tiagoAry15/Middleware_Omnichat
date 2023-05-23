@@ -86,13 +86,13 @@ class EntryTextIntent(BaseIntent):
 
     @staticmethod
     def _validateCPF(cpf: str) -> bool or dict:
+        cpf = cpf.replace(".", "").replace("-", "")  # Remove dots and hyphen from CPF
         return (
             {"output": "success", "outputDetails": "ACTION_ASSEMBLY_SIGNUP"}
             if re.match(CPF_REGEX, cpf)
             else {
                 "output": "failure",
-                "outputDetails": f"{cpf} é um CPF inválido. "
-                f"Por favor, insira um CPF válido.",
+                "outputDetails": f"{cpf} é um CPF inválido. Por favor, insira um CPF válido.",
             }
         )
 
@@ -129,7 +129,7 @@ def __testSignupName():
     et1 = EntryTextIntent(Replies.SIGNUP_CPF)
     firstResponse = et1.parseIncomingMessage("oii")
     print(firstResponse)
-    secondResponse = et1.parseIncomingMessage("rua osvaldo cruz 900")
+    secondResponse = et1.parseIncomingMessage("03874832333")
     print(secondResponse)
 
 
