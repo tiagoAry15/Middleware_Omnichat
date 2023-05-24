@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 from flask import request, make_response, jsonify, Response
 from urllib.parse import parse_qs
 
+from twilio.twiml.messaging_response import MessagingResponse
+
 
 def __prepareOutputResponse(myResult) -> Response:
     res = json.dumps(myResult, indent=4)
@@ -74,3 +76,12 @@ def __main():
 
 if __name__ == '__main__':
     __main()
+
+
+def _sendTwilioResponse(body: str, media: str = None) -> str:
+    response = MessagingResponse()
+    message = response.message()
+    message.body(body)
+    if media is not None:
+        message.media(media)
+    return str(response)

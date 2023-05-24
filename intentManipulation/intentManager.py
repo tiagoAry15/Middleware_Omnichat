@@ -2,12 +2,14 @@ from typing import List
 
 from colorama import Fore, Style
 
+from dialogFlowSession import singleton
 from firebaseFolder.FirebaseUser import FirebaseUser
 from firebaseFolder.firebaseConnection import FirebaseConnection
 from intentManipulation.intentTypes.intentEntryText import EntryTextIntent
 from intentManipulation.intentTypes.intentFallback import InstantFallbackIntent
 from intentManipulation.intentTypes.intentMultipleChoice import MultipleChoiceIntent
 from intentManipulation.intentTypes.replies import Replies, Types
+from utils import _sendTwilioResponse
 
 
 class IntentNotFoundException(Exception):
@@ -21,10 +23,14 @@ def getIntentPot():
             EntryTextIntent(Replies.SIGNUP_ADDRESS), EntryTextIntent(Replies.SIGNUP_CPF)]
 
 
+@singleton
 class IntentManager:
     def __init__(self):
         self.fc = FirebaseConnection()
         self.fu = FirebaseUser(self.fc)
+        self.whatsappNumber = ""
+        self.existingUser = False
+        self.isUserChecked = False
         self.intents = getIntentPot()
         self.currentIntent = self.intents[0]
         self.extractedParameters = {}
@@ -112,28 +118,49 @@ class IntentManager:
         botResponse = self.currentIntent.parseIncomingMessage(userMessage)
         self.extractedParameters.update(botResponse.get("parameters", {}))
         action = botResponse.get("action")
-        return self._analyzeBotResponse(botResponse) if action != "ASSEMBLY_SIGNUP" else\
-            "Usuário cadastrado com sucesso!"
+        if action != "ASSEMBLY_SIGNUP":
+            return self._analyzeBotResponse(botResponse)
+        self.finished = True
+        self.registerWhatsapp(self.extractedParameters)
+        return "Usuário cadastrado com sucesso!"
 
     def existingWhatsapp(self, whatsappNumber: str):
         return self.fu.existingUser({"phoneNumber": whatsappNumber})
 
     def registerWhatsapp(self, userDetails: dict):
+        self.existingUser = True
         return self.fu.createUser(userDetails)
+
+    def __checkUserExistence(self):
+        if not self.isUserChecked:
+            self.existingUser = self.existingWhatsapp(self.whatsappNumber)
+            self.isUserChecked = True
+        return self.existingUser
+
+    def setWhatsappNumber(self, userNumber: str):
+        self.whatsappNumber = userNumber
+        self.__checkUserExistence()
+
+    def needsToSignUp(self, userNumber: str):
+        self.setWhatsappNumber(userNumber)
+        return self.existingUser is False
+
+    def handleIncomingMessage(self, message: str):
+        return self.twilioSingleStep(message)
 
 
 def __main():
     im = IntentManager()
-    answers = []
-    answers.append(im.twilioSingleStep("Oii"))
-    print(answers[-1], im.extractedParameters)
-    answers.append(im.twilioSingleStep("João"))
-    print(answers[-1], im.extractedParameters)
-    answers.append(im.twilioSingleStep("Rua das Flores 2542"))
-    print(answers[-1], im.extractedParameters)
-    answers.append(im.twilioSingleStep("19574430239"))
-    print(answers[-1], im.extractedParameters)
-    return
+    existingUser = im.existingWhatsapp("+19574430239")
+    if not existingUser:
+        messagePot = ["Oii", "João", "Rua das Flores 2542", "19574430239"]
+        lastBotAnswer = ""
+        while lastBotAnswer != "Usuário cadastrado com sucesso!":
+            newUserMessage = messagePot.pop(0)
+            lastBotAnswer = im.twilioSingleStep(newUserMessage)
+            print(f"User: {newUserMessage}")
+            print(f"Bot: {lastBotAnswer}")
+        return
 
 
 if __name__ == "__main__":

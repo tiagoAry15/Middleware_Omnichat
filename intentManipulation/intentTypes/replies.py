@@ -22,7 +22,8 @@ class Replies:
     SIGNUP_NAME = {"media": None,
                    "intentName": "SIGNUP_NAME",
                    "intentType": Types.ENTRY_TEXT,
-                   "main": "Qual o seu nome?",
+                   "main": "Parece que você não está cadastrado no nosso sistema, e vou precisar fazer o seu cadastro."
+                           " Por favor, me informe o seu nome.",
                    "validators": ["name"],
                    "nextIntent": "SIGNUP_ADDRESS",}
 

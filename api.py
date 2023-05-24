@@ -3,12 +3,12 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, request
 from twilio.rest import Client
-from twilio.twiml.messaging_response import MessagingResponse
 
 from analyzePizzaIntent import structurePizza, structureDrink, structureFullOrder
 from dialogFlowSession import DialogFlowSession
-from gpt.PizzaGPT import PizzaGPT, getResponseDefaultGPT
-from utils import extractDictFromBytesRequest, sendWebhookCallback, changeDialogflowIntent
+from gpt.PizzaGPT import getResponseDefaultGPT
+from intentManipulation.intentManager import IntentManager
+from utils import extractDictFromBytesRequest, sendWebhookCallback, changeDialogflowIntent, _sendTwilioResponse
 
 load_dotenv()
 
@@ -33,33 +33,18 @@ def __handleWelcomeMultipleOptions(parameters: dict):
         return changeDialogflowIntent("Order.pizza")
 
 
-def _sendTwilioResponse(body: str, media: str = None) -> str:
-    response = MessagingResponse()
-    message = response.message()
-    message.body(body)
-    if media is not None:
-        message.media(media)
-    return str(response)
-
-
 @app.route("/twilioSandbox", methods=['POST'])
-def sandbox():
-    # print("a")
-    # originalMessage = request.values.get('Body', None)
-    # dispatcher = BotDispatcher()
-    # botResponse = dispatcher.reply(originalMessage)
-    # if botResponse == BotDispatcher.QUIZZ_FLOW:
-    #     botResponse = {"body": "Not implemented"}
-    # response = MessagingResponse()
-    # message = response.message()
-    # message.body(botResponse["body"])
-    # if botResponse.get("media"):
-    #     message.media(botResponse["media"])
-    # return str(response)
-
+def sandbox():  # sourcery skip: use-named-expression
     data = extractDictFromBytesRequest()
     receivedMessage = data.get("Body")[0]
     userNumber = data.get("From")[0]
+
+    im = IntentManager()
+    needsToSignUp = im.needsToSignUp(userNumber)
+    if needsToSignUp:
+        im.extractedParameters["phoneNumber"] = userNumber
+        botAnswer = im.twilioSingleStep(receivedMessage)
+        return _sendTwilioResponse(body=botAnswer)
 
     dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
     secret = dialogFlowInstance.params.get("secret")
@@ -68,9 +53,7 @@ def sandbox():
     parameters = dict(dialogflowResponse.query_result.parameters)
     mainResponse = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
     image_url = "https://shorturl.at/lEFT0"
-
-    return _sendTwilioResponse(body=mainResponse, media=image_url)
-    # return str(dialogFlowInstance.twiml), 200
+    return _sendTwilioResponse(body=mainResponse, media=None)
 
 
 @app.route("/webhookForIntent", methods=['POST'])
