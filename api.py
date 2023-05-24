@@ -74,8 +74,8 @@ def send():
         return sendWebhookCallback(drinkString)
     elif currentIntent == "Welcome":
         pizzaMenu = dialogFlowInstance.getPizzasString()
-        welcomeString = f"Olá! Bem-vindo à Pizza do Bill! Funcionamos das 17h às 22h.\n [{pizzaMenu}]." \
-                        f" Qual pizza você vai querer?"
+        welcomeString = f"Olá! Bem-vindo à Pizza do Bill! Funcionamos das 17h às 22h.\n {pizzaMenu}." \
+                        f" \nQual pizza você vai querer?"
         return sendWebhookCallback(welcomeString)
     elif currentIntent == "Order.drink":
         params = requestContent['queryResult']['parameters']

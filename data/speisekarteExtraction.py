@@ -28,6 +28,10 @@ def createMenuString(menu: dict, category: str = None) -> str:
 
 def __getItemDetails(item_type: str, desired_items: List[dict], price_dict: dict):
     order_items = []
+    if not desired_items or (len(desired_items) == 1 and not desired_items[0]):
+        return order_items
+    if not isinstance(desired_items, list):
+        desired_items = [desired_items]
     if desired_items:
         for item in desired_items:
             item_name = item["item"]
@@ -68,9 +72,10 @@ def __main():
     speisekarte = loadSpeisekarte()
     # structuredOrderExample = {'Bebida': {'item': 'Suco de laranja', 'quantity': 1}, 'Pizza': {'item': 'Calabresa', 'quantity': 1}}
     # structuredOrderExample = {'Bebida': {}, 'Pizza': {'item': 'Calabresa', 'quantity': 1}}
-    structuredOrderExample = {'Bebida': [{'item': 'Suco de laranja', 'quantity': 1}],
-                              'Pizza': [{'item': 'Calabresa', 'quantity': 0.5},
-                                        {'item': 'Pepperoni', 'quantity': 0.5}]}
+    # structuredOrderExample = {'Bebida': [{'item': 'Suco de laranja', 'quantity': 1}],
+    #                           'Pizza': [{'item': 'Calabresa', 'quantity': 0.5},
+    #                                     {'item': 'Pepperoni', 'quantity': 0.5}]}
+    structuredOrderExample = {'Bebida': [{}], 'Pizza': [{'item': 'Frango', 'quantity': 1}]}
     price = analyzeTotalPrice(structuredOrderExample, speisekarte)
     print(price)
     return
