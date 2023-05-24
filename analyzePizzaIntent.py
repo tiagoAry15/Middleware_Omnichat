@@ -30,17 +30,22 @@ def structureFullOrder(parameters: dict):
     else:
         drink_dict = {}
 
-    # Convert pizza string to dict
-    pizza_quantity, pizza_item = pizza.split(' ', 1)
-    pizza_quantity = fractionConverter[pizza_quantity.lower()]
-    pizza_dict = {"item": f"{pizza_item}".capitalize(), "quantity": pizza_quantity}
+    # Convert pizza string to list of dicts
+    pizza_parts = pizza.split(' ')
+    pizza_dicts = []
+    for i in range(0, len(pizza_parts), 2):
+        pizza_quantity = fractionConverter[pizza_parts[i].lower()]
+        pizza_item = pizza_parts[i + 1]
+        pizza_dict = {"item": f"{pizza_item}".capitalize(), "quantity": pizza_quantity}
+        pizza_dicts.append(pizza_dict)
 
-    return {"Bebida": drink_dict, "Pizza": pizza_dict}
+    return {"Bebida": [drink_dict], "Pizza": pizza_dicts}
 
 
 def __main():
     # parameterInput = {'drinks': ['Um suco de laranja'], 'pizzas': ['inteira calabresa'], 'secret': 'Mensagem secreta'}
-    parameterInput = {'drinks': [], 'pizzas': ['inteira calabresa'], 'secret': 'Mensagem secreta'}
+    parameterInput = {'drinks': ['Um suco de laranja'], 'pizzas': ['meia calabresa meia calabresa'], 'secret': 'Mensagem secreta'}
+    # parameterInput = {'drinks': [], 'pizzas': ['meia calabresa meia pepperoni'], 'secret': 'Mensagem secreta'}
     output = structureFullOrder(parameterInput)
     return
 

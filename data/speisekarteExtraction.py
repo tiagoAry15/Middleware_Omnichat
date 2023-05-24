@@ -1,4 +1,5 @@
 import json
+from typing import List
 
 from references.pathReference import getSpeisekartePath
 
@@ -25,6 +26,20 @@ def createMenuString(menu: dict, category: str = None) -> str:
     return menuString
 
 
+def __getItemDetails(item_type: str, desired_items: List[dict], price_dict: dict):
+    order_items = []
+    if desired_items:
+        for item in desired_items:
+            item_name = item["item"]
+            item_quantity = item["quantity"]
+            item_price = price_dict[item_name]
+            adjusted_price = item_price * item_quantity
+            item_tag = f"{item_quantity} x {item_type} {item_name} (R${adjusted_price:.2f})"
+            total_price = item_price * item_quantity
+            order_items.append({"tag": item_tag, "price": total_price})
+    return order_items
+
+
 def analyzeTotalPrice(structuredOrder: dict, menu: dict):
     # Convert menu lists to dictionaries for easier access
     dictDrinkLabeledPrices = {item["nome"]: item["preço"] for item in menu["Bebidas"]}
@@ -34,40 +49,28 @@ def analyzeTotalPrice(structuredOrder: dict, menu: dict):
     desiredDrinks = structuredOrder.get("Bebida")
     desiredPizzas = structuredOrder.get("Pizza")
 
-    # Initialize variables
-    desiredDrinkPrice, desiredDrinkName, desiredDrinkAmount = (0, ) * 3
-    desiredPizzaPrice, desiredPizzaName, desiredPizzaAmount = (0, ) * 3
-    orderItems = []
-
-    # If there are drinks in the order, get their details
-    if desiredDrinks:
-        desiredDrinkName = desiredDrinks["item"]
-        desiredDrinkAmount = desiredDrinks["quantity"]
-        desiredDrinkPrice = dictDrinkLabeledPrices[desiredDrinkName]
-        orderItems.append(f"{desiredDrinkAmount} x {desiredDrinkName} (R${desiredDrinkPrice:.2f})")
-
-    # If there are pizzas in the order, get their details
-    if desiredPizzas:
-        desiredPizzaName = desiredPizzas["item"]
-        desiredPizzaAmount = desiredPizzas["quantity"]
-        desiredPizzaPrice = dictPizzaLabeledPrices[desiredPizzaName]
-        orderItems.append(f"{desiredPizzaAmount} x {desiredPizzaName} (R${desiredPizzaPrice:.2f})")
+    # Get item details
+    orderItems = __getItemDetails('', desiredDrinks, dictDrinkLabeledPrices)
+    orderItems += __getItemDetails('Pizza de', desiredPizzas, dictPizzaLabeledPrices)
 
     # Calculate the total price
-    totalPrice = desiredDrinkPrice * desiredDrinkAmount + desiredPizzaPrice * desiredPizzaAmount
+    totalPrice = sum(item["price"] for item in orderItems)
+    orderTags = [item["tag"] for item in orderItems]
 
     # Construct the final message
-    finalMessage = f"Vai ser {', '.join(orderItems)}, totalizando R${totalPrice:.2f}." \
+    finalMessage = f"Vai ser {', '.join(orderTags)}, totalizando R${totalPrice:.2f}." \
                    f" Qual vai ser a forma de pagamento? (pix/cartão/dinheiro)"
 
     return {"totalPrice": totalPrice, "finalMessage": finalMessage}
 
 
-
 def __main():
     speisekarte = loadSpeisekarte()
     # structuredOrderExample = {'Bebida': {'item': 'Suco de laranja', 'quantity': 1}, 'Pizza': {'item': 'Calabresa', 'quantity': 1}}
-    structuredOrderExample = {'Bebida': {}, 'Pizza': {'item': 'Calabresa', 'quantity': 1}}
+    # structuredOrderExample = {'Bebida': {}, 'Pizza': {'item': 'Calabresa', 'quantity': 1}}
+    structuredOrderExample = {'Bebida': [{'item': 'Suco de laranja', 'quantity': 1}],
+                              'Pizza': [{'item': 'Calabresa', 'quantity': 0.5},
+                                        {'item': 'Pepperoni', 'quantity': 0.5}]}
     price = analyzeTotalPrice(structuredOrderExample, speisekarte)
     print(price)
     return
