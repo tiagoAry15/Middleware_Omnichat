@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from flask import Flask, request
 from twilio.rest import Client
 
-from analyzePizzaIntent import structurePizza, structureDrink, structureFullOrder
+from orderProcessing.orderHandler import structurePizza, structureDrink, structureFullOrder
 from dialogFlowSession import DialogFlowSession
 from gpt.PizzaGPT import getResponseDefaultGPT
 from intentManipulation.intentManager import IntentManager

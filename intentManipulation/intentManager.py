@@ -3,7 +3,7 @@ from typing import List
 from colorama import Fore, Style
 
 from dialogFlowSession import singleton
-from firebaseFolder.FirebaseUser import FirebaseUser
+from firebaseFolder.firebaseUser import FirebaseUser
 from firebaseFolder.firebaseConnection import FirebaseConnection
 from intentManipulation.intentTypes.intentEntryText import EntryTextIntent
 from intentManipulation.intentTypes.intentFallback import InstantFallbackIntent
