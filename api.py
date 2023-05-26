@@ -4,7 +4,8 @@ from dotenv import load_dotenv
 from flask import Flask, request
 from twilio.rest import Client
 
-from orderProcessing.orderHandler import structurePizza, structureDrink, structureFullOrder
+from orderProcessing.orderHandler import structurePizza, structureDrink, structureFullOrder, parsePizzaOrder, \
+    convertPizzaOrderToText
 from dialogFlowSession import DialogFlowSession
 from gpt.PizzaGPT import getResponseDefaultGPT
 from intentManipulation.intentManager import IntentManager
@@ -97,9 +98,12 @@ def send():
         number = parameters["number"][0] if parameters.get("number") else None
         if not number:
             parameters["number"] = [1.0]
-        fullPizza = structurePizza(parameters)
+        # fullPizza = "inteira calabresa"
+        fullPizza = parsePizzaOrder(userMessage=queryText, parameters=parameters)
+        fullPizzaText = convertPizzaOrderToText(fullPizza)
         dialogFlowInstance.params["pizzas"].append(fullPizza)
-        return sendWebhookCallback(botMessage=f"Maravilha! Uma {fullPizza} então. Você vai querer alguma bebida?")
+        return sendWebhookCallback(botMessage=f"Maravilha! {fullPizzaText.capitalize()} então. "
+                                              f"Você vai querer alguma bebida?")
     return sendWebhookCallback(botMessage="a")
 
 

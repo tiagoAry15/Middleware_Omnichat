@@ -100,6 +100,18 @@ def parsePizzaOrder(userMessage: str, parameters: dict):
     return [__translateOrder(order, parameters) for order in individualOrders]
 
 
+def convertPizzaOrderToText(pizzaOrder: dict) -> str:
+    result = []
+    number_dict = {0.5: "meia", 1.0: "uma inteira", 2.0: "duas inteiras"}
+    for pizza_order in pizzaOrder:
+        order = [
+            f"{number_dict[amount]} {flavor}"
+            for flavor, amount in pizza_order.items()
+        ]
+        result.append(" ".join(order))
+    return ', '.join(result)
+
+
 def __main():
     # parameterInput = {'drinks': ['Um suco de laranja'], 'pizzas': ['inteira calabresa'], 'secret': 'Mensagem secreta'}
     # parameterInput = {'drinks': ['Um suco de laranja'], 'pizzas': ['meia calabresa meia calabresa'], 'secret': 'Mensagem secreta'}
