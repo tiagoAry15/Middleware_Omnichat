@@ -15,9 +15,10 @@ def getSpeisekartePath() -> Path:
 
 
 def __main():
-    mainFolder = getFirebaseSDKPath()
-    print(mainFolder)
-    return mainFolder
+    sdkFile = getFirebaseSDKPath()
+    existingSdkFile = sdkFile.exists()
+    print(existingSdkFile)
+    return existingSdkFile
 
 
 if __name__ == '__main__':
