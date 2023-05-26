@@ -3,12 +3,13 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, request
 from twilio.rest import Client
-
+from flask_socketio import SocketIO
 from analyzePizzaIntent import structurePizza, structureDrink, structureFullOrder
 from dialogFlowSession import DialogFlowSession
 from gpt.PizzaGPT import getResponseDefaultGPT
 from intentManipulation.intentManager import IntentManager
 from utils import extractDictFromBytesRequest, sendWebhookCallback, changeDialogflowIntent, _sendTwilioResponse
+from flask_cors import CORS
 
 load_dotenv()
 
@@ -17,7 +18,15 @@ auth_token = os.environ["TWILIO_AUTH_TOKEN"]
 twilio_phone_number = f'whatsapp:{os.environ["TWILIO_PHONE_NUMBER"]}'
 client = Client(account_sid, auth_token)
 app = Flask(__name__)
+socketio = SocketIO(app, cors_allowed_origins='http://localhost:5173')
+
 dialogFlowInstance = DialogFlowSession()
+
+
+@socketio.on('sendMessage')
+def handle_message(msg):
+    print('mensagem recebida com sucesso')
+    socketio.emit('receiveMessage', 'oi flask')
 
 
 def __handleWelcomeMultipleOptions(parameters: dict):
@@ -38,7 +47,8 @@ def sandbox():  # sourcery skip: use-named-expression
     data = extractDictFromBytesRequest()
     receivedMessage = data.get("Body")[0]
     userNumber = data.get("From")[0]
-
+    socketio.emit('response', 'teste')
+    print("passou")
     im = IntentManager()
     needsToSignUp = im.needsToSignUp(userNumber)
     if needsToSignUp:
@@ -151,4 +161,7 @@ def hello():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
+    socketio.run(app, port=8000, debug=True)
+    print('deu certo')
+    while True:
+        socketio.emit('response', 'teste', broadcast=True)
