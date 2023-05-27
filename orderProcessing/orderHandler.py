@@ -1,52 +1,62 @@
+import copy
 import re
 from typing import List
 
 
-def structurePizza(parameters: dict):
-    flavors = parameters.get('flavor', [])
-    numbers = parameters.get('number', [])
-    formatted_flavors = []
-    for flavor, number in zip(flavors, numbers):
-        if number == 1 or number <= 0 or number >= 1:
-            formatted_flavors.append(f'inteira {flavor}')
-        else:
-            formatted_flavors.append(f"meia {flavor}")
-    return " ".join(formatted_flavors)
+def __getDrinkPluralForm(drinks: List[str]) -> dict:
+    # Add plural forms to drinks list and create a reverse map for later use
+    drinks_plural = []
+    reverse_map = {}
+    for drink in drinks:
+        words = drink.split()
+        words[0] += 's'  # Add 's' to the first word
+        plural_form = ' '.join(words)
+        drinks_plural.append(plural_form)
+        reverse_map[plural_form.replace(' ', '@')] = drink
+    drinks += drinks_plural
+    return reverse_map
 
 
-def structureDrink(parameters: dict):
-    number = int(parameters.get('number', []))
-    drink = parameters.get('Drinks', [])
-    drink_string = 'um' if number == 1 else f'{number}'
-    return f'{drink_string.capitalize()} {drink}'
+def structureDrink(parameters: dict, userMessage: str) -> dict:
+    drinks = parameters.get('Drinks', [])
+    numberEntity = {"uma": 1.0, "um": 1.0, "meio": 0.5, "meia": 0.5, "dois": 2.0, "duas": 2.0, "três": 3.0,
+                    "quatro": 4.0}
+
+    reverseDrinkMap = __getDrinkPluralForm(drinks)
+    # Step 1: replace spaces in composite drinks with "@"
+    drinksReplaced = [drink.replace(' ', '@') for drink in drinks]
+
+    # Step 2: replace drinks in the user message with the replaced versions
+    for drink, drinkReplaced in zip(drinks, drinksReplaced):
+        userMessage = userMessage.replace(drink, drinkReplaced)
+
+    words = userMessage.split()
+    drinkOrder = {
+        word: numberEntity[words[i - 1]]
+        for i, word in enumerate(words)
+        if word in drinksReplaced and i > 0 and words[i - 1] in numberEntity
+    }
+    # Step 4: convert drink names back using the reverse_map
+    for drinkReplaced in drinkOrder.copy():
+        if drinkReplaced in reverseDrinkMap:
+            originalDrinkName = reverseDrinkMap[drinkReplaced]
+            drinkOrder[originalDrinkName] = drinkOrder.pop(drinkReplaced)
+
+    return drinkOrder
 
 
 def structureFullOrder(parameters: dict):
+    """parameters example:  {'drinks': ['2 suco de laranja'],
+                            'pizzas': [{'calabresa': 2.0}, {'pepperoni': 0.5, 'portuguesa': 0.5},
+                             {'calabresa': 0.5, 'pepperoni': 0.5}],
+                            'secret': 'Mensagem secreta'}"""
     drink = parameters["drinks"][0] if parameters.get("drinks") else None
+    # Split drink into a list
     pizza = parameters["pizzas"][0]
-    fractionConverter = {"um": 1, "meia": 0.5, "inteira": 1}
-
-    if drink is not None:
-        # Convert drink string to dict
-        drink_quantity, drink_item = drink.split(' ', 1)
-        drink_quantity = fractionConverter[drink_quantity.lower()]
-        drink_dict = {"item": drink_item.capitalize(), "quantity": drink_quantity}
-    else:
-        drink_dict = {}
-
-    # Convert pizza string to list of dicts
-    pizza_parts = pizza.split(' ')
-    pizza_dicts = []
-    for i in range(0, len(pizza_parts), 2):
-        pizza_quantity = fractionConverter[pizza_parts[i].lower()]
-        pizza_item = pizza_parts[i + 1]
-        pizza_dict = {"item": f"{pizza_item}".capitalize(), "quantity": pizza_quantity}
-        pizza_dicts.append(pizza_dict)
-
-    return {"Bebida": [drink_dict], "Pizza": pizza_dicts}
+    return {"Bebida": [{key: value} for key, value in drink.items()], "Pizza": pizza}
 
 
-def __splitOrder(order: str) -> List[str]:
+def _splitOrder(order: str) -> List[str]:
     order = order.replace('vou querer ', '')  # remove the starting phrase
     items = order.split(', ')  # split on comma
 
@@ -64,7 +74,7 @@ def __splitOrder(order: str) -> List[str]:
     return final_items
 
 
-def __translateOrder(order: str, parameters: dict) -> dict:
+def _translateOrder(order: str, parameters: dict) -> dict:
     numberEntity = {"uma": 1.0, "meio": 0.5, "meia": 0.5, "duas": 2.0, "três": 3.0, "quatro": 4.0}
 
     # Initialize an empty result dictionary
@@ -96,8 +106,12 @@ def __translateOrder(order: str, parameters: dict) -> dict:
 
 def parsePizzaOrder(userMessage: str, parameters: dict):
     userMessage = userMessage.lower()
-    individualOrders = __splitOrder(userMessage)
-    return [__translateOrder(order, parameters) for order in individualOrders]
+    individualOrders = _splitOrder(userMessage)
+    pot = []
+    for order in individualOrders:
+        result = _translateOrder(order, parameters)
+        pot.append(result)
+    return pot
 
 
 def convertPizzaOrderToText(pizzaOrder: dict) -> str:
@@ -118,11 +132,20 @@ def __main():
     # parameterInput = {'drinks': [], 'pizzas': ['meia calabresa meia pepperoni'], 'secret': 'Mensagem secreta'}
     # parameterInput = {'drinks': [], 'pizzas': ['inteira frango'], 'secret': 'Mensagem secreta'}
     # output = structureFullOrder(parameterInput)
-    output = parsePizzaOrder(
-        "Vou querer duas pizzas de calabresa, uma meio pepperoni meio portuguesa e uma pizza meio calabresa meio "
-        "pepperoni",
-        {'flavor': ['calabresa', 'pepperoni', 'portuguesa']})
+    # output = parsePizzaOrder(
+    #     "Vou querer duas pizzas de calabresa, uma meio pepperoni meio portuguesa e uma pizza meio calabresa meio "
+    #     "pepperoni",
+    #     {'flavor': ['calabresa', 'pepperoni', 'portuguesa']})
+
+    parameterInput = {'drinks': [{'guaraná': 1.0, 'suco de laranja': 2.0}],
+                      'pizzas': [[{'calabresa': 2.0}, {'calabresa': 0.5, 'frango': 0.5}]],
+                      'secret': 'Mensagem secreta'}
+    output = structureFullOrder(parameterInput)
     print(output)
+
+    # parameterInput = {'Drinks': ['suco de laranja', 'guaraná']}
+    # output = structureDrink(parameters=parameterInput, userMessage="vou querer dois sucos de laranja e um guaraná")
+    # print(output)
     return output
 
 

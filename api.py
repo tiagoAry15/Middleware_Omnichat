@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from flask import Flask, request
 from twilio.rest import Client
 
-from orderProcessing.orderHandler import structurePizza, structureDrink, structureFullOrder, parsePizzaOrder, \
+from orderProcessing.orderHandler import structureDrink, structureFullOrder, parsePizzaOrder, \
     convertPizzaOrderToText
 from dialogFlowSession import DialogFlowSession
 from gpt.PizzaGPT import getResponseDefaultGPT
@@ -70,17 +70,9 @@ def send():
     userMessage = [item["name"] for item in queryText] if isinstance(queryText, list) else queryText
     currentIntent = requestContent['queryResult']['intent']['displayName']
     print(f"current Intent: {currentIntent}")
-    if currentIntent == "Order.pizza - drink yes":
-        drinkString = dialogFlowInstance.getDrinksString()
-        return sendWebhookCallback(drinkString)
-    elif currentIntent == "Welcome":
-        pizzaMenu = dialogFlowInstance.getPizzasString()
-        welcomeString = f"Olá! Bem-vindo à Pizza do Bill! Funcionamos das 17h às 22h.\n {pizzaMenu}." \
-                        f" \nQual pizza você vai querer?"
-        return sendWebhookCallback(welcomeString)
-    elif currentIntent == "Order.drink":
+    if currentIntent == "Order.drink":
         params = requestContent['queryResult']['parameters']
-        drink = structureDrink(params)
+        drink = structureDrink(params, userMessage)
         dialogFlowInstance.params["drinks"].append(drink)
         fullOrder = structureFullOrder(dialogFlowInstance.params)
         totalPriceDict = dialogFlowInstance.analyzeTotalPrice(fullOrder)
@@ -92,6 +84,9 @@ def send():
         totalPriceDict = dialogFlowInstance.analyzeTotalPrice(fullOrder)
         finalMessage = totalPriceDict["finalMessage"]
         return sendWebhookCallback(finalMessage)
+    elif currentIntent == "Order.pizza - drink yes":
+        drinkString = dialogFlowInstance.getDrinksString()
+        return sendWebhookCallback(drinkString)
     elif currentIntent == "Order.pizza":
         parameters = requestContent['queryResult']['parameters']
         flavor = parameters["flavor"][0] if parameters.get("flavor") else None
@@ -104,6 +99,11 @@ def send():
         dialogFlowInstance.params["pizzas"].append(fullPizza)
         return sendWebhookCallback(botMessage=f"Maravilha! {fullPizzaText.capitalize()} então. "
                                               f"Você vai querer alguma bebida?")
+    elif currentIntent == "Welcome":
+        pizzaMenu = dialogFlowInstance.getPizzasString()
+        welcomeString = f"Olá! Bem-vindo à Pizza do Bill! Funcionamos das 17h às 22h.\n {pizzaMenu}." \
+                        f" \nQual pizza você vai querer?"
+        return sendWebhookCallback(welcomeString)
     return sendWebhookCallback(botMessage="a")
 
 

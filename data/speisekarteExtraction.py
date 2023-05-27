@@ -34,8 +34,9 @@ def __getItemDetails(item_type: str, desired_items: List[dict], price_dict: dict
         desired_items = [desired_items]
     if desired_items:
         for item in desired_items:
-            item_name = item["item"]
-            item_quantity = item["quantity"]
+            # item is a single dict like {'guaraná': 1.0}
+            item_name = list(item.keys())[0].capitalize()
+            item_quantity = item[item_name.lower()]
             item_price = price_dict[item_name]
             adjusted_price = item_price * item_quantity
             item_tag = f"{item_quantity} x {item_type} {item_name} (R${adjusted_price:.2f})"
@@ -75,7 +76,8 @@ def __main():
     # structuredOrderExample = {'Bebida': [{'item': 'Suco de laranja', 'quantity': 1}],
     #                           'Pizza': [{'item': 'Calabresa', 'quantity': 0.5},
     #                                     {'item': 'Pepperoni', 'quantity': 0.5}]}
-    structuredOrderExample = {'Bebida': [{}], 'Pizza': [{'item': 'Frango', 'quantity': 1}]}
+    structuredOrderExample = {'Bebida': [{'guaraná': 1.0}, {'suco de laranja': 2.0}],
+                              'Pizza': [{'calabresa': 2.0}, {'calabresa': 0.5, 'frango': 0.5}]}
     price = analyzeTotalPrice(structuredOrderExample, speisekarte)
     print(price)
     return
