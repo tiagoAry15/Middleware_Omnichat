@@ -26,6 +26,13 @@ def createMenuString(menu: dict, category: str = None) -> str:
     return menuString
 
 
+def __createPizzaDescription(pizza_dict: dict) -> str:
+    if len(pizza_dict) == 1:
+        return f"Pizza de {list(pizza_dict.keys())[0]}"
+    toppings = [f"meio {topping}" for topping in pizza_dict]
+    return "Pizza " + " meio ".join(toppings)
+
+
 def __getItemDetails(item_type: str, desired_items: List[dict], price_dict: dict):
     order_items = []
     if not desired_items or (len(desired_items) == 1 and not desired_items[0]):
@@ -37,9 +44,15 @@ def __getItemDetails(item_type: str, desired_items: List[dict], price_dict: dict
             # item is a single dict like {'guaraná': 1.0}
             item_name = list(item.keys())[0].capitalize()
             item_quantity = item[item_name.lower()]
+            if item_quantity.is_integer():
+                item_quantity = int(item_quantity)
             item_price = price_dict[item_name]
             adjusted_price = item_price * item_quantity
-            item_tag = f"{item_quantity} x {item_type} {item_name} (R${adjusted_price:.2f})"
+            if item_type == 'Pizza de':
+                fullTag = __createPizzaDescription(item)
+                item_tag = f"{item_quantity} x {fullTag} (R${adjusted_price:.2f})"
+            else:
+                item_tag = f"{item_quantity} x {item_name} (R${adjusted_price:.2f})"
             total_price = item_price * item_quantity
             order_items.append({"tag": item_tag, "price": total_price})
     return order_items
