@@ -9,14 +9,19 @@ class FirebaseUser:
     def getAllUsers(self):
         return self.firebaseConnection.readData()
 
-    def existingUser(self, inputUserData: dict) -> bool:  # sourcery skip: use-any, use-next
+    def getUniqueIdByPhoneNumber(self, phoneNumber: str) -> str or None:
+        # sourcery skip: use-next
         allUsers = self.getAllUsers()
         if allUsers is None:
-            return False
+            return None
         for uniqueId, userData in allUsers.items():
-            if userData["phoneNumber"] == inputUserData["phoneNumber"]:
-                return True
-        return False
+            if userData["phoneNumber"] == phoneNumber:
+                return uniqueId
+        return None
+
+    def existingUser(self, inputUserData: dict) -> bool:
+        uniqueId = self.getUniqueIdByPhoneNumber(inputUserData["phoneNumber"])
+        return uniqueId is not None
 
     def createUser(self, userData: dict) -> bool:
         existingUser = self.existingUser(userData)
@@ -53,10 +58,10 @@ def __createDummyUsers():
 
 
 def __main():
-    # __createDummyUsers()
-    fc = FirebaseConnection()
-    fu = FirebaseUser(fc)
-    print(fu.existingUser({"phoneNumber": "+558597648593"}))
+    __createDummyUsers()
+    # fc = FirebaseConnection()
+    # fu = FirebaseUser(fc)
+    # print(fu.existingUser({"phoneNumber": "+558597648593"}))
     # fu.deleteUser({"email": "user@example.com", "password": "password"})
     return
 
