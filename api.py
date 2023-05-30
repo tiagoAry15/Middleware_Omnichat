@@ -27,17 +27,14 @@ fu = FirebaseUser(fc)
 fcm = FirebaseConversation(fc)
 
 
-def __handleWelcomeMultipleOptions(parameters: dict):
-    chosenNumber = int(parameters["number"][0])
-    if chosenNumber == 1:
-        dialogFlowInstance.sendTwilioRawMessage("Qual pizza você vai querer hoje?")
-        return sendWebhookCallback("Qual pizza você vai querer hoje?")
-    if chosenNumber == 2:
-        dialogFlowInstance.sendTwilioRawMessage("Aqui está o cardápio!", image_url="https://shorturl.at/lEFT0")
-        return changeDialogflowIntent("Order.pizza")
-    elif chosenNumber == 3:
-        dialogFlowInstance.sendTwilioRawMessage("Nós funcionamos das 17h até as 22h")
-        return changeDialogflowIntent("Order.pizza")
+def __getAllUsersMappedByPhone() -> dict:
+    users = fu.getAllUsers()
+    return {user["phoneNumber"]: user for user in users.values()} if users is not None else {}
+
+
+def __getUserByWhatsappNumber(whatsappNumber: str) -> dict or None:
+    users = __getAllUsersMappedByPhone()
+    return users.get(whatsappNumber)
 
 
 @app.route("/twilioSandbox", methods=['POST'])
@@ -121,54 +118,47 @@ def get_all_users():
 
 @app.route("/get_user_by_whatsapp/<whatsapp_number>", methods=['GET'])
 def get_user_by_whatsapp(whatsapp_number: str):
-    aux = fu.getAllUsers()
-    whatsappDict = {item["phoneNumber"]: item for item in aux.values()}
-    if whatsapp_number not in whatsappDict.keys():
-        return jsonify({"Error": f"Could not find an user with whatsapp {whatsapp_number}"}), 404
-    userFound = whatsappDict[whatsapp_number]
-    return jsonify(userFound), 200
+    user = __getUserByWhatsappNumber(whatsapp_number)
+    return ((jsonify(user), 200) if user
+            else (jsonify({"Error": f"Could not find an user with whatsapp {whatsapp_number}"}), 404))
 
 
 @app.route("/delete_user_by_whatsapp/<whatsapp_number>", methods=['DELETE'])
 def delete_user_by_whatsapp(whatsapp_number: str):
-    aux = fu.getAllUsers()
-    whatsappDict = {item["phoneNumber"]: item for item in aux.values()}
-    if whatsapp_number not in whatsappDict.keys():
+    user = __getUserByWhatsappNumber(whatsapp_number)
+    if not user:
         return jsonify({"Error": f"Could not find an user with whatsapp {whatsapp_number}"}), 404
-    userFound = whatsappDict[whatsapp_number]
-    fu.deleteUser(userFound["id"])
+    fu.deleteUser(user)
     return jsonify({"Success": f"User with whatsapp {whatsapp_number} deleted"}), 200
 
 
 @app.route("/get_user_conversations_by_whatsapp/<whatsapp_number>", methods=['GET'])
 def get_user_conversations_by_whatsapp(whatsapp_number: str):
-    aux = fu.getAllUsers()
-    whatsappDict = {item["phoneNumber"]: item for item in aux.values()}
-    if whatsapp_number not in whatsappDict.keys():
+    user = __getUserByWhatsappNumber(whatsapp_number)
+    if not user:
         return jsonify({"Error": f"Could not find an user with whatsapp {whatsapp_number}"}), 404
     allConversations = fcm.getAllConversations()
     allConversationsDict = {item["userNumber"]: item for item in allConversations.values()}
-    numbersWithNoConversations = [item for item in whatsappDict if item not in allConversationsDict.keys()]
-    if whatsapp_number in numbersWithNoConversations:
-        return jsonify({"Error": f"Could not find conversations for the user with whatsapp {whatsapp_number}"}), 404
-    userConversation = allConversationsDict[whatsapp_number]
-    return jsonify(userConversation), 200
+    userConversation = allConversationsDict.get(whatsapp_number)
+    return ((jsonify(userConversation), 200)
+            if userConversation
+            else (
+        jsonify({"Error": f"Could not find conversations for the user with whatsapp {whatsapp_number}"}), 404))
 
 
 @app.route("/push_new_message_by_whatsapp_number/", methods=['POST'])
 def push_new_message_by_whatsapp_number():
     data = dict(request.form)
-    whatsapp = data.get("whatsapp")
-    aux = fu.getAllUsers()
-    whatsappDict = {item["phoneNumber"]: item for item in aux.values()}
-    if whatsapp not in whatsappDict.keys():
-        return jsonify({"Error": f"Could not find an user with whatsapp {whatsapp}"}), 404
-    conversations = fcm.retrieveAllMessagesByWhatsappNumber(whatsapp)
+    whatsapp_number = data.get("whatsapp")
+    user = __getUserByWhatsappNumber(whatsapp_number)
+    if not user:
+        return jsonify({"Error": f"Could not find an user with whatsapp {whatsapp_number}"}), 404
+    conversations = fcm.retrieveAllMessagesByWhatsappNumber(whatsapp_number)
     if not conversations:
-        return jsonify({"Error": f"Could not find conversations for the user with whatsapp {whatsapp}"}), 404
+        return jsonify({"Error": f"Could not find conversations for the user with whatsapp {whatsapp_number}"}), 404
     message = {"content": data.get("message")}
-    fcm.appendMessageToWhatsappNumber(messageData=message, whatsappNumber=whatsapp)
-    return jsonify({"Success": f"New message pushed for user with whatsapp {whatsapp}"}), 200
+    fcm.appendMessageToWhatsappNumber(messageData=message, whatsappNumber=whatsapp_number)
+    return jsonify({"Success": f"New message pushed for user with whatsapp {whatsapp_number}"}), 200
 
 
 @app.route("/staticReply", methods=['POST'])
