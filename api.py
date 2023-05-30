@@ -2,8 +2,11 @@ import os
 
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
+from flask_cors import CORS
+from flask_socketio import SocketIO
 from twilio.rest import Client
 
+from data.messageConverter import MessageConverter, get_dialogflow_message_example
 from firebaseFolder.firebaseConnection import FirebaseConnection
 from firebaseFolder.firebaseConversation import FirebaseConversation
 from firebaseFolder.firebaseUser import FirebaseUser
@@ -12,7 +15,7 @@ from orderProcessing.orderHandler import structureDrink, structureFullOrder, par
 from dialogFlowSession import DialogFlowSession
 from gpt.PizzaGPT import getResponseDefaultGPT
 from intentManipulation.intentManager import IntentManager
-from utils import extractDictFromBytesRequest, sendWebhookCallback, changeDialogflowIntent, _sendTwilioResponse
+from utils import extractDictFromBytesRequest, sendWebhookCallback, _sendTwilioResponse
 
 load_dotenv()
 
@@ -21,6 +24,8 @@ auth_token = os.environ["TWILIO_AUTH_TOKEN"]
 twilio_phone_number = f'whatsapp:{os.environ["TWILIO_PHONE_NUMBER"]}'
 client = Client(account_sid, auth_token)
 app = Flask(__name__)
+CORS(app, support_credentials=True)
+socketInstance = SocketIO(app, cors_allowed_origins="*")
 dialogFlowInstance = DialogFlowSession()
 fc = FirebaseConnection()
 fu = FirebaseUser(fc)
@@ -42,6 +47,8 @@ def sandbox():  # sourcery skip: use-named-expression
     data = extractDictFromBytesRequest()
     receivedMessage = data.get("Body")[0]
     userNumber = data.get("From")[0]
+    userMessageJSON = MessageConverter.convert_user_message(data)
+    socketInstance.emit('user_message', userMessageJSON)
 
     im = IntentManager()
     needsToSignUp = im.needsToSignUp(userNumber)
@@ -51,13 +58,29 @@ def sandbox():  # sourcery skip: use-named-expression
         return _sendTwilioResponse(body=botAnswer)
 
     dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
+    dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(dialogflowResponse)
+    socketInstance.emit('dialogflow_message', userMessageJSON)
     secret = dialogFlowInstance.params.get("secret")
     detectedIntent = dialogflowResponse.query_result.intent.display_name
     # IntentManager.process_intent(detectedIntent)
     parameters = dict(dialogflowResponse.query_result.parameters)
     mainResponse = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
     image_url = "https://shorturl.at/lEFT0"
+    socketInstance.emit('Bot_response', dialogflowResponseJSON)
+
     return _sendTwilioResponse(body=mainResponse, media=None)
+
+
+@app.route("/ChatTest", methods=['GET'])
+def chatTest():
+    dialogflow_message = get_dialogflow_message_example()
+    user_message = get_dialogflow_message_example()
+    userMessageJSON = MessageConverter.convert_user_message(user_message)
+
+    dialogFlowJSON = MessageConverter.convert_dialogflow_message(dialogflow_message, userMessageJSON['telephone'])
+    for _ in range(4):
+        socketInstance.emit('user_message', userMessageJSON)
+        socketInstance.emit('dialogflow_message', dialogFlowJSON)
 
 
 @app.route("/webhookForIntent", methods=['POST'])
