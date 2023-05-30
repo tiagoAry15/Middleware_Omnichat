@@ -1,16 +1,18 @@
 import os
 
 from dotenv import load_dotenv
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from twilio.rest import Client
-from flask_socketio import SocketIO
-from analyzePizzaIntent import structurePizza, structureDrink, structureFullOrder
+
+from firebaseFolder.firebaseConnection import FirebaseConnection
+from firebaseFolder.firebaseConversation import FirebaseConversation
+from firebaseFolder.firebaseUser import FirebaseUser
+from orderProcessing.orderHandler import structureDrink, structureFullOrder, parsePizzaOrder, \
+    convertPizzaOrderToText
 from dialogFlowSession import DialogFlowSession
 from gpt.PizzaGPT import getResponseDefaultGPT
 from intentManipulation.intentManager import IntentManager
-from messageConverter import MessageConverter
 from utils import extractDictFromBytesRequest, sendWebhookCallback, changeDialogflowIntent, _sendTwilioResponse
-from flask_cors import CORS
 
 load_dotenv()
 
@@ -19,29 +21,20 @@ auth_token = os.environ["TWILIO_AUTH_TOKEN"]
 twilio_phone_number = f'whatsapp:{os.environ["TWILIO_PHONE_NUMBER"]}'
 client = Client(account_sid, auth_token)
 app = Flask(__name__)
-CORS(app, supports_credentials=True)
-socketio = SocketIO(app, cors_allowed_origins='*')
-
 dialogFlowInstance = DialogFlowSession()
+fc = FirebaseConnection()
+fu = FirebaseUser(fc)
+fcm = FirebaseConversation(fc)
 
 
-@socketio.on('sendMessage')
-def handle_message(msg):
-    print('mensagem recebida com sucesso')
-    socketio.emit('receiveMessage', 'oi flask')
+def __getAllUsersMappedByPhone() -> dict:
+    users = fu.getAllUsers()
+    return {user["phoneNumber"]: user for user in users.values()} if users is not None else {}
 
 
-def __handleWelcomeMultipleOptions(parameters: dict):
-    chosenNumber = int(parameters["number"][0])
-    if chosenNumber == 1:
-        dialogFlowInstance.sendTwilioRawMessage("Qual pizza você vai querer hoje?")
-        return sendWebhookCallback("Qual pizza você vai querer hoje?")
-    if chosenNumber == 2:
-        dialogFlowInstance.sendTwilioRawMessage("Aqui está o cardápio!", image_url="https://shorturl.at/lEFT0")
-        return changeDialogflowIntent("Order.pizza")
-    elif chosenNumber == 3:
-        dialogFlowInstance.sendTwilioRawMessage("Nós funcionamos das 17h até as 22h")
-        return changeDialogflowIntent("Order.pizza")
+def __getUserByWhatsappNumber(whatsappNumber: str) -> dict or None:
+    users = __getAllUsersMappedByPhone()
+    return users.get(whatsappNumber)
 
 
 @app.route("/twilioSandbox", methods=['POST'])
@@ -49,8 +42,6 @@ def sandbox():  # sourcery skip: use-named-expression
     data = extractDictFromBytesRequest()
     receivedMessage = data.get("Body")[0]
     userNumber = data.get("From")[0]
-    userMessageJSON = MessageConverter.convert_user_message(data)
-    socketio.emit('user_message', userMessageJSON)
 
     im = IntentManager()
     needsToSignUp = im.needsToSignUp(userNumber)
@@ -60,16 +51,12 @@ def sandbox():  # sourcery skip: use-named-expression
         return _sendTwilioResponse(body=botAnswer)
 
     dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
-    dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(dialogflowResponse)
-    socketio.emit('dialogflow_message', userMessageJSON)
     secret = dialogFlowInstance.params.get("secret")
     detectedIntent = dialogflowResponse.query_result.intent.display_name
     # IntentManager.process_intent(detectedIntent)
     parameters = dict(dialogflowResponse.query_result.parameters)
     mainResponse = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
     image_url = "https://shorturl.at/lEFT0"
-    socketio.emit('Bot_response', dialogflowResponseJSON)
-
     return _sendTwilioResponse(body=mainResponse, media=None)
 
 
@@ -86,17 +73,9 @@ def send():
     userMessage = [item["name"] for item in queryText] if isinstance(queryText, list) else queryText
     currentIntent = requestContent['queryResult']['intent']['displayName']
     print(f"current Intent: {currentIntent}")
-    if currentIntent == "Order.pizza - drink yes":
-        drinkString = dialogFlowInstance.getDrinksString()
-        return sendWebhookCallback(drinkString)
-    elif currentIntent == "Welcome":
-        pizzaMenu = dialogFlowInstance.getPizzasString()
-        welcomeString = f"Olá! Bem-vindo à Pizza do Bill! Funcionamos das 17h às 22h.\n {pizzaMenu}." \
-                        f" \nQual pizza você vai querer?"
-        return sendWebhookCallback(welcomeString)
-    elif currentIntent == "Order.drink":
+    if currentIntent == "Order.drink":
         params = requestContent['queryResult']['parameters']
-        drink = structureDrink(params)
+        drink = structureDrink(params, userMessage)
         dialogFlowInstance.params["drinks"].append(drink)
         fullOrder = structureFullOrder(dialogFlowInstance.params)
         totalPriceDict = dialogFlowInstance.analyzeTotalPrice(fullOrder)
@@ -108,149 +87,78 @@ def send():
         totalPriceDict = dialogFlowInstance.analyzeTotalPrice(fullOrder)
         finalMessage = totalPriceDict["finalMessage"]
         return sendWebhookCallback(finalMessage)
+    elif currentIntent == "Order.pizza - drink yes":
+        drinkString = dialogFlowInstance.getDrinksString()
+        return sendWebhookCallback(drinkString)
     elif currentIntent == "Order.pizza":
         parameters = requestContent['queryResult']['parameters']
         flavor = parameters["flavor"][0] if parameters.get("flavor") else None
         number = parameters["number"][0] if parameters.get("number") else None
         if not number:
             parameters["number"] = [1.0]
-        fullPizza = structurePizza(parameters)
+        # fullPizza = "inteira calabresa"
+        fullPizza = parsePizzaOrder(userMessage=queryText, parameters=parameters)
+        fullPizzaText = convertPizzaOrderToText(fullPizza)
         dialogFlowInstance.params["pizzas"].append(fullPizza)
-        return sendWebhookCallback(botMessage=f"Maravilha! Uma {fullPizza} então. Você vai querer alguma bebida?")
+        return sendWebhookCallback(botMessage=f"Maravilha! {fullPizzaText.capitalize()} então. "
+                                              f"Você vai querer alguma bebida?")
+    elif currentIntent == "Welcome":
+        pizzaMenu = dialogFlowInstance.getPizzasString()
+        welcomeString = f"Olá! Bem-vindo à Pizza do Bill! Funcionamos das 17h às 22h.\n {pizzaMenu}." \
+                        f" \nQual pizza você vai querer?"
+        return sendWebhookCallback(welcomeString)
     return sendWebhookCallback(botMessage="a")
 
 
-@app.route("/ChaTtest", methods=['GET'])
-def chatTest():
-    dialogflow_message = {
-        "response_id": "db1b18cf-4ed9-4339-bcfd-725cf722b4b7-4c6e80df",
-        "query_result": {
-            "query_text": "Oi",
-            "language_code": "pt-br",
-            "action": "input.welcome",
-            "parameters": {
-                "fields": {
-                    "key": "time-period",
-                    "value": {
-                        "string_value": ""
-                    }
-                },
-                "fields": {
-                    "key": "location",
-                    "value": {
-                        "struct_value": {
-                            "fields": {
-                                "key": "zip-code",
-                                "value": {
-                                    "string_value": ""
-                                }
-                            },
-                            "fields": {
-                                "key": "subadmin-area",
-                                "value": {
-                                    "string_value": ""
-                                }
-                            },
-                            "fields": {
-                                "key": "street-address",
-                                "value": {
-                                    "string_value": ""
-                                }
-                            },
-                            "fields": {
-                                "key": "shortcut",
-                                "value": {
-                                    "string_value": ""
-                                }
-                            },
-                            "fields": {
-                                "key": "island",
-                                "value": {
-                                    "string_value": ""
-                                }
-                            },
-                            "fields": {
-                                "key": "country",
-                                "value": {
-                                    "string_value": ""
-                                }
-                            },
-                            "fields": {
-                                "key": "city",
-                                "value": {
-                                    "string_value": ""
-                                }
-                            },
-                            "fields": {
-                                "key": "business-name",
-                                "value": {
-                                    "string_value": "Oi"
-                                }
-                            },
-                            "fields": {
-                                "key": "admin-area",
-                                "value": {
-                                    "string_value": ""
-                                }
-                            }
-                        }
-                    }
-                },
-                "fields": {
-                    "key": "date-time",
-                    "value": {
-                        "string_value": ""
-                    }
-                }
-            },
-            "all_required_params_present": "True",
-            "fulfillment_text": "Por favor, ligue a API",
-            "fulfillment_messages": {
-                "text": {
-                    "text": "Por favor, ligue a API"
-                }
-            },
-            "intent": {
-                "name": "projects/pizzadobill-rpin/agent/intents/acd8e087-5400-4cf9-95f3-4c681b16b516",
-                "display_name": "Welcome"
-            },
-            "intent_detection_confidence": 1,
-            "diagnostic_info": {
-                "fields": {
-                    "key": "webhook_latency_ms",
-                    "value": {
-                        "number_value": 2889
-                    }
-                }
-            }
-        },
-        "webhook_status": {
-            "code": 14,
-            "message": "Webhook call failed. Error: UNAVAILABLE, State: URL_UNREACHABLE, Reason: UNREACHABLE_5xx, HTTP status code: 502."
-        }
-    }
-    user_message = {
-        "SmsMessageSid": ["SMd9c46a08ff3349af9a93dc2d40d738ff"],
-        "NumMedia": ["0"],
-        "ProfileName": ["Tiago Ary"],
-        "SmsSid": ["SMd9c46a08ff3349af9a93dc2d40d738ff"],
-        "WaId": ["558599663533"],
-        "SmsStatus": ["received"],
-        "Body": ["Oi"],
-        "To": ["whatsapp:+14155238886"],
-        "NumSegments": ["1"],
-        "ReferralNumMedia": ["0"],
-        "MessageSid": ["SMd9c46a08ff3349af9a93dc2d40d738ff"],
-        "AccountSid": ["AC034f7d97b8d5bc62dfa91b519ac43b0f"],
-        "From": ["whatsapp:+558599663533"],
-        "ApiVersion": ["2010-04-01"]
-    }
-    userMessageJSON = MessageConverter.convert_user_message(user_message)
+@app.route("/get_all_users", methods=['GET'])
+def get_all_users():
+    aux = fu.getAllUsers()
+    return jsonify(aux), 200
 
-    dialogFlowJSON = MessageConverter.convert_dialogflow_message(dialogflow_message, userMessageJSON['telephone'])
-    for i in range(0, 4):
-        socketio.emit('user_message', userMessageJSON)
-        socketio.emit('dialogflow_message', dialogFlowJSON)
+
+@app.route("/get_user_by_whatsapp/<whatsapp_number>", methods=['GET'])
+def get_user_by_whatsapp(whatsapp_number: str):
+    user = __getUserByWhatsappNumber(whatsapp_number)
+    return ((jsonify(user), 200) if user
+            else (jsonify({"Error": f"Could not find an user with whatsapp {whatsapp_number}"}), 404))
+
+
+@app.route("/delete_user_by_whatsapp/<whatsapp_number>", methods=['DELETE'])
+def delete_user_by_whatsapp(whatsapp_number: str):
+    user = __getUserByWhatsappNumber(whatsapp_number)
+    if not user:
+        return jsonify({"Error": f"Could not find an user with whatsapp {whatsapp_number}"}), 404
+    fu.deleteUser(user)
+    return jsonify({"Success": f"User with whatsapp {whatsapp_number} deleted"}), 200
+
+
+@app.route("/get_user_conversations_by_whatsapp/<whatsapp_number>", methods=['GET'])
+def get_user_conversations_by_whatsapp(whatsapp_number: str):
+    user = __getUserByWhatsappNumber(whatsapp_number)
+    if not user:
+        return jsonify({"Error": f"Could not find an user with whatsapp {whatsapp_number}"}), 404
+    allConversations = fcm.getAllConversations()
+    allConversationsDict = {item["userNumber"]: item for item in allConversations.values()}
+    userConversation = allConversationsDict.get(whatsapp_number)
+    return ((jsonify(userConversation), 200)
+            if userConversation
+            else (
+        jsonify({"Error": f"Could not find conversations for the user with whatsapp {whatsapp_number}"}), 404))
+
+
+@app.route("/push_new_message_by_whatsapp_number/", methods=['POST'])
+def push_new_message_by_whatsapp_number():
+    data = dict(request.form)
+    whatsapp_number = data.get("whatsapp")
+    user = __getUserByWhatsappNumber(whatsapp_number)
+    if not user:
+        return jsonify({"Error": f"Could not find an user with whatsapp {whatsapp_number}"}), 404
+    conversations = fcm.retrieveAllMessagesByWhatsappNumber(whatsapp_number)
+    if not conversations:
+        return jsonify({"Error": f"Could not find conversations for the user with whatsapp {whatsapp_number}"}), 404
+    message = {"content": data.get("message")}
+    fcm.appendMessageToWhatsappNumber(messageData=message, whatsappNumber=whatsapp_number)
+    return jsonify({"Success": f"New message pushed for user with whatsapp {whatsapp_number}"}), 200
 
 
 @app.route("/staticReply", methods=['POST'])
@@ -301,4 +209,4 @@ def hello():
 
 
 if __name__ == '__main__':
-    socketio.run(app, port=8000)
+    app.run(host='0.0.0.0', port=8000)
