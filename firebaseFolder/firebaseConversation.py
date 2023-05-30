@@ -2,27 +2,17 @@ from typing import List
 
 from dialogFlowSession import singleton, update_connection_decorator
 from firebaseFolder.firebaseConnection import FirebaseConnection
+from firebaseFolder.firebaseCoreWrapper import FirebaseWrapper
 
 
 @singleton
-class FirebaseConversation:
+class FirebaseConversation(FirebaseWrapper):
     def __init__(self, inputFirebaseConnection: FirebaseConnection):
+        super().__init__()
         self.firebaseConnection = inputFirebaseConnection
 
     def updateConnection(self):
         self.firebaseConnection.changeDatabaseConnection("conversations")
-
-    def __getattribute__(self, name):
-        if name == "updateConnection":
-            return object.__getattribute__(self, name)
-
-        attr = super().__getattribute__(name)
-        if callable(attr) and not name.startswith("__"):
-            def wrapper(*args, **kwargs):
-                self.updateConnection()
-                return attr(*args, **kwargs)
-            return wrapper
-        return attr
 
     def getAllConversations(self):
         return self.firebaseConnection.readData()
