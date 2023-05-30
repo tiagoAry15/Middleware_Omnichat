@@ -1,12 +1,28 @@
 from typing import List
 
+from dialogFlowSession import singleton, update_connection_decorator
 from firebaseFolder.firebaseConnection import FirebaseConnection
 
 
+@singleton
 class FirebaseConversation:
     def __init__(self, inputFirebaseConnection: FirebaseConnection):
         self.firebaseConnection = inputFirebaseConnection
+
+    def updateConnection(self):
         self.firebaseConnection.changeDatabaseConnection("conversations")
+
+    def __getattribute__(self, name):
+        if name == "updateConnection":
+            return object.__getattribute__(self, name)
+
+        attr = super().__getattribute__(name)
+        if callable(attr) and not name.startswith("__"):
+            def wrapper(*args, **kwargs):
+                self.updateConnection()
+                return attr(*args, **kwargs)
+            return wrapper
+        return attr
 
     def getAllConversations(self):
         return self.firebaseConnection.readData()
@@ -82,9 +98,9 @@ def __createDummyConversations():
 
 
 def __main():
-    __createDummyConversations()
-    # fc = FirebaseConnection()
-    # fcm = FirebaseConversation(fc)
+    # __createDummyConversations()
+    fc = FirebaseConnection()
+    fcm = FirebaseConversation(fc)
     # fcm.appendMessageToWhatsappNumber({"message": "Olá, tudo bem?"}, "whatsapp:+5585994875482")
     # fc = FirebaseConnection()
     # fm = FirebaseConversation(fc)

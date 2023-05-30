@@ -4,9 +4,11 @@ import firebase_admin
 from dotenv import load_dotenv
 from firebase_admin import credentials, db
 
+from dialogFlowSession import singleton
 from references.pathReference import getFirebaseSDKPath
 
 
+@singleton
 class FirebaseConnection:
     def __init__(self):
         load_dotenv()
