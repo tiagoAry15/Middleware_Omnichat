@@ -1,3 +1,4 @@
+import uuid
 from typing import List
 
 from dialogFlowSession import singleton, update_connection_decorator
@@ -23,7 +24,7 @@ class FirebaseConversation(FirebaseWrapper):
         if allConversations is None:
             return None
         for uniqueId, conversationData in allConversations.items():
-            if conversationData["userNumber"] == whatsappNumber:
+            if "phoneNumber" in conversationData and conversationData["phoneNumber"] == whatsappNumber:
                 return uniqueId
         return None
 
@@ -34,6 +35,7 @@ class FirebaseConversation(FirebaseWrapper):
         conversationData = self.firebaseConnection.readData(path=uniqueId)
         if "messagePot" not in conversationData:
             conversationData["messagePot"] = []
+        messageData["id"] = str(uuid.uuid4())
         conversationData["messagePot"].append(messageData)
         return self.firebaseConnection.overWriteData(path=uniqueId, data=conversationData)
 
@@ -47,7 +49,7 @@ class FirebaseConversation(FirebaseWrapper):
         return conversationData["messagePot"]
 
     def existingConversation(self, inputConversationData: dict) -> bool:
-        uniqueId = self.getUniqueIdByWhatsappNumber(inputConversationData["userNumber"])
+        uniqueId = self.getUniqueIdByWhatsappNumber(inputConversationData["phoneNumber"])
         return uniqueId is not None
 
     def createConversation(self, conversationData: dict) -> bool:
@@ -58,21 +60,38 @@ class FirebaseConversation(FirebaseWrapper):
         )
 
     def updateConversation(self, conversationData: dict) -> bool:
-        uniqueId = self.getUniqueIdByWhatsappNumber(conversationData["userNumber"])
+        uniqueId = self.getUniqueIdByWhatsappNumber(conversationData["phoneNumber"])
         return (
             self.firebaseConnection.overWriteData(path=uniqueId, data=conversationData)
             if uniqueId is not None
             else False
         )
 
+    def updateConversationAddingUnreadMessages(self, messageData: dict) -> bool:
+        uniqueId = self.getUniqueIdByWhatsappNumber(messageData["phoneNumber"])
+        if not uniqueId:
+            return None
+        conversationData = self.firebaseConnection.readData(path=uniqueId)
+        if 'unreadMessages' not in conversationData:
+            conversationData["unreadMessages"] = []
+        if 'unreadMessages' not in messageData:
+            conversationData['lastMessage'] = messageData
+            conversationData["unreadMessages"].append(messageData)
+        else:
+            conversationData["unreadMessages"] = messageData["unreadMessages"]
+
+        self.firebaseConnection.overWriteData(path=uniqueId, data=conversationData)
+        return conversationData
     def deleteConversation(self, conversationData: dict) -> bool:
-        uniqueId = self.getUniqueIdByWhatsappNumber(conversationData["userNumber"])
+        uniqueId = self.getUniqueIdByWhatsappNumber(conversationData["phoneNumber"])
         return (
             self.firebaseConnection.deleteData(path=uniqueId)
             if uniqueId is not None
             else False
         )
 
+    def deleteAllConversations(self):
+        return self.firebaseConnection.deleteAllData()
 
 def __createDummyConversations():
     fc = FirebaseConnection()
@@ -91,6 +110,7 @@ def __main():
     # __createDummyConversations()
     fc = FirebaseConnection()
     fcm = FirebaseConversation(fc)
+    fcm.deleteAllConversations()
     # fcm.appendMessageToWhatsappNumber({"message": "Olá, tudo bem?"}, "whatsapp:+5585994875482")
     # fc = FirebaseConnection()
     # fm = FirebaseConversation(fc)

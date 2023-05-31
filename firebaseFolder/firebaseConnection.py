@@ -46,6 +46,11 @@ class FirebaseConnection:
         user_ref.delete()
         return True
 
+    def deleteAllData(self) -> bool:
+        ref = self.connection
+        ref.delete()
+        return True
+
     def getUniqueIdByData(self, path: str = None, data=None):
         if data is None:
             raise ValueError("Data cannot be None")

@@ -6,7 +6,7 @@ from flask_cors import CORS
 from flask_socketio import SocketIO
 from twilio.rest import Client
 
-from data.messageConverter import MessageConverter, get_dialogflow_message_example
+from data.messageConverter import MessageConverter, get_dialogflow_message_example, get_user_message_example
 from firebaseFolder.firebaseConnection import FirebaseConnection
 from firebaseFolder.firebaseConversation import FirebaseConversation
 from firebaseFolder.firebaseUser import FirebaseUser
@@ -16,6 +16,7 @@ from dialogFlowSession import DialogFlowSession
 from gpt.PizzaGPT import getResponseDefaultGPT
 from intentManipulation.intentManager import IntentManager
 from utils import extractDictFromBytesRequest, sendWebhookCallback, _sendTwilioResponse
+import json
 
 load_dotenv()
 
@@ -48,6 +49,8 @@ def sandbox():  # sourcery skip: use-named-expression
     receivedMessage = data.get("Body")[0]
     userNumber = data.get("From")[0]
     userMessageJSON = MessageConverter.convert_user_message(data)
+
+    fcm.appendMessageToWhatsappNumber(userMessageJSON, userNumber)
     socketInstance.emit('user_message', userMessageJSON)
 
     im = IntentManager()
@@ -66,6 +69,7 @@ def sandbox():  # sourcery skip: use-named-expression
     parameters = dict(dialogflowResponse.query_result.parameters)
     mainResponse = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
     image_url = "https://shorturl.at/lEFT0"
+    fcm.appendMessageToWhatsappNumber(dialogflowResponseJSON, userNumber)
     socketInstance.emit('Bot_response', dialogflowResponseJSON)
 
     return _sendTwilioResponse(body=mainResponse, media=None)
@@ -74,10 +78,10 @@ def sandbox():  # sourcery skip: use-named-expression
 @app.route("/ChatTest", methods=['GET'])
 def chatTest():
     dialogflow_message = get_dialogflow_message_example()
-    user_message = get_dialogflow_message_example()
+    user_message = get_user_message_example()
     userMessageJSON = MessageConverter.convert_user_message(user_message)
 
-    dialogFlowJSON = MessageConverter.convert_dialogflow_message(dialogflow_message, userMessageJSON['telephone'])
+    dialogFlowJSON = MessageConverter.convert_dialogflow_message(dialogflow_message, userMessageJSON['phoneNumber'])
     for _ in range(4):
         socketInstance.emit('user_message', userMessageJSON)
         socketInstance.emit('dialogflow_message', dialogFlowJSON)
@@ -139,14 +143,14 @@ def get_all_users():
     return jsonify(aux), 200
 
 
-@app.route("/get_user_by_whatsapp/<whatsapp_number>", methods=['GET'])
+@app.route("/get_user/<whatsapp_number>", methods=['GET'])
 def get_user_by_whatsapp(whatsapp_number: str):
     user = __getUserByWhatsappNumber(whatsapp_number)
     return ((jsonify(user), 200) if user
             else (jsonify({"Error": f"Could not find an user with whatsapp {whatsapp_number}"}), 404))
 
 
-@app.route("/delete_user_by_whatsapp/<whatsapp_number>", methods=['DELETE'])
+@app.route("/delete_user/<whatsapp_number>", methods=['DELETE'])
 def delete_user_by_whatsapp(whatsapp_number: str):
     user = __getUserByWhatsappNumber(whatsapp_number)
     if not user:
@@ -155,18 +159,24 @@ def delete_user_by_whatsapp(whatsapp_number: str):
     return jsonify({"Success": f"User with whatsapp {whatsapp_number} deleted"}), 200
 
 
-@app.route("/get_user_conversations_by_whatsapp/<whatsapp_number>", methods=['GET'])
+@app.route("/get_user_conversations/<whatsapp_number>", methods=['GET'])
 def get_user_conversations_by_whatsapp(whatsapp_number: str):
-    user = __getUserByWhatsappNumber(whatsapp_number)
-    if not user:
-        return jsonify({"Error": f"Could not find an user with whatsapp {whatsapp_number}"}), 404
-    allConversations = fcm.getAllConversations()
-    allConversationsDict = {item["userNumber"]: item for item in allConversations.values()}
-    userConversation = allConversationsDict.get(whatsapp_number)
-    return ((jsonify(userConversation), 200)
-            if userConversation
+    # user = __getUserByWhatsappNumber(whatsapp_number)
+    # if not user:
+    #     return jsonify({"Error": f"Could not find an user with whatsapp {whatsapp_number}"}), 404
+    response = fcm.retrieveAllMessagesByWhatsappNumber(whatsapp_number)
+    return ((jsonify(response), 200)
+            if response
             else (
         jsonify({"Error": f"Could not find conversations for the user with whatsapp {whatsapp_number}"}), 404))
+
+
+@app.route("/add_message", methods=['POST'])
+def add_message():
+    data = json.loads(request.data)
+    whatsapp_number = data['phoneNumber']
+    fcm.appendMessageToWhatsappNumber(messageData=data, whatsappNumber=data['phoneNumber'])
+    return jsonify({"Success": f"New message pushed for user with whatsapp {whatsapp_number}"}), 200
 
 
 @app.route("/push_new_message_by_whatsapp_number/", methods=['POST'])
@@ -182,6 +192,26 @@ def push_new_message_by_whatsapp_number():
     message = {"content": data.get("message")}
     fcm.appendMessageToWhatsappNumber(messageData=message, whatsappNumber=whatsapp_number)
     return jsonify({"Success": f"New message pushed for user with whatsapp {whatsapp_number}"}), 200
+
+
+@app.route("/create_conversation", methods=['POST'])
+def create_conversation():
+    data = json.loads(request.data.decode("utf-8"))
+    fcm.createConversation(data)
+    return jsonify(data), 200
+
+
+@app.route("/update_conversation", methods=['PUT'])
+def update_conversation():
+    messageData = json.loads(request.data.decode("utf-8"))
+    response = fcm.updateConversationAddingUnreadMessages(messageData)
+    return jsonify(response), 200
+
+
+@app.route("/get_all_conversations", methods=['GET'])
+def get_all_conversations():
+    data = fcm.getAllConversations()
+    return jsonify(data)
 
 
 @app.route("/staticReply", methods=['POST'])
@@ -232,4 +262,4 @@ def hello():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
+    socketInstance.run(app=app, port=8000)

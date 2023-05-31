@@ -8,15 +8,15 @@ def get_user_message_example():
         "NumMedia": ["0"],
         "ProfileName": ["Tiago Ary"],
         "SmsSid": ["SMd9c46a08ff3349af9a93dc2d40d738ff"],
-        "WaId": ["558599663533"],
+        "WaId": ["558588567446"],
         "SmsStatus": ["received"],
-        "Body": ["Oi"],
+        "Body": ["aloalo"],
         "To": ["whatsapp:+14155238886"],
         "NumSegments": ["1"],
         "ReferralNumMedia": ["0"],
         "MessageSid": ["SMd9c46a08ff3349af9a93dc2d40d738ff"],
         "AccountSid": ["AC034f7d97b8d5bc62dfa91b519ac43b0f"],
-        "From": ["whatsapp:+558599663533"],
+        "From": ["whatsapp:+558588567446"],
         "ApiVersion": ["2010-04-01"]
     }
 
@@ -73,18 +73,18 @@ class MessageConverter:
         return {
             'sender': userMessage['ProfileName'][0],
             'from': social_network,
-            'telephone': telephone,
+            'phoneNumber': telephone,
             'body': userMessage['Body'][0],
-            "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "time": datetime.now().strftime("%H:%M"),
         }
 
     @staticmethod
     def convert_dialogflow_message(dialogflowMessage, userNumber):
         return {
             'sender': "ChatBot",
-            'telephone': userNumber,
+            'phoneNumber': userNumber,
             'body': dialogflowMessage['query_result']['fulfillment_text'],
-            "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "time": datetime.now().strftime("%H:%M"),
         }
 
 
