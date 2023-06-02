@@ -76,28 +76,25 @@ def _splitOrder(order: str) -> List[str]:
 
 def _translateOrder(order: str, parameters: dict) -> dict:
     numberEntity = {"uma": 1.0, "meio": 0.5, "meia": 0.5, "duas": 2.0, "três": 3.0, "quatro": 4.0}
-
-    # Initialize an empty result dictionary
+    availableFlavors = parameters['flavor']
+    pluralFlavors = {f'{flavor}s': flavor for flavor in availableFlavors}
     result = {}
-
-    # Split the order into words
     words = order.split()
-
-    # Initialize current number to None
     current_number = None
 
     # Iterate over each word in the order
     for word in words:
+        correctWord = pluralFlavors.get(word, word)
         # If the word is a number, update current number
         if word in numberEntity:
-            current_number = numberEntity[word]
-        elif word in parameters['flavor']:
+            current_number = numberEntity[correctWord]
+        elif correctWord in availableFlavors:
             if current_number is None:
-                raise ValueError(f"No quantity specified for flavor '{word}'.")
+                raise ValueError(f"No quantity specified for flavor '{correctWord}'.")
             if word in result:
-                result[word] += current_number
+                result[correctWord] += current_number
             else:
-                result[word] = current_number
+                result[correctWord] = current_number
             # Reset current number if it's not 1.0 (as it's for "meio"/"meia")
             if current_number != 1.0:
                 current_number = None
@@ -137,10 +134,12 @@ def __main():
     #     "pepperoni",
     #     {'flavor': ['calabresa', 'pepperoni', 'portuguesa']})
 
-    parameterInput = {'drinks': [{'guaraná': 1.0, 'suco de laranja': 2.0}],
-                      'pizzas': [[{'calabresa': 2.0}, {'calabresa': 0.5, 'frango': 0.5}]],
-                      'secret': 'Mensagem secreta'}
-    output = structureFullOrder(parameterInput)
+    # parameterInput = {'drinks': [{'guaraná': 1.0, 'suco de laranja': 2.0}],
+    #                   'pizzas': [[{'calabresa': 2.0}, {'calabresa': 0.5, 'frango': 0.5}]],
+    #                   'secret': 'Mensagem secreta'}
+    parameterInput = {'flavor': ['calabresa', 'margherita', 'queijo'], 'number': [1.0]}
+    userMessage = 'vou querer duas calabresas e uma pizza meio margherita meio quatro queijos'
+    output = parsePizzaOrder(userMessage, parameterInput)
     print(output)
 
     # parameterInput = {'Drinks': ['suco de laranja', 'guaraná']}

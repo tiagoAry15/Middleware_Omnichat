@@ -65,7 +65,6 @@ def sandbox():  # sourcery skip: use-named-expression
     socketInstance.emit('dialogflow_message', userMessageJSON)
     secret = dialogFlowInstance.params.get("secret")
     detectedIntent = dialogflowResponse.query_result.intent.display_name
-    # IntentManager.process_intent(detectedIntent)
     parameters = dict(dialogflowResponse.query_result.parameters)
     mainResponse = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
     image_url = "https://shorturl.at/lEFT0"
@@ -175,7 +174,9 @@ def get_user_conversations_by_whatsapp(whatsapp_number: str):
 def add_message():
     data = json.loads(request.data)
     whatsapp_number = data['phoneNumber']
-    fcm.appendMessageToWhatsappNumber(messageData=data, whatsappNumber=data['phoneNumber'])
+    fcm.appendMessageToWhatsappNumber(
+        messageData=data, whatsappNumber=whatsapp_number
+    )
     return jsonify({"Success": f"New message pushed for user with whatsapp {whatsapp_number}"}), 200
 
 
@@ -260,6 +261,9 @@ def handle_response():
 def hello():
     return 'Hello, World!', 200
 
+def __main():
+    socketInstance.run(app=app, port=8000, allow_unsafe_werkzeug=True)
+
 
 if __name__ == '__main__':
-    socketInstance.run(app=app, port=8000)
+    __main()
