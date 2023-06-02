@@ -122,11 +122,6 @@ def send():
 
 def __handleOrderPizzaIntent(queryText: str, requestContent: dict) -> Response:
     parameters = requestContent['queryResult']['parameters']
-    flavor = parameters["flavor"][0] if parameters.get("flavor") else None
-    number = parameters["number"][0] if parameters.get("number") else None
-    if not number:
-        parameters["number"] = [1.0]
-    # fullPizza = "inteira calabresa"
     fullPizza = parsePizzaOrder(userMessage=queryText, parameters=parameters)
     fullPizzaText = convertMultiplePizzaOrderToText(fullPizza)
     dialogFlowInstance.params["pizzas"].append(fullPizza)
@@ -137,7 +132,8 @@ def __handleOrderPizzaIntent(queryText: str, requestContent: dict) -> Response:
 def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
     drink = structureDrink(params, userMessage)
     dialogFlowInstance.params["drinks"].append(drink)
-    fullOrder = buildFullOrder(dialogFlowInstance.params)
+    parameters = dialogFlowInstance.params
+    fullOrder = buildFullOrder(parameters)
     totalPriceDict = dialogFlowInstance.analyzeTotalPrice(fullOrder)
     finalMessage = totalPriceDict["finalMessage"]
     return sendWebhookCallback(finalMessage)

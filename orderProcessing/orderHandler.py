@@ -119,17 +119,21 @@ def __convertPizzaOrderToText(pizzaOrder: dict) -> str:
     flavors = []
 
     for flavor, amount in pizzaOrder.items():
-        if previous_order != amount:
-            if flavors:
-                order_text = f"{number_dict[previous_order]} {' '.join(flavors)}"
-                result.append(order_text)
-                flavors = []
+        if previous_order is None:
             previous_order = amount
+        if previous_order != amount:
+            order_text = f"{number_dict[previous_order]} {' '.join(flavors)}"
+            result.append(order_text)
+            flavors = []
         flavors.append(flavor)
+        previous_order = amount
+
     if flavors:
         order_text = f"{number_dict[previous_order]} {' '.join(flavors)}"
         result.append(order_text)
+
     return ', '.join(result)
+
 
 
 def convertMultiplePizzaOrderToText(pizzaOrders: List[dict]) -> str:
@@ -163,9 +167,20 @@ def __testStructureDrink():
     output = structureDrink(parameters, userMessage)
     print(output)
 
+def __testConvertMultiplePizzaOrderToText():
+    pizzaOrder = [{'frango': 3.0}, {'calabresa': 0.5, 'margherita': 0.5}, {'calabresa': 1.0}]
+    output = convertMultiplePizzaOrderToText(pizzaOrder)
+    print(output)
+
+def __testBuildFullOrder():
+    orderTest = {'Bebida': [{'guaraná': 2.0}, {'suco de laranja': 1.0}],
+                 'Pizza': [{'frango': 3.0}, {'calabresa': 0.5, 'margherita': 0.5}, {'calabresa': 1.0}]}
+    output = buildFullOrder(orderTest)
+    print(output)
+
 
 def __main():
-    __testStructureDrink()
+    __testBuildFullOrder()
     # output = structureFullOrder(parameterInput)
     # output = parsePizzaOrder(
     #     "Vou querer duas pizzas de calabresa, uma meio pepperoni meio portuguesa e uma pizza meio calabresa meio "
