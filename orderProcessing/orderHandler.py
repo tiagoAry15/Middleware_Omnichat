@@ -1,5 +1,3 @@
-import copy
-import re
 from typing import List
 
 
@@ -48,7 +46,7 @@ def structureDrink(parameters: dict, userMessage: str) -> dict:
     return drinkOrder
 
 
-def structureFullOrder(parameters: dict):
+def buildFullOrder(parameters: dict):
     """parameters example:  {'drinks': ['2 suco de laranja'],
                             'pizzas': [{'calabresa': 2.0}, {'pepperoni': 0.5, 'portuguesa': 0.5},
                              {'calabresa': 0.5, 'pepperoni': 0.5}],
@@ -76,6 +74,12 @@ def _splitOrder(order: str) -> List[str]:
     final_items[0] = f'vou querer {final_items[0]}'
     return final_items
 
+def __getQuantity(word: str, numberEntity: dict) -> float:
+    return numberEntity.get(word)
+
+def __getFlavor(word: str, availableFlavors: List[str], pluralFlavors: dict) -> str:
+    correctWord = pluralFlavors.get(word, word)
+    return correctWord if correctWord in availableFlavors else None
 
 def _translateOrder(order: str, parameters: dict) -> dict:
     numberEntity = {"uma": 1.0, "meio": 0.5, "meia": 0.5, "duas": 2.0, "três": 3.0, "quatro": 4.0}
@@ -85,22 +89,16 @@ def _translateOrder(order: str, parameters: dict) -> dict:
     words = order.split()
     current_number = None
 
-    # Iterate over each word in the order
     for word in words:
-        correctWord = pluralFlavors.get(word, word)
-        # If the word is a number, update current number
-        if word in numberEntity:
-            current_number = numberEntity[correctWord]
-        elif correctWord in availableFlavors:
-            if current_number is None:
-                raise ValueError(f"No quantity specified for flavor '{correctWord}'.")
-            if word in result:
-                result[correctWord] += current_number
-            else:
-                result[correctWord] = current_number
-            # Reset current number if it's not 1.0 (as it's for "meio"/"meia")
-            if current_number != 1.0:
-                current_number = None
+        quantity = __getQuantity(word, numberEntity)
+        if quantity is not None:
+            current_number = quantity
+        else:
+            flavor = __getFlavor(word, availableFlavors, pluralFlavors)
+            if flavor is not None:
+                if flavor not in result:
+                    result[flavor] = 0
+                result[flavor] += current_number or 1
     return result
 
 

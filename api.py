@@ -1,7 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 from flask_socketio import SocketIO
 from twilio.rest import Client
@@ -10,7 +10,7 @@ from data.messageConverter import MessageConverter, get_dialogflow_message_examp
 from firebaseFolder.firebaseConnection import FirebaseConnection
 from firebaseFolder.firebaseConversation import FirebaseConversation
 from firebaseFolder.firebaseUser import FirebaseUser
-from orderProcessing.orderHandler import structureDrink, structureFullOrder, parsePizzaOrder, \
+from orderProcessing.orderHandler import structureDrink, buildFullOrder, parsePizzaOrder, \
     __convertPizzaOrderToText, convertMultiplePizzaOrderToText
 from dialogFlowSession import DialogFlowSession
 from gpt.PizzaGPT import getResponseDefaultGPT
@@ -99,17 +99,11 @@ def send():
     userMessage = [item["name"] for item in queryText] if isinstance(queryText, list) else queryText
     currentIntent = requestContent['queryResult']['intent']['displayName']
     print(f"current Intent: {currentIntent}")
+    params = requestContent['queryResult']['parameters']
     if currentIntent == "Order.drink":
-        params = requestContent['queryResult']['parameters']
-        drink = structureDrink(params, userMessage)
-        dialogFlowInstance.params["drinks"].append(drink)
-        fullOrder = structureFullOrder(dialogFlowInstance.params)
-        totalPriceDict = dialogFlowInstance.analyzeTotalPrice(fullOrder)
-        finalMessage = totalPriceDict["finalMessage"]
-        return sendWebhookCallback(finalMessage)
+        return __handleOrderDrinkIntent(params, userMessage)
     elif currentIntent == "Order.pizza - drink no":
-        params = dialogFlowInstance.params
-        fullOrder = structureFullOrder(dialogFlowInstance.params)
+        fullOrder = buildFullOrder(dialogFlowInstance.params)
         totalPriceDict = dialogFlowInstance.analyzeTotalPrice(fullOrder)
         finalMessage = totalPriceDict["finalMessage"]
         return sendWebhookCallback(finalMessage)
@@ -117,23 +111,36 @@ def send():
         drinkString = dialogFlowInstance.getDrinksString()
         return sendWebhookCallback(drinkString)
     elif currentIntent == "Order.pizza":
-        parameters = requestContent['queryResult']['parameters']
-        flavor = parameters["flavor"][0] if parameters.get("flavor") else None
-        number = parameters["number"][0] if parameters.get("number") else None
-        if not number:
-            parameters["number"] = [1.0]
-        # fullPizza = "inteira calabresa"
-        fullPizza = parsePizzaOrder(userMessage=queryText, parameters=parameters)
-        fullPizzaText = convertMultiplePizzaOrderToText(fullPizza)
-        dialogFlowInstance.params["pizzas"].append(fullPizza)
-        return sendWebhookCallback(botMessage=f"Maravilha! {fullPizzaText.capitalize()} então. "
-                                              f"Você vai querer alguma bebida?")
+        return __handleOrderPizzaIntent(queryText, requestContent)
     elif currentIntent == "Welcome":
         pizzaMenu = dialogFlowInstance.getPizzasString()
         welcomeString = f"Olá! Bem-vindo à Pizza do Bill! Funcionamos das 17h às 22h.\n {pizzaMenu}." \
                         f" \nQual pizza você vai querer?"
         return sendWebhookCallback(welcomeString)
     return sendWebhookCallback(botMessage="a")
+
+
+def __handleOrderPizzaIntent(queryText: str, requestContent: dict) -> Response:
+    parameters = requestContent['queryResult']['parameters']
+    flavor = parameters["flavor"][0] if parameters.get("flavor") else None
+    number = parameters["number"][0] if parameters.get("number") else None
+    if not number:
+        parameters["number"] = [1.0]
+    # fullPizza = "inteira calabresa"
+    fullPizza = parsePizzaOrder(userMessage=queryText, parameters=parameters)
+    fullPizzaText = convertMultiplePizzaOrderToText(fullPizza)
+    dialogFlowInstance.params["pizzas"].append(fullPizza)
+    return sendWebhookCallback(botMessage=f"Maravilha! {fullPizzaText.capitalize()} então. "
+                                          f"Você vai querer alguma bebida?")
+
+
+def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
+    drink = structureDrink(params, userMessage)
+    dialogFlowInstance.params["drinks"].append(drink)
+    fullOrder = buildFullOrder(dialogFlowInstance.params)
+    totalPriceDict = dialogFlowInstance.analyzeTotalPrice(fullOrder)
+    finalMessage = totalPriceDict["finalMessage"]
+    return sendWebhookCallback(finalMessage)
 
 
 @app.route("/get_all_users", methods=['GET'])
