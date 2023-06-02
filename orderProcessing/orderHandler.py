@@ -13,6 +13,7 @@ def __getDrinkPluralForm(drinks: List[str]) -> dict:
         plural_form = ' '.join(words)
         drinks_plural.append(plural_form)
         reverse_map[plural_form.replace(' ', '@')] = drink
+        reverse_map[drink.replace(' ', '@')] = drink  # Include original drink name with spaces replaced by '@'
     drinks += drinks_plural
     return reverse_map
 
@@ -22,7 +23,9 @@ def structureDrink(parameters: dict, userMessage: str) -> dict:
     numberEntity = {"uma": 1.0, "um": 1.0, "meio": 0.5, "meia": 0.5, "dois": 2.0, "duas": 2.0, "três": 3.0,
                     "quatro": 4.0}
 
+    # Create a reverse map for later use
     reverseDrinkMap = __getDrinkPluralForm(drinks)
+
     # Step 1: replace spaces in composite drinks with "@"
     drinksReplaced = [drink.replace(' ', '@') for drink in drinks]
 
@@ -101,7 +104,7 @@ def _translateOrder(order: str, parameters: dict) -> dict:
     return result
 
 
-def parsePizzaOrder(userMessage: str, parameters: dict):
+def parsePizzaOrder(userMessage: str, parameters: dict) -> List[dict]:
     userMessage = userMessage.lower()
     individualOrders = _splitOrder(userMessage)
     pot = []
@@ -111,23 +114,60 @@ def parsePizzaOrder(userMessage: str, parameters: dict):
     return pot
 
 
-def convertPizzaOrderToText(pizzaOrder: dict) -> str:
+def __convertPizzaOrderToText(pizzaOrder: dict) -> str:
     result = []
-    number_dict = {0.5: "meia", 1.0: "uma inteira", 2.0: "duas inteiras"}
-    for pizza_order in pizzaOrder:
-        order = [
-            f"{number_dict[amount]} {flavor}"
-            for flavor, amount in pizza_order.items()
-        ]
-        result.append(" ".join(order))
+    number_dict = {0.5: "meia", 1.0: "uma inteira", 2.0: "duas inteiras", 3.0: "três inteiras"}
+    previous_order = None
+    flavors = []
+
+    for flavor, amount in pizzaOrder.items():
+        if previous_order != amount:
+            if flavors:
+                order_text = f"{number_dict[previous_order]} {' '.join(flavors)}"
+                result.append(order_text)
+                flavors = []
+            previous_order = amount
+        flavors.append(flavor)
+    if flavors:
+        order_text = f"{number_dict[previous_order]} {' '.join(flavors)}"
+        result.append(order_text)
     return ', '.join(result)
 
 
-def __main():
+def convertMultiplePizzaOrderToText(pizzaOrders: List[dict]) -> str:
+    result = []
+    for pizzaOrder in pizzaOrders:
+        order_text = __convertPizzaOrderToText(pizzaOrder)
+        result.append(order_text)
+    return ', '.join(result)
+
+
+def __testParsePizzaOrder():
     # parameterInput = {'drinks': ['Um suco de laranja'], 'pizzas': ['inteira calabresa'], 'secret': 'Mensagem secreta'}
     # parameterInput = {'drinks': ['Um suco de laranja'], 'pizzas': ['meia calabresa meia calabresa'], 'secret': 'Mensagem secreta'}
     # parameterInput = {'drinks': [], 'pizzas': ['meia calabresa meia pepperoni'], 'secret': 'Mensagem secreta'}
     # parameterInput = {'drinks': [], 'pizzas': ['inteira frango'], 'secret': 'Mensagem secreta'}
+    parameterInput = {'flavor': ['calabresa', 'margherita', 'queijo'], 'number': [1.0]}
+    userMessage = 'vou querer duas calabresas e uma pizza meio margherita meio quatro queijos'
+    output = parsePizzaOrder(userMessage, parameterInput)
+    print(output)
+
+
+def __testPizzaOrderToText():
+    pizzaOrder = [{'frango': 3.0}, {'calabresa': 0.5, 'margherita': 0.5}]
+    output = convertMultiplePizzaOrderToText(pizzaOrder)
+    print(output)
+
+
+def __testStructureDrink():
+    userMessage = 'dois guaranás e um suco de laranja'
+    parameters = {'Drinks': ['guaraná', 'suco de laranja']}
+    output = structureDrink(parameters, userMessage)
+    print(output)
+
+
+def __main():
+    __testStructureDrink()
     # output = structureFullOrder(parameterInput)
     # output = parsePizzaOrder(
     #     "Vou querer duas pizzas de calabresa, uma meio pepperoni meio portuguesa e uma pizza meio calabresa meio "
@@ -137,15 +177,10 @@ def __main():
     # parameterInput = {'drinks': [{'guaraná': 1.0, 'suco de laranja': 2.0}],
     #                   'pizzas': [[{'calabresa': 2.0}, {'calabresa': 0.5, 'frango': 0.5}]],
     #                   'secret': 'Mensagem secreta'}
-    parameterInput = {'flavor': ['calabresa', 'margherita', 'queijo'], 'number': [1.0]}
-    userMessage = 'vou querer duas calabresas e uma pizza meio margherita meio quatro queijos'
-    output = parsePizzaOrder(userMessage, parameterInput)
-    print(output)
-
     # parameterInput = {'Drinks': ['suco de laranja', 'guaraná']}
     # output = structureDrink(parameters=parameterInput, userMessage="vou querer dois sucos de laranja e um guaraná")
     # print(output)
-    return output
+    return
 
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
 import pytest
 
 from orderProcessing.orderHandler import (structureDrink, structureFullOrder, _splitOrder, _translateOrder,
-                                          parsePizzaOrder, convertPizzaOrderToText
+                                          parsePizzaOrder, __convertPizzaOrderToText
                                           )
 
 

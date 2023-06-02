@@ -11,7 +11,7 @@ from firebaseFolder.firebaseConnection import FirebaseConnection
 from firebaseFolder.firebaseConversation import FirebaseConversation
 from firebaseFolder.firebaseUser import FirebaseUser
 from orderProcessing.orderHandler import structureDrink, structureFullOrder, parsePizzaOrder, \
-    convertPizzaOrderToText
+    __convertPizzaOrderToText, convertMultiplePizzaOrderToText
 from dialogFlowSession import DialogFlowSession
 from gpt.PizzaGPT import getResponseDefaultGPT
 from intentManipulation.intentManager import IntentManager
@@ -124,7 +124,7 @@ def send():
             parameters["number"] = [1.0]
         # fullPizza = "inteira calabresa"
         fullPizza = parsePizzaOrder(userMessage=queryText, parameters=parameters)
-        fullPizzaText = convertPizzaOrderToText(fullPizza)
+        fullPizzaText = convertMultiplePizzaOrderToText(fullPizza)
         dialogFlowInstance.params["pizzas"].append(fullPizza)
         return sendWebhookCallback(botMessage=f"Maravilha! {fullPizzaText.capitalize()} então. "
                                               f"Você vai querer alguma bebida?")
