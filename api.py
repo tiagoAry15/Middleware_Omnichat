@@ -205,8 +205,9 @@ def push_new_message_by_whatsapp_number():
 @app.route("/create_conversation", methods=['POST'])
 def create_conversation():
     data = json.loads(request.data.decode("utf-8"))
-    fcm.createConversation(data)
-    return jsonify(data), 200
+    response = fcm.createConversation(data)
+    finalResponse = data if response else False
+    return jsonify(finalResponse), 200
 
 
 @app.route("/update_conversation", methods=['PUT'])
@@ -268,8 +269,9 @@ def handle_response():
 def hello():
     return 'Hello, World!', 200
 
+
 def __main():
-    socketInstance.run(app=app, port=8000, allow_unsafe_werkzeug=True)
+    socketInstance.run(app=app, port=8000)
 
 
 if __name__ == '__main__':

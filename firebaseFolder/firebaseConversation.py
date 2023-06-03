@@ -18,6 +18,7 @@ class FirebaseConversation(FirebaseWrapper):
     def getAllConversations(self):
         return self.firebaseConnection.readData()
 
+
     def getUniqueIdByWhatsappNumber(self, whatsappNumber: str) -> str or None:
         # sourcery skip: use-next
         allConversations = self.getAllConversations()
