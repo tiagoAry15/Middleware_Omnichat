@@ -36,7 +36,6 @@ def __createPizzaDescription(pizza_dict: dict) -> str:
         return "Pizza " + " e ".join(meio_toppings)
 
 
-
 def analyzeSingleItem(desiredItem: dict, priceDict: dict, itemType: str) -> dict:
     itemName = list(desiredItem.keys())[0].capitalize()
     itemQuantity = desiredItem[itemName.lower()]

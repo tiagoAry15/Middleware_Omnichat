@@ -264,6 +264,7 @@ def handle_response():
 def hello():
     return 'Hello, World!', 200
 
+
 def __main():
     socketInstance.run(app=app, port=8000, allow_unsafe_werkzeug=True)
 

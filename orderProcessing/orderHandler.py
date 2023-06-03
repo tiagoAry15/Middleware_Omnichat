@@ -16,8 +16,20 @@ def __getDrinkPluralForm(drinks: List[str]) -> dict:
     return reverse_map
 
 
-def structureDrink(parameters: dict, userMessage: str) -> dict:
+def __replaceDrinkSynonym(drinks: List[str], userMessage: str) -> str:
+    words = userMessage.split()
+    finalMessage = userMessage
+    for word in words:
+        isWordSubstring = any([word in drink for drink in drinks])
+        if isWordSubstring:
+            detectedSubstring = [drink for drink in drinks if word in drink][0]
+            finalMessage = finalMessage.replace(word, detectedSubstring)
+    return finalMessage
+
+
+def structureDrink(parameters: dict, inputUserMessage: str) -> dict:
     drinks = parameters.get('Drinks', [])
+    userMessage = __replaceDrinkSynonym(drinks, inputUserMessage)
     numberEntity = {"uma": 1.0, "um": 1.0, "meio": 0.5, "meia": 0.5, "dois": 2.0, "duas": 2.0, "três": 3.0,
                     "quatro": 4.0}
 
@@ -74,12 +86,15 @@ def _splitOrder(order: str) -> List[str]:
     final_items[0] = f'vou querer {final_items[0]}'
     return final_items
 
+
 def __getQuantity(word: str, numberEntity: dict) -> float:
     return numberEntity.get(word)
+
 
 def __getFlavor(word: str, availableFlavors: List[str], pluralFlavors: dict) -> str:
     correctWord = pluralFlavors.get(word, word)
     return correctWord if correctWord in availableFlavors else None
+
 
 def _translateOrder(order: str, parameters: dict) -> dict:
     numberEntity = {"uma": 1.0, "meio": 0.5, "meia": 0.5, "duas": 2.0, "três": 3.0, "quatro": 4.0}
@@ -135,7 +150,6 @@ def __convertPizzaOrderToText(pizzaOrder: dict) -> str:
     return ', '.join(result)
 
 
-
 def convertMultiplePizzaOrderToText(pizzaOrders: List[dict]) -> str:
     result = []
     for pizzaOrder in pizzaOrders:
@@ -162,15 +176,17 @@ def __testPizzaOrderToText():
 
 
 def __testStructureDrink():
-    userMessage = 'dois guaranás e um suco de laranja'
-    parameters = {'Drinks': ['guaraná', 'suco de laranja']}
+    userMessage = 'uma coca e um guaraná'
+    parameters = {'Drinks': ['coca-cola', 'guaraná']}
     output = structureDrink(parameters, userMessage)
     print(output)
+
 
 def __testConvertMultiplePizzaOrderToText():
     pizzaOrder = [{'frango': 3.0}, {'calabresa': 0.5, 'margherita': 0.5}, {'calabresa': 1.0}]
     output = convertMultiplePizzaOrderToText(pizzaOrder)
     print(output)
+
 
 def __testBuildFullOrder():
     orderTest = {'Bebida': [{'guaraná': 2.0}, {'suco de laranja': 1.0}],
@@ -180,7 +196,7 @@ def __testBuildFullOrder():
 
 
 def __main():
-    __testBuildFullOrder()
+    __testStructureDrink()
     # output = structureFullOrder(parameterInput)
     # output = parsePizzaOrder(
     #     "Vou querer duas pizzas de calabresa, uma meio pepperoni meio portuguesa e uma pizza meio calabresa meio "

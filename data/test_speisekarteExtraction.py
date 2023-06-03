@@ -81,6 +81,5 @@ def test_analyzeTotalPrice():
         assert analyzeTotalPrice(structured_order, menu) == expected_output
 
 
-
 if __name__ == "__main__":
     pytest.main()
