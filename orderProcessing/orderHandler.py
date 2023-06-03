@@ -20,9 +20,10 @@ def __replaceDrinkSynonym(drinks: List[str], userMessage: str) -> str:
     words = userMessage.split()
     finalMessage = userMessage
     for word in words:
-        isWordSubstring = any([word in drink for drink in drinks])
+        singular_word = word[:-1] if word.endswith('s') else word  # remove 's' at the end
+        isWordSubstring = any([singular_word in drink for drink in drinks])
         if isWordSubstring:
-            detectedSubstring = [drink for drink in drinks if word in drink][0]
+            detectedSubstring = [drink for drink in drinks if singular_word in drink][0]
             finalMessage = finalMessage.replace(word, detectedSubstring)
     return finalMessage
 
@@ -176,7 +177,7 @@ def __testPizzaOrderToText():
 
 
 def __testStructureDrink():
-    userMessage = 'uma coca e um guaraná'
+    userMessage = 'duas cocas e dois guaranás'
     parameters = {'Drinks': ['coca-cola', 'guaraná']}
     output = structureDrink(parameters, userMessage)
     print(output)
