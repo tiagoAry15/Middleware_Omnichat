@@ -215,7 +215,8 @@ def update_conversation():
 @app.route("/get_all_conversations", methods=['GET'])
 def get_all_conversations():
     data = fcm.getAllConversations()
-    return jsonify(data)
+    trimmedData = list(data.values())[0]
+    return jsonify(trimmedData)
 
 
 @app.route("/staticReply", methods=['POST'])
