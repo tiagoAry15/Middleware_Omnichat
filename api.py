@@ -216,7 +216,7 @@ def update_conversation():
 def get_all_conversations():
     data = fcm.getAllConversations()
     trimmedData = list(data.values())[0]
-    return jsonify(trimmedData)
+    return jsonify([trimmedData])
 
 
 @app.route("/staticReply", methods=['POST'])
