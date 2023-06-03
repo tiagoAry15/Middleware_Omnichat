@@ -18,19 +18,23 @@ def createMenuString(menu: dict, category: str = None) -> str:
     for item in menu:
         name = item['nome']
         price = item['preço']
-        size = item['tamanho']
 
-        itemString = f"- {name} ({size}) - R${price:.2f}\n"
+        itemString = f"- {name} - R${price:.2f}\n"
         menuString += itemString
 
     return menuString
 
 
 def __createPizzaDescription(pizza_dict: dict) -> str:
-    if len(pizza_dict) == 1:
-        return f"Pizza de {list(pizza_dict.keys())[0]}"
-    toppings = [f"meio {topping}" for topping in pizza_dict]
-    return "Pizza " + " meio ".join(toppings)
+    toppings = list(pizza_dict.keys())
+    if len(toppings) == 1:
+        return f"Pizza de {toppings[0]}"
+    elif len(toppings) == 2:
+        return f"Pizza meio {toppings[0]} meio {toppings[1]}"
+    else:
+        meio_toppings = [f"meio {topping}" for topping in toppings]
+        return "Pizza " + " e ".join(meio_toppings)
+
 
 
 def analyzeSingleItem(desiredItem: dict, priceDict: dict, itemType: str) -> dict:
@@ -109,8 +113,9 @@ def __main():
     #                                     {'item': 'Pepperoni', 'quantity': 0.5}]}
     structuredOrderExample = {'Bebida': [{'guaraná': 2.0}, {'suco de laranja': 1.0}],
                               'Pizza': [{'calabresa': 0.5, 'margherita': 0.5}, {'frango': 3.0}, {'calabresa': 2.0}]}
-    price = analyzeTotalPrice(structuredOrderExample, speisekarte)
-    print(price)
+    output = analyzeTotalPrice(structuredOrderExample, speisekarte)
+    finalMessage = output["finalMessage"]
+    price = output["totalPrice"]
     return
 
 
