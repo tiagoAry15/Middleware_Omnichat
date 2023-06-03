@@ -16,8 +16,21 @@ def __getDrinkPluralForm(drinks: List[str]) -> dict:
     return reverse_map
 
 
-def structureDrink(parameters: dict, userMessage: str) -> dict:
+def __replaceDrinkSynonym(drinks: List[str], userMessage: str) -> str:
+    words = userMessage.split()
+    finalMessage = userMessage
+    for word in words:
+        singular_word = word[:-1] if word.endswith('s') else word  # remove 's' at the end
+        isWordSubstring = any([singular_word in drink for drink in drinks])
+        if isWordSubstring:
+            detectedSubstring = [drink for drink in drinks if singular_word in drink][0]
+            finalMessage = finalMessage.replace(word, detectedSubstring)
+    return finalMessage
+
+
+def structureDrink(parameters: dict, inputUserMessage: str) -> dict:
     drinks = parameters.get('Drinks', [])
+    userMessage = __replaceDrinkSynonym(drinks, inputUserMessage)
     numberEntity = {"uma": 1.0, "um": 1.0, "meio": 0.5, "meia": 0.5, "dois": 2.0, "duas": 2.0, "três": 3.0,
                     "quatro": 4.0}
 
@@ -74,12 +87,15 @@ def _splitOrder(order: str) -> List[str]:
     final_items[0] = f'vou querer {final_items[0]}'
     return final_items
 
+
 def __getQuantity(word: str, numberEntity: dict) -> float:
     return numberEntity.get(word)
+
 
 def __getFlavor(word: str, availableFlavors: List[str], pluralFlavors: dict) -> str:
     correctWord = pluralFlavors.get(word, word)
     return correctWord if correctWord in availableFlavors else None
+
 
 def _translateOrder(order: str, parameters: dict) -> dict:
     numberEntity = {"uma": 1.0, "meio": 0.5, "meia": 0.5, "duas": 2.0, "três": 3.0, "quatro": 4.0}
@@ -119,16 +135,19 @@ def __convertPizzaOrderToText(pizzaOrder: dict) -> str:
     flavors = []
 
     for flavor, amount in pizzaOrder.items():
-        if previous_order != amount:
-            if flavors:
-                order_text = f"{number_dict[previous_order]} {' '.join(flavors)}"
-                result.append(order_text)
-                flavors = []
+        if previous_order is None:
             previous_order = amount
+        if previous_order != amount:
+            order_text = f"{number_dict[previous_order]} {' '.join(flavors)}"
+            result.append(order_text)
+            flavors = []
         flavors.append(flavor)
+        previous_order = amount
+
     if flavors:
         order_text = f"{number_dict[previous_order]} {' '.join(flavors)}"
         result.append(order_text)
+
     return ', '.join(result)
 
 
@@ -141,8 +160,8 @@ def convertMultiplePizzaOrderToText(pizzaOrders: List[dict]) -> str:
 
 
 def __testParsePizzaOrder():
-    # parameterInput = {'drinks': ['Um suco de laranja'], 'pizzas': ['inteira calabresa'], 'secret': 'Mensagem secreta'}
-    # parameterInput = {'drinks': ['Um suco de laranja'], 'pizzas': ['meia calabresa meia calabresa'], 'secret': 'Mensagem secreta'}
+    # parameterInput = {'drinks': ['Um suco de laranja'], 'pizzas': ['inteira calabresa']}
+    # parameterInput = {'drinks': ['Um suco de laranja'], 'pizzas': ['meia calabresa meia calabresa']}
     # parameterInput = {'drinks': [], 'pizzas': ['meia calabresa meia pepperoni'], 'secret': 'Mensagem secreta'}
     # parameterInput = {'drinks': [], 'pizzas': ['inteira frango'], 'secret': 'Mensagem secreta'}
     parameterInput = {'flavor': ['calabresa', 'margherita', 'queijo'], 'number': [1.0]}
@@ -158,9 +177,22 @@ def __testPizzaOrderToText():
 
 
 def __testStructureDrink():
-    userMessage = 'dois guaranás e um suco de laranja'
-    parameters = {'Drinks': ['guaraná', 'suco de laranja']}
+    userMessage = 'duas cocas e dois guaranás'
+    parameters = {'Drinks': ['coca-cola', 'guaraná']}
     output = structureDrink(parameters, userMessage)
+    print(output)
+
+
+def __testConvertMultiplePizzaOrderToText():
+    pizzaOrder = [{'frango': 3.0}, {'calabresa': 0.5, 'margherita': 0.5}, {'calabresa': 1.0}]
+    output = convertMultiplePizzaOrderToText(pizzaOrder)
+    print(output)
+
+
+def __testBuildFullOrder():
+    orderTest = {'Bebida': [{'guaraná': 2.0}, {'suco de laranja': 1.0}],
+                 'Pizza': [{'frango': 3.0}, {'calabresa': 0.5, 'margherita': 0.5}, {'calabresa': 1.0}]}
+    output = buildFullOrder(orderTest)
     print(output)
 
 

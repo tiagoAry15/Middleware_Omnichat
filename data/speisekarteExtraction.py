@@ -18,19 +18,48 @@ def createMenuString(menu: dict, category: str = None) -> str:
     for item in menu:
         name = item['nome']
         price = item['preço']
-        size = item['tamanho']
 
-        itemString = f"- {name} ({size}) - R${price:.2f}\n"
+        itemString = f"- {name} - R${price:.2f}\n"
         menuString += itemString
 
     return menuString
 
 
 def __createPizzaDescription(pizza_dict: dict) -> str:
-    if len(pizza_dict) == 1:
-        return f"Pizza de {list(pizza_dict.keys())[0]}"
-    toppings = [f"meio {topping}" for topping in pizza_dict]
-    return "Pizza " + " meio ".join(toppings)
+    toppings = list(pizza_dict.keys())
+    if len(toppings) == 1:
+        return f"Pizza de {toppings[0]}"
+    elif len(toppings) == 2:
+        return f"Pizza meio {toppings[0]} meio {toppings[1]}"
+    else:
+        meio_toppings = [f"meio {topping}" for topping in toppings]
+        return "Pizza " + " e ".join(meio_toppings)
+
+
+def analyzeSingleItem(desiredItem: dict, priceDict: dict, itemType: str) -> dict:
+    itemName = list(desiredItem.keys())[0].capitalize()
+    itemQuantity = desiredItem[itemName.lower()]
+    if itemQuantity.is_integer():
+        itemQuantity = int(itemQuantity)
+    itemPrice = priceDict[itemName]
+    adjustedPrice = itemPrice * itemQuantity
+    if itemType == 'Pizza de':
+        fullTag = __createPizzaDescription(desiredItem)
+        itemTag = f"{itemQuantity} x {fullTag} (R${adjustedPrice:.2f})"
+    else:
+        itemTag = f"{itemQuantity} x {itemName} (R${adjustedPrice:.2f})"
+    total_price = itemPrice * itemQuantity
+    return {"tag": itemTag, "price": total_price}
+
+
+def analyzeCompositeItem(desiredItem: dict, priceDict: dict, itemType: str) -> dict:
+    itemNames = [i.capitalize() for i in list(desiredItem.keys())]
+    itemQuantities = [desiredItem[i.lower()] for i in itemNames]
+    itemPrices = [priceDict[i] for i in itemNames]
+    adjustedPrice = sum(i * j for i, j in zip(itemQuantities, itemPrices))
+    fullTag = __createPizzaDescription(desiredItem)
+    itemTag = f"1 x {fullTag} (R${adjustedPrice:.2f})"
+    return {"tag": itemTag, "price": adjustedPrice}
 
 
 def __getItemDetails(item_type: str, desired_items: List[dict], price_dict: dict):
@@ -38,23 +67,14 @@ def __getItemDetails(item_type: str, desired_items: List[dict], price_dict: dict
     if not desired_items or (len(desired_items) == 1 and not desired_items[0]):
         return order_items
     if not isinstance(desired_items, list):
-        desired_items = [desired_items]
+        desired_items: List[dict] = [desired_items]
     if desired_items:
         for item in desired_items:
-            # item is a single dict like {'guaraná': 1.0}
-            item_name = list(item.keys())[0].capitalize()
-            item_quantity = item[item_name.lower()]
-            if item_quantity.is_integer():
-                item_quantity = int(item_quantity)
-            item_price = price_dict[item_name]
-            adjusted_price = item_price * item_quantity
-            if item_type == 'Pizza de':
-                fullTag = __createPizzaDescription(item)
-                item_tag = f"{item_quantity} x {fullTag} (R${adjusted_price:.2f})"
+            if len(item) == 1:
+                tag = analyzeSingleItem(desiredItem=item, priceDict=price_dict, itemType=item_type)
             else:
-                item_tag = f"{item_quantity} x {item_name} (R${adjusted_price:.2f})"
-            total_price = item_price * item_quantity
-            order_items.append({"tag": item_tag, "price": total_price})
+                tag = analyzeCompositeItem(desiredItem=item, priceDict=price_dict, itemType=item_type)
+            order_items.append(tag)
     return order_items
 
 
@@ -68,8 +88,8 @@ def analyzeTotalPrice(structuredOrder: dict, menu: dict):
     desiredPizzas = structuredOrder.get("Pizza")
 
     # Get item details
-    orderItems = __getItemDetails('', desiredDrinks, dictDrinkLabeledPrices)
-    orderItems += __getItemDetails('Pizza de', desiredPizzas, dictPizzaLabeledPrices)
+    orderItems = __getItemDetails('Pizza de', desiredPizzas, dictPizzaLabeledPrices)
+    orderItems += __getItemDetails('', desiredDrinks, dictDrinkLabeledPrices)
 
     # Calculate the total price
     totalPrice = sum(item["price"] for item in orderItems)
@@ -84,15 +104,17 @@ def analyzeTotalPrice(structuredOrder: dict, menu: dict):
 
 def __main():
     speisekarte = loadSpeisekarte()
-    # structuredOrderExample = {'Bebida': {'item': 'Suco de laranja', 'quantity': 1}, 'Pizza': {'item': 'Calabresa', 'quantity': 1}}
+    # structuredOrderExample = {'Bebida': {'item': 'Suco de laranja', 'quantity': 1},
+    # 'Pizza': {'item': 'Calabresa', 'quantity': 1}}
     # structuredOrderExample = {'Bebida': {}, 'Pizza': {'item': 'Calabresa', 'quantity': 1}}
     # structuredOrderExample = {'Bebida': [{'item': 'Suco de laranja', 'quantity': 1}],
     #                           'Pizza': [{'item': 'Calabresa', 'quantity': 0.5},
     #                                     {'item': 'Pepperoni', 'quantity': 0.5}]}
-    structuredOrderExample = {'Bebida': [{'guaraná': 1.0}, {'suco de laranja': 2.0}],
-                              'Pizza': [{'calabresa': 2.0}, {'calabresa': 0.5, 'frango': 0.5}]}
-    price = analyzeTotalPrice(structuredOrderExample, speisekarte)
-    print(price)
+    structuredOrderExample = {'Bebida': [{'guaraná': 2.0}, {'suco de laranja': 1.0}],
+                              'Pizza': [{'calabresa': 0.5, 'margherita': 0.5}, {'frango': 3.0}, {'calabresa': 2.0}]}
+    output = analyzeTotalPrice(structuredOrderExample, speisekarte)
+    finalMessage = output["finalMessage"]
+    price = output["totalPrice"]
     return
 
 
