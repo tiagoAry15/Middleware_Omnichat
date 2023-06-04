@@ -58,6 +58,8 @@ def sandbox():  # sourcery skip: use-named-expression
     if needsToSignUp:
         im.extractedParameters["phoneNumber"] = userNumber
         botAnswer = im.twilioSingleStep(receivedMessage)
+        #dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(botAnswer)
+        #socketInstance.emit('dialogflow_message', dialogflowResponseJSON)
         return _sendTwilioResponse(body=botAnswer)
 
     dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
@@ -69,7 +71,7 @@ def sandbox():  # sourcery skip: use-named-expression
     mainResponse = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
     image_url = "https://shorturl.at/lEFT0"
     fcm.appendMessageToWhatsappNumber(dialogflowResponseJSON, userNumber)
-    socketInstance.emit('Bot_response', dialogflowResponseJSON)
+    socketInstance.emit('dialogflow_message', dialogflowResponseJSON)
 
     return _sendTwilioResponse(body=mainResponse, media=None)
 
@@ -84,7 +86,7 @@ def chatTest():
     for _ in range(4):
         socketInstance.emit('user_message', userMessageJSON)
         socketInstance.emit('dialogflow_message', dialogFlowJSON)
-
+    return [], 200
 
 @app.route("/webhookForIntent", methods=['POST'])
 def send():
@@ -216,8 +218,8 @@ def update_conversation():
 @app.route("/get_all_conversations", methods=['GET'])
 def get_all_conversations():
     data = fcm.getAllConversations()
-    trimmedData = list(data.values())[0]
-    return jsonify([trimmedData])
+    trimmedData = list(data.values()) if data else None
+    return jsonify(trimmedData), 200
 
 
 @app.route("/staticReply", methods=['POST'])
