@@ -47,10 +47,9 @@ def __getUserByWhatsappNumber(whatsappNumber: str) -> dict or None:
 def sandbox():  # sourcery skip: use-named-expression
     data = extractDictFromBytesRequest()
     receivedMessage = data.get("Body")[0]
-    userNumber = data.get("From")[0]
+    userNumber = data.get("From")[0].split(":")[1]
     userMessageJSON = MessageConverter.convert_user_message(data)
-
-    fcm.appendMessageToWhatsappNumber(userMessageJSON, userNumber)
+    # fcm.appendMessageToWhatsappNumber(userMessageJSON, userNumber)
     socketInstance.emit('user_message', userMessageJSON)
 
     im = IntentManager()
@@ -58,20 +57,19 @@ def sandbox():  # sourcery skip: use-named-expression
     if needsToSignUp:
         im.extractedParameters["phoneNumber"] = userNumber
         botAnswer = im.twilioSingleStep(receivedMessage)
-        #dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(botAnswer)
-        #socketInstance.emit('dialogflow_message', dialogflowResponseJSON)
+        dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(botAnswer, userNumber)
+        socketInstance.emit('dialogflow_message', dialogflowResponseJSON)
         return _sendTwilioResponse(body=botAnswer)
 
     dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
-    dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(dialogflowResponse)
-    socketInstance.emit('dialogflow_message', userMessageJSON)
+    dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(
+        dialogflowResponse.query_result.fulfillment_text, userNumber)
+    socketInstance.emit('dialogflow_message', dialogflowResponseJSON)
     secret = dialogFlowInstance.params.get("secret")
     detectedIntent = dialogflowResponse.query_result.intent.display_name
     parameters = dict(dialogflowResponse.query_result.parameters)
     mainResponse = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
     image_url = "https://shorturl.at/lEFT0"
-    fcm.appendMessageToWhatsappNumber(dialogflowResponseJSON, userNumber)
-    socketInstance.emit('dialogflow_message', dialogflowResponseJSON)
 
     return _sendTwilioResponse(body=mainResponse, media=None)
 
@@ -87,6 +85,7 @@ def chatTest():
         socketInstance.emit('user_message', userMessageJSON)
         socketInstance.emit('dialogflow_message', dialogFlowJSON)
     return [], 200
+
 
 @app.route("/webhookForIntent", methods=['POST'])
 def send():
@@ -179,6 +178,7 @@ def get_user_conversations_by_whatsapp(whatsapp_number: str):
 def add_message():
     data = json.loads(request.data)
     whatsapp_number = data['phoneNumber']
+
     fcm.appendMessageToWhatsappNumber(
         messageData=data, whatsappNumber=whatsapp_number
     )

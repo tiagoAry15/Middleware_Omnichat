@@ -6,17 +6,17 @@ def get_user_message_example():
     return {
         "SmsMessageSid": ["SMd9c46a08ff3349af9a93dc2d40d738ff"],
         "NumMedia": ["0"],
-        "ProfileName": ["Tiago Ary"],
+        "ProfileName": ["Tiago"],
         "SmsSid": ["SMd9c46a08ff3349af9a93dc2d40d738ff"],
         "WaId": ["558588567446"],
         "SmsStatus": ["received"],
-        "Body": ["aloalo"],
+        "Body": ["oi"],
         "To": ["whatsapp:+14155238886"],
         "NumSegments": ["1"],
         "ReferralNumMedia": ["0"],
         "MessageSid": ["SMd9c46a08ff3349af9a93dc2d40d738ff"],
         "AccountSid": ["AC034f7d97b8d5bc62dfa91b519ac43b0f"],
-        "From": ["whatsapp:+558588567446"],
+        "From": ["whatsapp:+558599663533"],
         "ApiVersion": ["2010-04-01"]
     }
 
@@ -83,7 +83,7 @@ class MessageConverter:
         return {
             'sender': "ChatBot",
             'phoneNumber': userNumber,
-            'body': dialogflowMessage['query_result']['fulfillment_text'],
+            'body': dialogflowMessage,
             "time": datetime.now().strftime("%H:%M"),
         }
 
