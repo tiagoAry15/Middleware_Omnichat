@@ -61,7 +61,7 @@ def sandbox():  # sourcery skip: use-named-expression
         socketInstance.emit('dialogflow_message', dialogflowResponseJSON)
         return _sendTwilioResponse(body=botAnswer)
 
-    dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
+    dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage, user_number=userNumber)
     dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(
         dialogflowResponse.query_result.fulfillment_text, userNumber)
     socketInstance.emit('dialogflow_message', dialogflowResponseJSON)
@@ -70,7 +70,6 @@ def sandbox():  # sourcery skip: use-named-expression
     parameters = dict(dialogflowResponse.query_result.parameters)
     mainResponse = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
     image_url = "https://shorturl.at/lEFT0"
-
     return _sendTwilioResponse(body=mainResponse, media=None)
 
 
@@ -95,6 +94,7 @@ def send():
     print('FULFILLMENT ATIVADO')
     dialogFlowInstance.params["secret"] = "Mensagem secreta"
     requestContent = request.get_json()
+    phone_number = requestContent['originalDetectIntentRequest']['payload']['phone-number']
     contexts = [item['name'].split("/")[-1] for item in requestContent['queryResult']['outputContexts']]
     queryText = requestContent['queryResult']['queryText']
     userMessage = [item["name"] for item in queryText] if isinstance(queryText, list) else queryText
