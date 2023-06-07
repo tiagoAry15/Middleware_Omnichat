@@ -47,7 +47,7 @@ def __getUserByWhatsappNumber(whatsappNumber: str) -> dict or None:
 @app.route("/twilioSandbox", methods=['POST'])
 def sandbox():  # sourcery skip: use-named-expression
     data = extractDictFromBytesRequest()
-    userMessageJSON = mc.convert_user_message(data)
+    userMessageJSON = mc.convertUserMessage(data)
     socketInstance.emit('user_message', userMessageJSON)
     im = IntentManager()
     phoneNumber = userMessageJSON['phoneNumber']
@@ -75,7 +75,7 @@ def sandbox():  # sourcery skip: use-named-expression
 def chatTest():
     dialogflow_message = get_dialogflow_message_example()
     user_message = get_user_message_example()
-    userMessageJSON = MessageConverter.convert_user_message(user_message)
+    userMessageJSON = MessageConverter.convertUserMessage(user_message)
 
     dialogFlowJSON = MessageConverter.convert_dialogflow_message(dialogflow_message, userMessageJSON['phoneNumber'])
     for _ in range(4):
@@ -269,7 +269,7 @@ def hello():
 
 
 def __main():
-    socketInstance.run(app=app, port=8000)
+    socketInstance.run(app=app, port=8000, allow_unsafe_werkzeug=True, host="0.0.0.0")
 
 
 if __name__ == '__main__':

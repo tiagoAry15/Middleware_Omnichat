@@ -86,8 +86,7 @@ class MessageConverter:
         }
 
     @staticmethod
-    def convert_user_message(userMessage):
-
+    def convertUserMessage(userMessage: dict) -> dict:
         social_network, userNumber = userMessage['From'][0].split(":")
         sender = userMessage['ProfileName'][0] if social_network == "whatsapp" else userNumber
         receivedMessage = userMessage['Body'][0]
@@ -111,7 +110,7 @@ class MessageConverter:
 
 
 def __main():
-    print(MessageConverter.convert_user_message(json.dumps(get_user_message_example())))
+    print(MessageConverter.convertUserMessage(json.dumps(get_user_message_example())))
     print(MessageConverter.convert_dialogflow_message(json.dumps(get_dialogflow_message_example())))
 
 
