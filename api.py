@@ -47,32 +47,24 @@ def __getUserByWhatsappNumber(whatsappNumber: str) -> dict or None:
 @app.route("/twilioSandbox", methods=['POST'])
 def sandbox():  # sourcery skip: use-named-expression
     data = extractDictFromBytesRequest()
-    receivedMessage = data.get("Body")[0]
-    userNumber = data.get("From")[0].split(":")[1]
-    sender = data.get("ProfileName")[0]
-    _from = data.get("From")[0].split(":")[0]
-    userMessageJSON = MessageConverter.convert_user_message(data)
-    mc.setMessageCoreDetails(sender, _from, userNumber)
+    userMessageJSON = mc.convert_user_message(data)
     socketInstance.emit('user_message', userMessageJSON)
-
     im = IntentManager()
-    needsToSignUp = im.needsToSignUp(userNumber)
+    phoneNumber = userMessageJSON['phoneNumber']
+    receivedMessage = userMessageJSON['body']
+    needsToSignUp = im.needsToSignUp(phoneNumber)
     if needsToSignUp:
         print("Needs to signup!")
-        im.extractedParameters["phoneNumber"] = userNumber
+        im.extractedParameters["phoneNumber"] = phoneNumber
         botAnswer = im.twilioSingleStep(receivedMessage)
-        dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(botAnswer, userNumber)
+        dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(botAnswer, phoneNumber)
         socketInstance.emit('dialogflow_message', dialogflowResponseJSON)
         return _sendTwilioResponse(body=botAnswer)
-
     print("Already signed up!")
     dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
     dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(
-        dialogflowResponse.query_result.fulfillment_text, userNumber)
+        dialogflowResponse.query_result.fulfillment_text, phoneNumber)
     socketInstance.emit('dialogflow_message', dialogflowResponseJSON)
-    secret = dialogFlowInstance.params.get("secret")
-    detectedIntent = dialogflowResponse.query_result.intent.display_name
-    parameters = dict(dialogflowResponse.query_result.parameters)
     mainResponse = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
     image_url = "https://shorturl.at/lEFT0"
 
@@ -277,7 +269,7 @@ def hello():
 
 
 def __main():
-    socketInstance.run(app=app, port=8000, allow_unsafe_werkzeug=True)
+    socketInstance.run(app=app, port=8000)
 
 
 if __name__ == '__main__':

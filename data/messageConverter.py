@@ -87,13 +87,16 @@ class MessageConverter:
 
     @staticmethod
     def convert_user_message(userMessage):
-        # user_message_dict = json.loads(user_message)
-        social_network, telephone = userMessage['From'][0].split(":")
+
+        social_network, userNumber = userMessage['From'][0].split(":")
+        sender = userMessage['ProfileName'][0] if social_network == "whatsapp" else userNumber
+        receivedMessage = userMessage['Body'][0]
+
         return {
-            'sender': userMessage['ProfileName'][0],
+            'sender': sender,
             'from': social_network,
-            'phoneNumber': telephone,
-            'body': userMessage['Body'][0],
+            'phoneNumber': userNumber,
+            'body': receivedMessage,
             "time": datetime.now().strftime("%H:%M"),
         }
 
