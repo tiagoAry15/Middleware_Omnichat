@@ -66,6 +66,25 @@ def get_dialogflow_message_example():
 
 
 class MessageConverter:
+    def __init__(self):
+        self._from = ""
+        self.phoneNumber = ""
+        self.sender = ""
+
+    def setMessageCoreDetails(self, sender: str, _from: str, phoneNumber: str):
+        self.sender = sender
+        self._from = _from
+        self.phoneNumber = phoneNumber
+
+    def dynamicConversion(self, message: str):
+        return {
+            'sender': self.sender,
+            'from': self._from,
+            'phoneNumber': self.phoneNumber,
+            'body': message,
+            "time": datetime.now().strftime("%H:%M"),
+        }
+
     @staticmethod
     def convert_user_message(userMessage):
         # user_message_dict = json.loads(user_message)

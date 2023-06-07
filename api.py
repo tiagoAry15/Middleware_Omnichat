@@ -31,6 +31,7 @@ dialogFlowInstance = DialogFlowSession()
 fc = FirebaseConnection()
 fu = FirebaseUser(fc)
 fcm = FirebaseConversation(fc)
+mc = MessageConverter()
 
 
 def __getAllUsersMappedByPhone() -> dict:
@@ -48,19 +49,23 @@ def sandbox():  # sourcery skip: use-named-expression
     data = extractDictFromBytesRequest()
     receivedMessage = data.get("Body")[0]
     userNumber = data.get("From")[0].split(":")[1]
+    sender = data.get("ProfileName")[0]
+    _from = data.get("From")[0].split(":")[0]
     userMessageJSON = MessageConverter.convert_user_message(data)
-    # fcm.appendMessageToWhatsappNumber(userMessageJSON, userNumber)
+    mc.setMessageCoreDetails(sender, _from, userNumber)
     socketInstance.emit('user_message', userMessageJSON)
 
     im = IntentManager()
     needsToSignUp = im.needsToSignUp(userNumber)
     if needsToSignUp:
+        print("Needs to signup!")
         im.extractedParameters["phoneNumber"] = userNumber
         botAnswer = im.twilioSingleStep(receivedMessage)
         dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(botAnswer, userNumber)
         socketInstance.emit('dialogflow_message', dialogflowResponseJSON)
         return _sendTwilioResponse(body=botAnswer)
 
+    print("Already signed up!")
     dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
     dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(
         dialogflowResponse.query_result.fulfillment_text, userNumber)
@@ -98,6 +103,8 @@ def send():
     contexts = [item['name'].split("/")[-1] for item in requestContent['queryResult']['outputContexts']]
     queryText = requestContent['queryResult']['queryText']
     userMessage = [item["name"] for item in queryText] if isinstance(queryText, list) else queryText
+    socketMessage = mc.dynamicConversion(userMessage)
+    socketInstance.emit('user_message', socketMessage)
     currentIntent = requestContent['queryResult']['intent']['displayName']
     print(f"current Intent: {currentIntent}")
     params = requestContent['queryResult']['parameters']
@@ -270,7 +277,7 @@ def hello():
 
 
 def __main():
-    socketInstance.run(app=app, port=8000)
+    socketInstance.run(app=app, port=8000, allow_unsafe_werkzeug=True)
 
 
 if __name__ == '__main__':

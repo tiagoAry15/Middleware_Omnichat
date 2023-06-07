@@ -153,7 +153,7 @@ def __main():
     im = IntentManager()
     existingUser = im.existingWhatsapp("+19574430239")
     if not existingUser:
-        messagePot = ["Oii", "João", "Rua das Flores 2542", "19574430239"]
+        messagePot = ["Oii", "João", "Rua das Flores 4874", "19574430239"]
         lastBotAnswer = ""
         while lastBotAnswer != "Usuário cadastrado com sucesso!":
             newUserMessage = messagePot.pop(0)
