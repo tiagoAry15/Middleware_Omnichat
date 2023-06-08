@@ -1,3 +1,4 @@
+import logging
 import os
 
 from dotenv import load_dotenv
@@ -35,32 +36,53 @@ mc = MessageConverter()
 
 
 def __getAllUsersMappedByPhone() -> dict:
+    """Retrieve all users from the Firebase and map them by phone number."""
     users = fu.getAllUsers()
     return {user["phoneNumber"]: user for user in users.values()} if users is not None else {}
 
 
 def __getUserByWhatsappNumber(whatsappNumber: str) -> dict or None:
+    """Returns a dict like this:
+        {'address': 'Rua das Flores 4984',
+        'cpf': '14587544589',
+        'name': 'João',
+        'phoneNumber': '+5585997548654'}"""
     users = __getAllUsersMappedByPhone()
     return users.get(whatsappNumber)
+
+def __detectIncomingMessage(userMessage: dict) -> dict:
+    twilioKeys = ['AccountSid', 'SmsMessageSid', 'NumMedia', 'ProfileName', 'SmsSid', 'WaId', 'SmsStatus', 'To',
+                  'NumSegments', 'ReferralNumMedia', 'MessageSid', 'AccountSid', 'From', 'ApiVersion']
+    incomingKeys = set(userMessage.keys())
+    commonKeys = incomingKeys.intersection(twilioKeys)
+    isTwilio = len(commonKeys) / len(twilioKeys) > 50 / 100
+    if isTwilio:
+        return __processTwilioIncomingMessage(userMessage)
+
+def __processTwilioIncomingMessage(twilioMessage: dict):
+    userMessageJSON = mc.convertUserMessage(twilioMessage)
+    return {"userMessageJSON": userMessageJSON, "phoneNumber": userMessageJSON["phoneNumber"],
+            "receivedMessage": userMessageJSON["body"]}
 
 
 @app.route("/twilioSandbox", methods=['POST'])
 def sandbox():  # sourcery skip: use-named-expression
     data = extractDictFromBytesRequest()
-    userMessageJSON = mc.convertUserMessage(data)
+    processedData = __detectIncomingMessage(data)
+    userMessageJSON = processedData["userMessageJSON"]
     socketInstance.emit('user_message', userMessageJSON)
     im = IntentManager()
-    phoneNumber = userMessageJSON['phoneNumber']
-    receivedMessage = userMessageJSON['body']
+    phoneNumber = processedData["phoneNumber"]
+    receivedMessage = processedData["receivedMessage"]
     needsToSignUp = im.needsToSignUp(phoneNumber)
     if needsToSignUp:
-        print("Needs to signup!")
+        logging.info("Needs to sign up!")
         im.extractedParameters["phoneNumber"] = phoneNumber
         botAnswer = im.twilioSingleStep(receivedMessage)
         dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(botAnswer, phoneNumber)
         socketInstance.emit('dialogflow_message', dialogflowResponseJSON)
         return _sendTwilioResponse(body=botAnswer)
-    print("Already signed up!")
+    logging.info("Already signup!")
     dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
     dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(
         dialogflowResponse.query_result.fulfillment_text, phoneNumber)
@@ -89,7 +111,7 @@ def send():
     """This is a dialogflow callback endpoint. Everytime a message is sent to the bot, a POST request is sent to this
     endpoint.
     This is under DialogflowEssentials -> Fulfillment"""
-    print('FULFILLMENT ATIVADO')
+    logging.info("FULLFILLMENT ENDPOINT")
     dialogFlowInstance.params["secret"] = "Mensagem secreta"
     requestContent = request.get_json()
     contexts = [item['name'].split("/")[-1] for item in requestContent['queryResult']['outputContexts']]
@@ -98,7 +120,7 @@ def send():
     socketMessage = mc.dynamicConversion(userMessage)
     socketInstance.emit('user_message', socketMessage)
     currentIntent = requestContent['queryResult']['intent']['displayName']
-    print(f"current Intent: {currentIntent}")
+    logging.info(f"current Intent: {currentIntent}")
     params = requestContent['queryResult']['parameters']
     if currentIntent == "Order.drink":
         return __handleOrderDrinkIntent(params, userMessage)
@@ -229,7 +251,6 @@ def staticReply():
 @app.route("/twilioPreEvent", methods=['POST'])
 def preEvent():
     """This is a twilio pre-webhook target. It intercepts events, and fires before twilio does anything."""
-    print("c")
     data = extractDictFromBytesRequest()
     received_msg = data.get("Body")[0]
     author = data.get("Author")[0].split(":")
@@ -244,12 +265,9 @@ def preEvent():
 def handle_whatsapp():
     """This is a twilio post-webhook target. It reacts to changes, and fires after twilio has processed an event.
     It prints on the console the message content and sender."""
-    print("d")
-    print('Received WhatsApp message!')
     data = extractDictFromBytesRequest()
     sender = data['Author'][0].split(':')[1]
     content = data['Body'][0]
-    print(f'Received message from {sender}: {content}')
     return 'OK', 200
 
 
