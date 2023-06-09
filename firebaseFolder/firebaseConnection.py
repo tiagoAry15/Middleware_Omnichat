@@ -7,6 +7,7 @@ from firebase_admin import credentials, db
 from dialogFlowSession import singleton
 from references.pathReference import getFirebaseSDKPath
 
+
 def getFirebaseCredentials():
     load_dotenv()
     firebase_credentials = {
