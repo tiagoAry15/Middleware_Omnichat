@@ -64,10 +64,10 @@ def buildFullOrder(parameters: dict):
                             'pizzas': [{'calabresa': 2.0}, {'pepperoni': 0.5, 'portuguesa': 0.5},
                              {'calabresa': 0.5, 'pepperoni': 0.5}],
                             'secret': 'Mensagem secreta'}"""
-    drink = parameters["drinks"][0] if parameters.get("drinks") else None
-    # Split drink into a list
-    pizza = parameters["pizzas"][0]
-    return {"Bebida": [{key: value} for key, value in drink.items()], "Pizza": pizza}
+    drink = parameters["drinks"][0] if parameters.get("drinks") and parameters["drinks"] else None
+    pizza = parameters["pizzas"][0] if parameters.get("pizzas") and parameters["pizzas"] else None
+    return {"Bebida": [{key: value} for key, value in (drink.items() if drink else [])], "Pizza": pizza}
+
 
 
 def _splitOrder(order: str) -> List[str]:
@@ -190,14 +190,15 @@ def __testConvertMultiplePizzaOrderToText():
 
 
 def __testBuildFullOrder():
-    orderTest = {'Bebida': [{'guaraná': 2.0}, {'suco de laranja': 1.0}],
-                 'Pizza': [{'frango': 3.0}, {'calabresa': 0.5, 'margherita': 0.5}, {'calabresa': 1.0}]}
+    # orderTest = {'Bebida': [{'guaraná': 2.0}, {'suco de laranja': 1.0}],
+    #              'Pizza': [{'frango': 3.0}, {'calabresa': 0.5, 'margherita': 0.5}, {'calabresa': 1.0}]}
+    orderTest = {'drinks': [{"suco de laranja": 1.0}], 'pizzas': [[{'calabresa': 1.0}]], 'secret': 'Mensagem secreta'}
     output = buildFullOrder(orderTest)
     print(output)
 
 
 def __main():
-    __testStructureDrink()
+    __testBuildFullOrder()
     # output = structureFullOrder(parameterInput)
     # output = parsePizzaOrder(
     #     "Vou querer duas pizzas de calabresa, uma meio pepperoni meio portuguesa e uma pizza meio calabresa meio "

@@ -125,7 +125,8 @@ def send():
     if currentIntent == "Order.drink":
         return __handleOrderDrinkIntent(params, userMessage)
     elif currentIntent == "Order.pizza - drink no":
-        fullOrder = buildFullOrder(dialogFlowInstance.params)
+        params = dialogFlowInstance.params
+        fullOrder = buildFullOrder(params)
         totalPriceDict = dialogFlowInstance.analyzeTotalPrice(fullOrder)
         finalMessage = totalPriceDict["finalMessage"]
         return sendWebhookCallback(finalMessage)
