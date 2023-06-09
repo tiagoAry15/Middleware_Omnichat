@@ -8,6 +8,7 @@ from dialogFlowSession import singleton
 from references.pathReference import getFirebaseSDKPath
 
 def getFirebaseCredentials():
+    load_dotenv()
     firebase_credentials = {
         "type": os.environ["FIREBASE_SDK_TYPE"],
         "project_id": os.environ["FIREBASE_SDK_PROJECT_ID"],
