@@ -3,7 +3,7 @@ import os
 
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify, Response
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from flask_socketio import SocketIO
 from twilio.rest import Client
 
@@ -26,7 +26,7 @@ auth_token = os.environ["TWILIO_AUTH_TOKEN"]
 twilio_phone_number = f'whatsapp:{os.environ["TWILIO_PHONE_NUMBER"]}'
 client = Client(account_sid, auth_token)
 app = Flask(__name__)
-CORS(app, support_credentials=True)
+CORS(app)
 socketInstance = SocketIO(app, cors_allowed_origins="*")
 dialogFlowInstance = DialogFlowSession()
 fc = FirebaseConnection()
@@ -66,6 +66,7 @@ def __processTwilioIncomingMessage(twilioMessage: dict):
 
 
 @app.route("/twilioSandbox", methods=['POST'])
+@cross_origin()
 def sandbox():  # sourcery skip: use-named-expression
     data = extractDictFromBytesRequest()
     processedData = __detectIncomingMessage(data)

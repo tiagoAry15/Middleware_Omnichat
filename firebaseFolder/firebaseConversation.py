@@ -18,7 +18,6 @@ class FirebaseConversation(FirebaseWrapper):
     def getAllConversations(self):
         return self.firebaseConnection.readData()
 
-
     def getUniqueIdByWhatsappNumber(self, whatsappNumber: str) -> str or None:
         # sourcery skip: use-next
         allConversations = self.getAllConversations()
@@ -73,16 +72,13 @@ class FirebaseConversation(FirebaseWrapper):
         if not uniqueId:
             return None
         conversationData = self.firebaseConnection.readData(path=uniqueId)
-        if 'unreadMessages' not in conversationData:
-            conversationData["unreadMessages"] = []
         if 'unreadMessages' not in messageData:
-            conversationData['lastMessage'] = messageData
-            conversationData["unreadMessages"].append(messageData)
+            conversationData["unreadMessages"] = conversationData["unreadMessages"] + 1
         else:
-            conversationData["unreadMessages"] = messageData["unreadMessages"]
-
+            conversationData["unreadMessages"] = 0
         self.firebaseConnection.overWriteData(path=uniqueId, data=conversationData)
         return conversationData
+
     def deleteConversation(self, conversationData: dict) -> bool:
         uniqueId = self.getUniqueIdByWhatsappNumber(conversationData["phoneNumber"])
         return (
@@ -93,6 +89,7 @@ class FirebaseConversation(FirebaseWrapper):
 
     def deleteAllConversations(self):
         return self.firebaseConnection.deleteAllData()
+
 
 def __createDummyConversations():
     fc = FirebaseConnection()
