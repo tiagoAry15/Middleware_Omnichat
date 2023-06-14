@@ -37,7 +37,8 @@ class FirebaseConversation(FirebaseWrapper):
             conversationData["messagePot"] = []
         messageData["id"] = str(uuid.uuid4())
         conversationData["messagePot"].append(messageData)
-        return self.firebaseConnection.overWriteData(path=uniqueId, data=conversationData)
+        self.firebaseConnection.overWriteData(path=uniqueId, data=conversationData)
+        return messageData
 
     def retrieveAllMessagesByWhatsappNumber(self, whatsappNumber: str) -> List[dict] or None:
         uniqueId = self.getUniqueIdByWhatsappNumber(whatsappNumber)

@@ -84,7 +84,7 @@ def __processTwilioSandboxIncomingMessage(data: dict):
     print("__processTwilioSandboxIncomingMessage")
     processedData = __processTwilioIncomingMessage(data)
     userMessageJSON = processedData["userMessageJSON"]
-    socketInstance.emit('user_message', userMessageJSON)
+    socketInstance.emit('message', userMessageJSON)
     im = IntentManager()
     phoneNumber = processedData["phoneNumber"]
     receivedMessage = processedData["receivedMessage"]
@@ -95,7 +95,7 @@ def __processTwilioSandboxIncomingMessage(data: dict):
         im.extractedParameters["phoneNumber"] = phoneNumber
         botAnswer = im.twilioSingleStep(receivedMessage)
         dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(botAnswer, phoneNumber)
-        socketInstance.emit('dialogflow_message', dialogflowResponseJSON)
+        socketInstance.emit('message', dialogflowResponseJSON)
         output["body"] = botAnswer
         output["formattedBody"] = _sendTwilioResponse(body=botAnswer)
         return output
@@ -103,7 +103,7 @@ def __processTwilioSandboxIncomingMessage(data: dict):
     dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
     dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(
         dialogflowResponse.query_result.fulfillment_text, phoneNumber)
-    socketInstance.emit('dialogflow_message', dialogflowResponseJSON)
+    socketInstance.emit('message', dialogflowResponseJSON)
     output["body"] = dialogflowResponse.query_result.fulfillment_text
     output["formattedBody"] = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
     return output
@@ -117,8 +117,8 @@ def chatTest():
 
     dialogFlowJSON = MessageConverter.convert_dialogflow_message(dialogflow_message, userMessageJSON['phoneNumber'])
     for _ in range(4):
-        socketInstance.emit('user_message', userMessageJSON)
-        socketInstance.emit('dialogflow_message', dialogFlowJSON)
+        socketInstance.emit('message', userMessageJSON)
+        socketInstance.emit('message', dialogFlowJSON)
     return [], 200
 
 
@@ -134,7 +134,7 @@ def send():
     queryText = requestContent['queryResult']['queryText']
     userMessage = [item["name"] for item in queryText] if isinstance(queryText, list) else queryText
     socketMessage = mc.dynamicConversion(userMessage)
-    socketInstance.emit('user_message', socketMessage)
+    socketInstance.emit('message', socketMessage)
     currentIntent = requestContent['queryResult']['intent']['displayName']
     logging.info(f"current Intent: {currentIntent}")
     params = requestContent['queryResult']['parameters']
@@ -217,10 +217,10 @@ def add_message():
     data = json.loads(request.data)
     whatsapp_number = data['phoneNumber']
 
-    fcm.appendMessageToWhatsappNumber(
+    response = fcm.appendMessageToWhatsappNumber(
         messageData=data, whatsappNumber=whatsapp_number
     )
-    return jsonify({"Success": f"New message pushed for user with whatsapp {whatsapp_number}"}), 200
+    return jsonify(response), 200
 
 
 @app.route("/push_new_message_by_whatsapp_number/", methods=['POST'])
@@ -343,7 +343,7 @@ def __sendInstagramMessage(recipient_id, message_text):
 
 
 def __main():
-    socketInstance.run(app=app, port=8000, host="0.0.0.0", allow_unsafe_werkzeug=True)
+    socketInstance.run(app=app, port=8000, host="0.0.0.0")
 
 
 if __name__ == '__main__':
