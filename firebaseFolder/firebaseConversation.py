@@ -1,3 +1,5 @@
+import datetime
+import random
 import uuid
 from typing import List
 
@@ -92,24 +94,42 @@ class FirebaseConversation(FirebaseWrapper):
         return self.firebaseConnection.deleteAllData()
 
 
-def __createDummyConversations():
+def getDummyConversationDicts(username: str = "John", phoneNumber: str = "+558599171902", _from: str = "whatsapp"):
+    dummyBodyMessages = ["Olá, tudo bem?", "Sim estou bem, e você?", "Estou bem também, obrigado por perguntar!"]
+    dummyMessagePot = []
+    for index, body in enumerate(dummyBodyMessages):
+        currentFormattedTimestamp = datetime.datetime.now().strftime("%H:%M")
+        sender = "ChatBot" if index % 2 == 1 else username
+        message = {"body": body, "id": random.randint(0, 10000000000), "phoneNumber": phoneNumber,
+                   "sender": sender, "timestamp": currentFormattedTimestamp}
+        dummyMessagePot.append(message)
+
+    dummyPot = [{"from": _from, "id": 3, "name": username, "phoneNumber": phoneNumber, "status": "active",
+                 "messagePot": dummyMessagePot, "lastMessage": dummyMessagePot[-1], "unreadMessages": 1}]
+    return {"dummyMessagePot": dummyMessagePot, "dummyPot": dummyPot}
+
+
+def createDummyConversations():
     fc = FirebaseConnection()
     fcm = FirebaseConversation(fc)
-    dummyMessagePot = [{"message": "Olá, tudo bem?"},
-                       {"message": "Sim, estou bem e você?"},
-                       {"message": "Estou bem também, obrigado por perguntar!"}]
-    dummyPot = [{"messagePot": dummyMessagePot, "userNumber": "whatsapp:+5585994875482"},
-                {"messagePot": [], "userNumber": "whatsapp:+5585935478125"},
-                {"messagePot": [], "userNumber": "whatsapp:+5585948978154"}]
-    for message in dummyPot:
-        fcm.createConversation(message)
+    dictPot = []
+    dictParameters = ("John", "+558599171902", "whatsapp",
+                      "Maria", "+558599171903", "instagram",
+                      "Anthony", "+558599171904", "facebook")
+    for username, phoneNumber, _from in zip(dictParameters[::3], dictParameters[1::3], dictParameters[2::3]):
+        dicts = getDummyConversationDicts(username=username, phoneNumber=phoneNumber, _from=_from)
+        dictPot.append(dicts)
+    for _dict in dictPot:
+        for conversation in _dict["dummyPot"]:
+            fcm.createConversation(conversation)
 
 
 def __main():
     # __createDummyConversations()
-    fc = FirebaseConnection()
-    fcm = FirebaseConversation(fc)
-    fcm.deleteAllConversations()
+    # fc = FirebaseConnection()
+    # fcm = FirebaseConversation(fc)
+    createDummyConversations()
+    # fcm.deleteAllConversations()
     # fcm.appendMessageToWhatsappNumber({"message": "Olá, tudo bem?"}, "whatsapp:+5585994875482")
     # fc = FirebaseConnection()
     # fm = FirebaseConversation(fc)

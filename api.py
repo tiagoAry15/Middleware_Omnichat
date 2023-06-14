@@ -12,7 +12,7 @@ from twilio.rest import Client
 
 from data.messageConverter import MessageConverter, get_dialogflow_message_example, get_user_message_example
 from firebaseFolder.firebaseConnection import FirebaseConnection
-from firebaseFolder.firebaseConversation import FirebaseConversation
+from firebaseFolder.firebaseConversation import FirebaseConversation, getDummyConversationDicts
 from firebaseFolder.firebaseUser import FirebaseUser
 from orderProcessing.orderHandler import structureDrink, buildFullOrder, parsePizzaOrder, \
     __convertPizzaOrderToText, convertMultiplePizzaOrderToText
@@ -231,8 +231,8 @@ def push_new_message_by_whatsapp_number():
     if not user:
         return jsonify({"Error": f"Could not find an user with whatsapp {whatsapp_number}"}), 404
     conversations = fcm.retrieveAllMessagesByWhatsappNumber(whatsapp_number)
-    if not conversations:
-        return jsonify({"Error": f"Could not find conversations for the user with whatsapp {whatsapp_number}"}), 404
+    # if not conversations:
+    #     return jsonify({"Error": f"Could not find conversations for the user with whatsapp {whatsapp_number}"}), 404
     message = {"content": data.get("message")}
     fcm.appendMessageToWhatsappNumber(messageData=message, whatsappNumber=whatsapp_number)
     return jsonify({"Success": f"New message pushed for user with whatsapp {whatsapp_number}"}), 200
@@ -244,6 +244,15 @@ def create_conversation():
     response = fcm.createConversation(data)
     finalResponse = data if response else False
     return jsonify(finalResponse), 200
+
+
+@app.route("/create_dummy_conversation", methods=['POST'])
+def create_dummy_conversation():
+    data = json.loads(request.data.decode("utf-8"))
+    dummyMessagePot, dummyPot = getDummyConversationDicts().values()
+    for message in dummyPot:
+        fcm.createConversation(message)
+    return jsonify({"Success": "Dummy conversation created"}), 200
 
 
 @app.route("/update_conversation", methods=['PUT'])
