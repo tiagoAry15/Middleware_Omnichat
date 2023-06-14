@@ -329,7 +329,7 @@ def _processInstagramIncomingMessage(data):
     currentFormattedTime = datetime.datetime.now().strftime("%H:%M")
     emitDict = {'body': message_text, 'from': 'instagram', 'phoneNumber': sender_id, 'sender': 'Mateus',
                 'time': currentFormattedTime}
-    socketInstance.emit('message', emitDict, broadcast=True)
+    socketInstance.emit('message', emitDict)
 
 
 def __sendInstagramMessage(recipient_id, message_text):
