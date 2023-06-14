@@ -240,6 +240,7 @@ def push_new_message_by_whatsapp_number():
 
 @app.route("/create_conversation", methods=['POST'])
 def create_conversation():
+    print("Creating new conversation!")
     data = json.loads(request.data.decode("utf-8"))
     response = fcm.createConversation(data)
     finalResponse = data if response else False
