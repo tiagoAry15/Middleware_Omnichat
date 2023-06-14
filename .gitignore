@@ -1,3 +1,4 @@
 /.env
 /dialogflow.json
 /firebaseFolder/firebase_sdk.json
+/tokens/token.json

@@ -14,6 +14,14 @@ def getSpeisekartePath() -> Path:
     return getMainFolderPath() / "data/speisekarte.json"
 
 
+def getEnvPath() -> Path:
+    return getMainFolderPath() / '.env'
+
+
+def getTokenJsonPath() -> Path:
+    return getMainFolderPath() / 'tokens/token.json'
+
+
 def __main():
     sdkFile = getFirebaseSDKPath()
     existingSdkFile = sdkFile.exists()
