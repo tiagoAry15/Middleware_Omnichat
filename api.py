@@ -1,8 +1,11 @@
+import datetime
 import logging
 import os
+from threading import Thread
 
+import requests
 from dotenv import load_dotenv
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, Response, abort
 from flask_cors import CORS
 from flask_socketio import SocketIO
 from twilio.rest import Client
@@ -50,6 +53,7 @@ def __getUserByWhatsappNumber(whatsappNumber: str) -> dict or None:
     users = __getAllUsersMappedByPhone()
     return users.get(whatsappNumber)
 
+
 def __detectIncomingMessage(userMessage: dict) -> dict:
     twilioKeys = ['AccountSid', 'SmsMessageSid', 'NumMedia', 'ProfileName', 'SmsSid', 'WaId', 'SmsStatus', 'To',
                   'NumSegments', 'ReferralNumMedia', 'MessageSid', 'AccountSid', 'From', 'ApiVersion']
@@ -58,6 +62,7 @@ def __detectIncomingMessage(userMessage: dict) -> dict:
     isTwilio = len(commonKeys) / len(twilioKeys) > 50 / 100
     if isTwilio:
         return __processTwilioIncomingMessage(userMessage)
+
 
 def __processTwilioIncomingMessage(twilioMessage: dict):
     userMessageJSON = mc.convertUserMessage(twilioMessage)
@@ -68,29 +73,40 @@ def __processTwilioIncomingMessage(twilioMessage: dict):
 @app.route("/twilioSandbox", methods=['POST'])
 def sandbox():  # sourcery skip: use-named-expression
     data = extractDictFromBytesRequest()
-    processedData = __detectIncomingMessage(data)
+    mainResponseDict = __processTwilioSandboxIncomingMessage(data)
+    rawResponse = mainResponseDict["body"]
+    formattedResponse = mainResponseDict["formattedBody"]
+    image_url = "https://shorturl.at/lEFT0"
+    return _sendTwilioResponse(body=rawResponse, media=None)
+
+
+def __processTwilioSandboxIncomingMessage(data: dict):
+    print("__processTwilioSandboxIncomingMessage")
+    processedData = __processTwilioIncomingMessage(data)
     userMessageJSON = processedData["userMessageJSON"]
     socketInstance.emit('user_message', userMessageJSON)
     im = IntentManager()
     phoneNumber = processedData["phoneNumber"]
     receivedMessage = processedData["receivedMessage"]
-    needsToSignUp = im.needsToSignUp(phoneNumber)
+    needsToSignUp = not im.existingWhatsapp(phoneNumber)
+    output = {"body": None, "formattedBody": None}
     if needsToSignUp:
         logging.info("Needs to sign up!")
         im.extractedParameters["phoneNumber"] = phoneNumber
         botAnswer = im.twilioSingleStep(receivedMessage)
         dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(botAnswer, phoneNumber)
         socketInstance.emit('dialogflow_message', dialogflowResponseJSON)
-        return _sendTwilioResponse(body=botAnswer)
+        output["body"] = botAnswer
+        output["formattedBody"] = _sendTwilioResponse(body=botAnswer)
+        return output
     logging.info("Already signup!")
     dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
     dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(
         dialogflowResponse.query_result.fulfillment_text, phoneNumber)
     socketInstance.emit('dialogflow_message', dialogflowResponseJSON)
-    mainResponse = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
-    image_url = "https://shorturl.at/lEFT0"
-
-    return _sendTwilioResponse(body=mainResponse, media=None)
+    output["body"] = dialogflowResponse.query_result.fulfillment_text
+    output["formattedBody"] = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
+    return output
 
 
 @app.route("/ChatTest", methods=['GET'])
@@ -287,8 +303,47 @@ def hello():
     return 'Hello, World!', 200
 
 
+@app.route("/instagram", methods=['GET', 'POST'])
+def instagram():
+    if request.method == 'GET':
+        if request.args.get('hub.mode') == 'subscribe' and request.args.get('hub.verify_token') == 'bill':
+            return request.args.get('hub.challenge')
+        else:
+            abort(403)
+    if request.method == 'POST':
+        # Handle POST requests here (i.e. updates from Instagram)
+        data = request.get_json()
+        is_echo = data['entry'][0]['messaging'][0]['message'].get('is_echo')
+        if not is_echo:
+            _processInstagramIncomingMessage(data)
+        return jsonify({'status': 'success', 'response': 'Message sent'}), 200
+
+
+def _processInstagramIncomingMessage(data):
+    sender_id = data['entry'][0]['messaging'][0]['sender']['id']
+    message_text = data['entry'][0]['messaging'][0]['message']['text']
+    structuredMessage = {'Body': [message_text], 'From': [f'whatsapp:+5585{sender_id}'], 'ProfileName': [sender_id]}
+    mainResponse = __processTwilioSandboxIncomingMessage(structuredMessage)
+    txtResponse = mainResponse["body"]
+    __sendInstagramMessage(sender_id, txtResponse)
+    currentFormattedTime = datetime.datetime.now().strftime("%H:%M")
+    emitDict = {'body': message_text, 'from': 'instagram', 'phoneNumber': sender_id, 'sender': 'Mateus',
+                'time': currentFormattedTime}
+    socketInstance.emit('message', emitDict, broadcast=True)
+
+
+def __sendInstagramMessage(recipient_id, message_text):
+    access_token = os.environ["INSTAGRAM_ACCESS_TOKEN"]
+    headers = {'Content-Type': 'application/json'}
+    data = {'recipient': {'id': recipient_id}, 'message': {'text': message_text}}
+    params = {'access_token': access_token}
+    response = requests.post('https://graph.facebook.com/v13.0/me/messages', headers=headers, params=params, json=data)
+    if response.status_code != 200:
+        print(f"Unable to send message: {response.text}")
+
+
 def __main():
-    socketInstance.run(app=app, port=8000,  host="0.0.0.0")
+    socketInstance.run(app=app, port=8000, host="0.0.0.0", allow_unsafe_werkzeug=True)
 
 
 if __name__ == '__main__':

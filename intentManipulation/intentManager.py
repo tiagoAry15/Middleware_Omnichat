@@ -124,7 +124,7 @@ class IntentManager:
         self.registerWhatsapp(self.extractedParameters)
         return "Usuário cadastrado com sucesso!"
 
-    def existingWhatsapp(self, whatsappNumber: str):
+    def existingWhatsapp(self, whatsappNumber: str) -> bool:
         return self.fu.existingUser({"phoneNumber": whatsappNumber})
 
     def registerWhatsapp(self, userDetails: dict):

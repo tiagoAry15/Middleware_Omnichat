@@ -18,7 +18,7 @@ class MockedFirebaseCred:
 
 
 @pytest.fixture
-def firebase_connection():
+def firebase_connection() -> FirebaseConnection:
     load_dotenv()
     with patch('firebase_admin.initialize_app'), \
             patch('firebase_admin.credentials.Certificate'), \
@@ -27,34 +27,34 @@ def firebase_connection():
     return connection
 
 
-def test_readData(firebase_connection):
+def test_readData(firebase_connection: FirebaseConnection):
     data = firebase_connection.readData("users")
     assert data == {'dummyData': 5}
 
 
-def test_writeData(firebase_connection):
+def test_writeData(firebase_connection: FirebaseConnection):
     result = firebase_connection.writeData("users", {"testData": 10})
     assert result is True
 
 
-def test_overWriteData(firebase_connection):
+def test_overWriteData(firebase_connection: FirebaseConnection):
     result = firebase_connection.overWriteData("users", {"testData": 10})
     assert result is True
 
 
-def test_deleteData(firebase_connection):
+def test_deleteData(firebase_connection: FirebaseConnection):
     with patch.object(firebase_connection, 'getUniqueIdByData') as mock_getUniqueId:
         mock_getUniqueId.return_value = 'test_key'
         result = firebase_connection.deleteData("users", {"testData": 10})
         assert result is True
 
 
-def test_deleteAllData(firebase_connection):
+def test_deleteAllData(firebase_connection: FirebaseConnection):
     result = firebase_connection.deleteAllData()
     assert result is True
 
 
-def test_getUniqueIdByData(firebase_connection):
+def test_getUniqueIdByData(firebase_connection: FirebaseConnection):
     result = firebase_connection.getUniqueIdByData("users", {"testData": 10})
     assert result == 'test_key'
 
