@@ -1,0 +1,21 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "your_project_name"  # replace with your actual project name
+version = "0.1.0"  # replace with your actual project version
+description = ""  # replace with your actual project description
+authors = ["Your Name <your.email@example.com>"]  # replace with your actual details
+
+[tool.poetry.dependencies]
+python = "^3.8"
+python-dotenv = "^1.0.0"
+Flask = "^2.2.3"
+twilio = "^7.17.0"
+openai = "^0.27.6"
+colorama = "^0.4.6"
+requests = "^2.28.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.3.1"
