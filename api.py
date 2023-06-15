@@ -19,6 +19,7 @@ from orderProcessing.orderHandler import structureDrink, buildFullOrder, parsePi
 from dialogFlowSession import DialogFlowSession
 from gpt.PizzaGPT import getResponseDefaultGPT
 from intentManipulation.intentManager import IntentManager
+from socketEmissions.socketEmissor import pulseEmit
 from utils import extractDictFromBytesRequest, sendWebhookCallback, _sendTwilioResponse
 import json
 
@@ -84,7 +85,8 @@ def __processTwilioSandboxIncomingMessage(data: dict):
     print("__processTwilioSandboxIncomingMessage")
     processedData = __processTwilioIncomingMessage(data)
     userMessageJSON = processedData["userMessageJSON"]
-    socketInstance.emit('message', userMessageJSON)
+    pulseEmit(socketInstance, userMessageJSON)
+    # socketInstance.emit('message', userMessageJSON)
     im = IntentManager()
     phoneNumber = processedData["phoneNumber"]
     receivedMessage = processedData["receivedMessage"]
@@ -95,7 +97,8 @@ def __processTwilioSandboxIncomingMessage(data: dict):
         im.extractedParameters["phoneNumber"] = phoneNumber
         botAnswer = im.twilioSingleStep(receivedMessage)
         dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(botAnswer, phoneNumber)
-        socketInstance.emit('message', dialogflowResponseJSON)
+        pulseEmit(socketInstance, dialogflowResponseJSON)
+        # socketInstance.emit('message', dialogflowResponseJSON)
         output["body"] = botAnswer
         output["formattedBody"] = _sendTwilioResponse(body=botAnswer)
         return output
@@ -103,7 +106,8 @@ def __processTwilioSandboxIncomingMessage(data: dict):
     dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
     dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(
         dialogflowResponse.query_result.fulfillment_text, phoneNumber)
-    socketInstance.emit('message', dialogflowResponseJSON)
+    # socketInstance.emit('message', dialogflowResponseJSON)
+    pulseEmit(socketInstance, dialogflowResponseJSON)
     output["body"] = dialogflowResponse.query_result.fulfillment_text
     output["formattedBody"] = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
     return output
@@ -117,8 +121,10 @@ def chatTest():
 
     dialogFlowJSON = MessageConverter.convert_dialogflow_message(dialogflow_message, userMessageJSON['phoneNumber'])
     for _ in range(4):
-        socketInstance.emit('message', userMessageJSON)
-        socketInstance.emit('message', dialogFlowJSON)
+        # socketInstance.emit('message', userMessageJSON)
+        pulseEmit(socketInstance, userMessageJSON)
+        # socketInstance.emit('message', dialogFlowJSON)
+        pulseEmit(socketInstance, dialogFlowJSON)
     return [], 200
 
 
@@ -134,7 +140,8 @@ def send():
     queryText = requestContent['queryResult']['queryText']
     userMessage = [item["name"] for item in queryText] if isinstance(queryText, list) else queryText
     socketMessage = mc.dynamicConversion(userMessage)
-    socketInstance.emit('message', socketMessage)
+    # socketInstance.emit('message', socketMessage)
+    pulseEmit(socketInstance, socketMessage)
     currentIntent = requestContent['queryResult']['intent']['displayName']
     logging.info(f"current Intent: {currentIntent}")
     params = requestContent['queryResult']['parameters']
@@ -316,7 +323,7 @@ def hello():
 @app.route("/instagram", methods=['GET', 'POST'])
 def instagram():
     if request.method == 'GET':
-        if request.args.get('hub.mode') == 'subscribe' and request.args.get('hub.verify_token') == 'bill':
+        if request.args.get('hub.mode') == 'subscribe':
             return request.args.get('hub.challenge')
         else:
             abort(403)
@@ -339,7 +346,8 @@ def _processInstagramIncomingMessage(data):
     currentFormattedTime = datetime.datetime.now().strftime("%H:%M")
     emitDict = {'body': message_text, 'from': 'instagram', 'phoneNumber': sender_id, 'sender': 'Mateus',
                 'time': currentFormattedTime}
-    socketInstance.emit('message', emitDict)
+    # socketInstance.emit('message', emitDict)
+    pulseEmit(socketInstance, emitDict)
 
 
 def __sendInstagramMessage(recipient_id, message_text):
