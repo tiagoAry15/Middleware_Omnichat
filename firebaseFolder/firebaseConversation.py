@@ -26,7 +26,8 @@ class FirebaseConversation(FirebaseWrapper):
         if allConversations is None:
             return None
         for uniqueId, conversationData in allConversations.items():
-            if "phoneNumber" in conversationData and conversationData["phoneNumber"] == whatsappNumber:
+            phoneNumber = conversationData.get("phoneNumber", None)
+            if phoneNumber == whatsappNumber:
                 return uniqueId
         return None
 
@@ -50,6 +51,19 @@ class FirebaseConversation(FirebaseWrapper):
         if "messagePot" not in conversationData:
             return None
         return conversationData["messagePot"]
+
+    def createFirstDummyConversationByWhatsappNumber(self, msgDict: dict):
+        whatsappNumber = msgDict.get("phoneNumber", None)
+        body = msgDict.get("body", None)
+        name = msgDict.get("name", None)
+        platform = msgDict.get("from", None)
+        currentTime = datetime.datetime.now().strftime("%H:%M")
+        conversationData = {"from": platform, "whatsappNumber": whatsappNumber, "id": 0, "name": name,
+                            "status": "active", "unreadMessages": 1,
+                            "msgPot": [{"body": body, "id": str(uuid.uuid4()), "phoneNumber": "+5585999171902",
+                                        "sender": "User", "time": currentTime}]}
+        self.firebaseConnection.writeData(data=conversationData)
+        return "Dummy conversation created successfully."
 
     def existingConversation(self, inputConversationData: dict) -> bool:
         uniqueId = self.getUniqueIdByWhatsappNumber(inputConversationData["phoneNumber"])
@@ -109,7 +123,7 @@ def getDummyConversationDicts(username: str = "John", phoneNumber: str = "+55859
     return {"dummyMessagePot": dummyMessagePot, "dummyPot": dummyPot}
 
 
-def createDummyConversations():
+def __createDummyConversations():
     fc = FirebaseConnection()
     fcm = FirebaseConversation(fc)
     dictPot = []
@@ -124,11 +138,27 @@ def createDummyConversations():
             fcm.createConversation(conversation)
 
 
+def checkNewUser(whatsappNumber: str, numberPot: List[str],
+                 conversationInstance: FirebaseConversation, msgDict: dict) -> bool:
+    if whatsappNumber in numberPot:
+        return False
+    numberPot.append(whatsappNumber)
+    conversationInstance.createFirstDummyConversationByWhatsappNumber(msgDict)
+    return True
+
+
 def __main():
     # __createDummyConversations()
-    # fc = FirebaseConnection()
-    # fcm = FirebaseConversation(fc)
-    createDummyConversations()
+    fc = FirebaseConnection()
+    fcm = FirebaseConversation(fc)
+    randomUniqueId = str(uuid.uuid4())
+    currentTime = datetime.datetime.now().strftime("%H:%M")
+    msgDict = {"body": "Olá, tudo bem?", "id": str(uuid.uuid4()), "phoneNumber": "+5585999171902",
+               "sender": "Mateus", "time": datetime.datetime.now().strftime("%H:%M")}
+    fcm.appendMessageToWhatsappNumber(msgDict, "+5585999171902")
+    # msgDict = {"phoneNumber": "+5585994875485", "body": "Olá, tudo bem?", "name": "Maria", "from": "facebook"}
+    # fcm.createFirstDummyConversationByWhatsappNumber(msgDict)
+    # createDummyConversations()
     # fcm.deleteAllConversations()
     # fcm.appendMessageToWhatsappNumber({"message": "Olá, tudo bem?"}, "whatsapp:+5585994875482")
     # fc = FirebaseConnection()

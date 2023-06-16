@@ -28,6 +28,7 @@ class IntentManager:
     def __init__(self):
         self.fc = FirebaseConnection()
         self.fu = FirebaseUser(self.fc)
+        self.numberPot = []
         self.whatsappNumber = ""
         self.existingUser = False
         self.isUserChecked = False

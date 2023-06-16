@@ -1,6 +1,8 @@
+import copy
 import datetime
 import logging
 import os
+import uuid
 from threading import Thread
 
 import requests
@@ -88,7 +90,7 @@ def __processTwilioSandboxIncomingMessage(data: dict):
     processedData = __processTwilioIncomingMessage(data)
     userMessageJSON = processedData["userMessageJSON"]
     pulseEmit(socketInstance, userMessageJSON)
-    #socketInstance.emit('message', userMessageJSON)
+    # socketInstance.emit('message', userMessageJSON)
     im = IntentManager()
     phoneNumber = processedData["phoneNumber"]
     receivedMessage = processedData["receivedMessage"]
@@ -103,6 +105,7 @@ def __processTwilioSandboxIncomingMessage(data: dict):
         # socketInstance.emit('message', dialogflowResponseJSON)
         output["body"] = botAnswer
         output["formattedBody"] = _sendTwilioResponse(body=botAnswer)
+        # __addBotMessageToFirebase(phoneNumber, userMessageJSON)
         return output
     logging.info("Already signup!")
     dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
@@ -112,8 +115,14 @@ def __processTwilioSandboxIncomingMessage(data: dict):
     # pulseEmit(socketInstance, dialogflowResponseJSON)
     output["body"] = dialogflowResponse.query_result.fulfillment_text
     output["formattedBody"] = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
+    # __addBotMessageToFirebase(phoneNumber, userMessageJSON)
     return dialogflowResponseJSON
 
+
+def __addBotMessageToFirebase(phoneNumber, userMessageJSON):
+    msgDict = copy.deepcopy(userMessageJSON)
+    msgDict["sender"] = "ChatBot"
+    fcm.appendMessageToWhatsappNumber(msgDict, phoneNumber)
 
 
 @app.route("/ChatTest", methods=['GET'])
@@ -212,10 +221,9 @@ def delete_user_by_whatsapp(whatsapp_number: str):
 
 @app.route("/get_user_conversations/<whatsapp_number>", methods=['GET'])
 def get_user_conversations_by_whatsapp(whatsapp_number: str):
-    # user = __getUserByWhatsappNumber(whatsapp_number)
-    # if not user:
-    #     return jsonify({"Error": f"Could not find an user with whatsapp {whatsapp_number}"}), 404
     response = fcm.retrieveAllMessagesByWhatsappNumber(whatsapp_number)
+    # if response is None:
+    #     response = fcm.createFirstDummyConversationByWhatsappNumber(whatsapp_number)
     return ((jsonify(response), 200)
             if response
             else (
@@ -364,7 +372,7 @@ def __sendInstagramMessage(recipient_id, message_text):
 
 
 def __main():
-    socketInstance.run(app=app, port=3000, host="0.0.0.0")
+    socketInstance.run(app=app, port=3000, host="0.0.0.0", allow_unsafe_werkzeug=True)
 
 
 if __name__ == '__main__':
