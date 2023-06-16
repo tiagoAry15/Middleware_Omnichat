@@ -2,7 +2,6 @@ import copy
 import datetime
 import logging
 import os
-import time
 import uuid
 from threading import Thread
 
@@ -80,12 +79,9 @@ def sandbox():  # sourcery skip: use-named-expression
     data = extractDictFromBytesRequest()
     mainResponseDict = __processTwilioSandboxIncomingMessage(data)
     rawResponse = mainResponseDict["body"]
+
     image_url = "https://shorturl.at/lEFT0"
-    sender = mainResponseDict["dict"]["sender"]
-    userResponse = mainResponseDict["dict"]
-    botResponse = mainResponseDict["botResponse"]
-    pulseEmit(socketInstance, userResponse)
-    pulseEmit(socketInstance, botResponse)
+    pulseEmit(socketInstance, mainResponseDict)
     return _sendTwilioResponse(body=rawResponse, media=None)
 
 
@@ -93,6 +89,8 @@ def __processTwilioSandboxIncomingMessage(data: dict):
     print("__processTwilioSandboxIncomingMessage")
     processedData = __processTwilioIncomingMessage(data)
     userMessageJSON = processedData["userMessageJSON"]
+    pulseEmit(socketInstance, userMessageJSON)
+    # socketInstance.emit('message', userMessageJSON)
     im = IntentManager()
     phoneNumber = processedData["phoneNumber"]
     receivedMessage = processedData["receivedMessage"]
@@ -103,17 +101,22 @@ def __processTwilioSandboxIncomingMessage(data: dict):
         im.extractedParameters["phoneNumber"] = phoneNumber
         botAnswer = im.twilioSingleStep(receivedMessage)
         dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(botAnswer, phoneNumber)
+        pulseEmit(socketInstance, dialogflowResponseJSON)
+        # socketInstance.emit('message', dialogflowResponseJSON)
         output["body"] = botAnswer
-        output["dict"] = userMessageJSON
-        output["botResponse"] = dialogflowResponseJSON
+        output["formattedBody"] = _sendTwilioResponse(body=botAnswer)
+        # __addBotMessageToFirebase(phoneNumber, userMessageJSON)
         return output
     logging.info("Already signup!")
     dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
     dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(
         dialogflowResponse.query_result.fulfillment_text, phoneNumber)
+    # socketInstance.emit('message', dialogflowResponseJSON)
+    # pulseEmit(socketInstance, dialogflowResponseJSON)
     output["body"] = dialogflowResponse.query_result.fulfillment_text
-    output["dict"] = dialogflowResponseJSON
-    return output
+    output["formattedBody"] = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
+    # __addBotMessageToFirebase(phoneNumber, userMessageJSON)
+    return dialogflowResponseJSON
 
 
 def __addBotMessageToFirebase(phoneNumber, userMessageJSON):
@@ -255,8 +258,8 @@ def push_new_message_by_whatsapp_number():
 
 @app.route("/create_conversation", methods=['POST'])
 def create_conversation():
+    print("Creating new conversation!")
     data = json.loads(request.data.decode("utf-8"))
-    print("Creating conversation for data: ", data)
     response = fcm.createConversation(data)
     finalResponse = data if response else False
     return jsonify(finalResponse), 200
