@@ -1,8 +1,10 @@
 import os
 import google.cloud.dialogflow_v2 as dialogflow
+from dotenv import load_dotenv
 from twilio.twiml.messaging_response import MessagingResponse
 
 from data.speisekarteExtraction import loadSpeisekarte, createMenuString, analyzeTotalPrice
+from references.pathReference import getDialogflowJsonPath
 
 
 def singleton(cls):
@@ -20,6 +22,7 @@ def update_connection_decorator(func):
     def wrapper(self, *args, **kwargs):
         self.updateConnection()
         return func(self, *args, **kwargs)
+
     return wrapper
 
 
@@ -28,7 +31,7 @@ class DialogFlowSession:
     def __init__(self):
         self.speisekarte = loadSpeisekarte()
         self.params = {"pizzas": [], "drinks": []}
-        dialogflowJsonFilePath = os.path.join(os.getcwd(), 'dialogflow.json')
+        dialogflowJsonFilePath = getDialogflowJsonPath()
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = dialogflowJsonFilePath
         self.sessionClient = dialogflow.SessionsClient()
         self.session = self.sessionClient.session_path(os.environ["DIALOGFLOW_PROJECT_ID"], "abc")
@@ -49,6 +52,7 @@ class DialogFlowSession:
             session=session, query_input=queryInput, query_params=session_params
         )
         return self.sessionClient.detect_intent(request=requests)
+
     @staticmethod
     def extractTextFromDialogflowResponse(dialogflowResponse: dialogflow.types.DetectIntentResponse):
         dialogflowResponses = dialogflowResponse.query_result.fulfillment_messages
@@ -70,3 +74,13 @@ class DialogFlowSession:
 
     def analyzeTotalPrice(self, structuredOrder: dict):
         return analyzeTotalPrice(structuredOrder=structuredOrder, menu=self.speisekarte)
+
+
+def __main():
+    load_dotenv()
+    ds = DialogFlowSession()
+    return
+
+
+if __name__ == "__main__":
+    __main()

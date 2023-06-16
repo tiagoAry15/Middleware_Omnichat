@@ -25,13 +25,14 @@ import json
 
 load_dotenv()
 
-account_sid = os.environ["TWILIO_ACCOUNT_SID"]
-auth_token = os.environ["TWILIO_AUTH_TOKEN"]
+twilio_account_ssid = os.environ["TWILIO_ACCOUNT_SID"]
+twilio_auth_token = os.environ["TWILIO_AUTH_TOKEN"]
 twilio_phone_number = f'whatsapp:{os.environ["TWILIO_PHONE_NUMBER"]}'
-client = Client(account_sid, auth_token)
+twilioClient = Client(twilio_account_ssid, twilio_auth_token)
 app = Flask(__name__)
-CORS(app, support_credentials=True)
-socketInstance = SocketIO(app, cors_allowed_origins="*")
+originList = ["http://localhost:3000", "https://4c56-168-232-84-74.ngrok-free.app"]
+CORS(app, origins=originList, support_credentials=True)
+socketInstance = SocketIO(app, cors_allowed_origins=originList)
 dialogFlowInstance = DialogFlowSession()
 fc = FirebaseConnection()
 fu = FirebaseUser(fc)
@@ -78,6 +79,7 @@ def sandbox():  # sourcery skip: use-named-expression
     rawResponse = mainResponseDict["body"]
     formattedResponse = mainResponseDict["formattedBody"]
     image_url = "https://shorturl.at/lEFT0"
+    pulseEmit(socketInstance, rawResponse)
     return _sendTwilioResponse(body=rawResponse, media=None)
 
 
@@ -85,7 +87,7 @@ def __processTwilioSandboxIncomingMessage(data: dict):
     print("__processTwilioSandboxIncomingMessage")
     processedData = __processTwilioIncomingMessage(data)
     userMessageJSON = processedData["userMessageJSON"]
-    pulseEmit(socketInstance, userMessageJSON)
+    # pulseEmit(socketInstance, userMessageJSON)
     # socketInstance.emit('message', userMessageJSON)
     im = IntentManager()
     phoneNumber = processedData["phoneNumber"]
@@ -97,7 +99,7 @@ def __processTwilioSandboxIncomingMessage(data: dict):
         im.extractedParameters["phoneNumber"] = phoneNumber
         botAnswer = im.twilioSingleStep(receivedMessage)
         dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(botAnswer, phoneNumber)
-        pulseEmit(socketInstance, dialogflowResponseJSON)
+        # pulseEmit(socketInstance, dialogflowResponseJSON)
         # socketInstance.emit('message', dialogflowResponseJSON)
         output["body"] = botAnswer
         output["formattedBody"] = _sendTwilioResponse(body=botAnswer)
@@ -107,7 +109,7 @@ def __processTwilioSandboxIncomingMessage(data: dict):
     dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(
         dialogflowResponse.query_result.fulfillment_text, phoneNumber)
     # socketInstance.emit('message', dialogflowResponseJSON)
-    pulseEmit(socketInstance, dialogflowResponseJSON)
+    # pulseEmit(socketInstance, dialogflowResponseJSON)
     output["body"] = dialogflowResponse.query_result.fulfillment_text
     output["formattedBody"] = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
     return output
@@ -361,7 +363,7 @@ def __sendInstagramMessage(recipient_id, message_text):
 
 
 def __main():
-    socketInstance.run(app=app, port=8000, host="0.0.0.0")
+    socketInstance.run(app=app, port=3000, host="0.0.0.0", allow_unsafe_werkzeug=True)
 
 
 if __name__ == '__main__':
