@@ -363,7 +363,7 @@ def __sendInstagramMessage(recipient_id, message_text):
 
 
 def __main():
-    socketInstance.run(app=app, port=3000, host="0.0.0.0", allow_unsafe_werkzeug=True)
+    socketInstance.run(app=app, port=3000, host="0.0.0.0")
 
 
 if __name__ == '__main__':
