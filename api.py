@@ -101,7 +101,7 @@ def __processTwilioSandboxIncomingMessage(data: dict):
         im.extractedParameters["phoneNumber"] = phoneNumber
         botAnswer = im.twilioSingleStep(receivedMessage)
         dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(botAnswer, phoneNumber)
-        # pulseEmit(socketInstance, dialogflowResponseJSON)
+        pulseEmit(socketInstance, dialogflowResponseJSON)
         # socketInstance.emit('message', dialogflowResponseJSON)
         output["body"] = botAnswer
         output["formattedBody"] = _sendTwilioResponse(body=botAnswer)
@@ -372,7 +372,7 @@ def __sendInstagramMessage(recipient_id, message_text):
 
 
 def __main():
-    socketInstance.run(app=app, port=3000, host="0.0.0.0", allow_unsafe_werkzeug=True)
+    socketInstance.run(app=app, port=3000, host="0.0.0.0")
 
 
 if __name__ == '__main__':
