@@ -30,8 +30,8 @@ twilio_auth_token = os.environ["TWILIO_AUTH_TOKEN"]
 twilio_phone_number = f'whatsapp:{os.environ["TWILIO_PHONE_NUMBER"]}'
 twilioClient = Client(twilio_account_ssid, twilio_auth_token)
 app = Flask(__name__)
-originList = ["http://localhost:3000", "https://4c56-168-232-84-74.ngrok-free.app"]
-CORS(app, origins=originList, support_credentials=True)
+originList = ["http://localhost:5173", "https://dbc1-187-18-142-212.ngrok-free.app"]
+CORS(app, support_credentials=True)
 socketInstance = SocketIO(app, cors_allowed_origins=originList)
 dialogFlowInstance = DialogFlowSession()
 fc = FirebaseConnection()
@@ -77,9 +77,9 @@ def sandbox():  # sourcery skip: use-named-expression
     data = extractDictFromBytesRequest()
     mainResponseDict = __processTwilioSandboxIncomingMessage(data)
     rawResponse = mainResponseDict["body"]
-    formattedResponse = mainResponseDict["formattedBody"]
+
     image_url = "https://shorturl.at/lEFT0"
-    pulseEmit(socketInstance, rawResponse)
+    pulseEmit(socketInstance, mainResponseDict)
     return _sendTwilioResponse(body=rawResponse, media=None)
 
 
@@ -87,8 +87,8 @@ def __processTwilioSandboxIncomingMessage(data: dict):
     print("__processTwilioSandboxIncomingMessage")
     processedData = __processTwilioIncomingMessage(data)
     userMessageJSON = processedData["userMessageJSON"]
-    # pulseEmit(socketInstance, userMessageJSON)
-    # socketInstance.emit('message', userMessageJSON)
+    pulseEmit(socketInstance, userMessageJSON)
+    #socketInstance.emit('message', userMessageJSON)
     im = IntentManager()
     phoneNumber = processedData["phoneNumber"]
     receivedMessage = processedData["receivedMessage"]
@@ -112,7 +112,8 @@ def __processTwilioSandboxIncomingMessage(data: dict):
     # pulseEmit(socketInstance, dialogflowResponseJSON)
     output["body"] = dialogflowResponse.query_result.fulfillment_text
     output["formattedBody"] = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
-    return output
+    return dialogflowResponseJSON
+
 
 
 @app.route("/ChatTest", methods=['GET'])
