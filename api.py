@@ -12,25 +12,27 @@ from twilio.rest import Client
 
 from data.messageConverter import MessageConverter, get_dialogflow_message_example, get_user_message_example
 from firebaseFolder.firebaseConnection import FirebaseConnection
-from firebaseFolder.firebaseConversation import FirebaseConversation
+from firebaseFolder.firebaseConversation import FirebaseConversation, getDummyConversationDicts
 from firebaseFolder.firebaseUser import FirebaseUser
 from orderProcessing.orderHandler import structureDrink, buildFullOrder, parsePizzaOrder, \
     __convertPizzaOrderToText, convertMultiplePizzaOrderToText
 from dialogFlowSession import DialogFlowSession
 from gpt.PizzaGPT import getResponseDefaultGPT
 from intentManipulation.intentManager import IntentManager
+from socketEmissions.socketEmissor import pulseEmit
 from utils import extractDictFromBytesRequest, sendWebhookCallback, _sendTwilioResponse
 import json
 
 load_dotenv()
 
-account_sid = os.environ["TWILIO_ACCOUNT_SID"]
-auth_token = os.environ["TWILIO_AUTH_TOKEN"]
+twilio_account_ssid = os.environ["TWILIO_ACCOUNT_SID"]
+twilio_auth_token = os.environ["TWILIO_AUTH_TOKEN"]
 twilio_phone_number = f'whatsapp:{os.environ["TWILIO_PHONE_NUMBER"]}'
-client = Client(account_sid, auth_token)
+twilioClient = Client(twilio_account_ssid, twilio_auth_token)
 app = Flask(__name__)
-CORS(app, support_credentials=True)
-socketInstance = SocketIO(app, cors_allowed_origins="*")
+originList = ["http://localhost:3000", "https://4c56-168-232-84-74.ngrok-free.app"]
+CORS(app, origins=originList, support_credentials=True)
+socketInstance = SocketIO(app, cors_allowed_origins=originList)
 dialogFlowInstance = DialogFlowSession()
 fc = FirebaseConnection()
 fu = FirebaseUser(fc)
@@ -77,6 +79,7 @@ def sandbox():  # sourcery skip: use-named-expression
     rawResponse = mainResponseDict["body"]
     formattedResponse = mainResponseDict["formattedBody"]
     image_url = "https://shorturl.at/lEFT0"
+    pulseEmit(socketInstance, rawResponse)
     return _sendTwilioResponse(body=rawResponse, media=None)
 
 
@@ -84,7 +87,8 @@ def __processTwilioSandboxIncomingMessage(data: dict):
     print("__processTwilioSandboxIncomingMessage")
     processedData = __processTwilioIncomingMessage(data)
     userMessageJSON = processedData["userMessageJSON"]
-    socketInstance.emit('message_received', userMessageJSON)
+    # pulseEmit(socketInstance, userMessageJSON)
+    # socketInstance.emit('message', userMessageJSON)
     im = IntentManager()
     phoneNumber = processedData["phoneNumber"]
     receivedMessage = processedData["receivedMessage"]
@@ -95,7 +99,8 @@ def __processTwilioSandboxIncomingMessage(data: dict):
         im.extractedParameters["phoneNumber"] = phoneNumber
         botAnswer = im.twilioSingleStep(receivedMessage)
         dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(botAnswer, phoneNumber)
-        socketInstance.emit('message_received', dialogflowResponseJSON)
+        # pulseEmit(socketInstance, dialogflowResponseJSON)
+        # socketInstance.emit('message', dialogflowResponseJSON)
         output["body"] = botAnswer
         output["formattedBody"] = _sendTwilioResponse(body=botAnswer)
         return output
@@ -103,7 +108,8 @@ def __processTwilioSandboxIncomingMessage(data: dict):
     dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
     dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(
         dialogflowResponse.query_result.fulfillment_text, phoneNumber)
-    socketInstance.emit('message_received', dialogflowResponseJSON)
+    # socketInstance.emit('message', dialogflowResponseJSON)
+    # pulseEmit(socketInstance, dialogflowResponseJSON)
     output["body"] = dialogflowResponse.query_result.fulfillment_text
     output["formattedBody"] = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
     return output
@@ -117,8 +123,10 @@ def chatTest():
 
     dialogFlowJSON = MessageConverter.convert_dialogflow_message(dialogflow_message, userMessageJSON['phoneNumber'])
     for _ in range(4):
-        socketInstance.emit('message_received', userMessageJSON)
-        socketInstance.emit('message_received', dialogFlowJSON)
+        # socketInstance.emit('message', userMessageJSON)
+        pulseEmit(socketInstance, userMessageJSON)
+        # socketInstance.emit('message', dialogFlowJSON)
+        pulseEmit(socketInstance, dialogFlowJSON)
     return [], 200
 
 
@@ -134,7 +142,8 @@ def send():
     queryText = requestContent['queryResult']['queryText']
     userMessage = [item["name"] for item in queryText] if isinstance(queryText, list) else queryText
     socketMessage = mc.dynamicConversion(userMessage)
-    socketInstance.emit('message_received', socketMessage)
+    # socketInstance.emit('message', socketMessage)
+    pulseEmit(socketInstance, socketMessage)
     currentIntent = requestContent['queryResult']['intent']['displayName']
     logging.info(f"current Intent: {currentIntent}")
     params = requestContent['queryResult']['parameters']
@@ -231,8 +240,8 @@ def push_new_message_by_whatsapp_number():
     if not user:
         return jsonify({"Error": f"Could not find an user with whatsapp {whatsapp_number}"}), 404
     conversations = fcm.retrieveAllMessagesByWhatsappNumber(whatsapp_number)
-    if not conversations:
-        return jsonify({"Error": f"Could not find conversations for the user with whatsapp {whatsapp_number}"}), 404
+    # if not conversations:
+    #     return jsonify({"Error": f"Could not find conversations for the user with whatsapp {whatsapp_number}"}), 404
     message = {"content": data.get("message")}
     fcm.appendMessageToWhatsappNumber(messageData=message, whatsappNumber=whatsapp_number)
     return jsonify({"Success": f"New message pushed for user with whatsapp {whatsapp_number}"}), 200
@@ -240,10 +249,20 @@ def push_new_message_by_whatsapp_number():
 
 @app.route("/create_conversation", methods=['POST'])
 def create_conversation():
+    print("Creating new conversation!")
     data = json.loads(request.data.decode("utf-8"))
     response = fcm.createConversation(data)
     finalResponse = data if response else False
     return jsonify(finalResponse), 200
+
+
+@app.route("/create_dummy_conversation", methods=['POST'])
+def create_dummy_conversation():
+    data = json.loads(request.data.decode("utf-8"))
+    dummyMessagePot, dummyPot = getDummyConversationDicts().values()
+    for message in dummyPot:
+        fcm.createConversation(message)
+    return jsonify({"Success": "Dummy conversation created"}), 200
 
 
 @app.route("/update_conversation", methods=['PUT'])
@@ -306,7 +325,7 @@ def hello():
 @app.route("/instagram", methods=['GET', 'POST'])
 def instagram():
     if request.method == 'GET':
-        if request.args.get('hub.mode') == 'subscribe' and request.args.get('hub.verify_token') == 'bill':
+        if request.args.get('hub.mode') == 'subscribe':
             return request.args.get('hub.challenge')
         else:
             abort(403)
@@ -329,7 +348,8 @@ def _processInstagramIncomingMessage(data):
     currentFormattedTime = datetime.datetime.now().strftime("%H:%M")
     emitDict = {'body': message_text, 'from': 'instagram', 'phoneNumber': sender_id, 'sender': 'Mateus',
                 'time': currentFormattedTime}
-    socketInstance.emit('message_received', emitDict)
+    # socketInstance.emit('message', emitDict)
+    pulseEmit(socketInstance, emitDict)
 
 
 def __sendInstagramMessage(recipient_id, message_text):
@@ -343,7 +363,7 @@ def __sendInstagramMessage(recipient_id, message_text):
 
 
 def __main():
-    socketInstance.run(app=app, port=8000, host="0.0.0.0")
+    socketInstance.run(app=app, port=3000, host="0.0.0.0", allow_unsafe_werkzeug=True)
 
 
 if __name__ == '__main__':

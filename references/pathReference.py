@@ -22,8 +22,12 @@ def getTokenJsonPath() -> Path:
     return getMainFolderPath() / 'tokens/token.json'
 
 
+def getDialogflowJsonPath() -> str:
+    return str(getMainFolderPath() / 'dialogflow.json')
+
+
 def __main():
-    sdkFile = getFirebaseSDKPath()
+    sdkFile = getDialogflowJsonPath()
     existingSdkFile = sdkFile.exists()
     print(existingSdkFile)
     return existingSdkFile
