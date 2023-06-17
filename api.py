@@ -27,6 +27,9 @@ import json
 
 load_dotenv()
 
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
+
 twilio_account_ssid = os.environ["TWILIO_ACCOUNT_SID"]
 twilio_auth_token = os.environ["TWILIO_AUTH_TOKEN"]
 twilio_phone_number = f'whatsapp:{os.environ["TWILIO_PHONE_NUMBER"]}'
