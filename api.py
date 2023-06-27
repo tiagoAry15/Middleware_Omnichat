@@ -10,7 +10,7 @@ from flask_cors import CORS
 from flask_socketio import SocketIO
 from twilio.rest import Client
 
-from data.messageConverter import MessageConverter, get_dialogflow_message_example, get_user_message_example
+from data.message_converter import MessageConverter, get_dialogflow_message_example, get_user_message_example
 from firebaseFolder.firebaseConnection import FirebaseConnection
 from firebaseFolder.firebaseConversation import FirebaseConversation
 from firebaseFolder.firebaseUser import FirebaseUser
