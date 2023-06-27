@@ -1,5 +1,5 @@
 import pytest
-from data.speisekarteExtraction import __createPizzaDescription, analyzeSingleItem, analyzeCompositeItem, \
+from data.speisekarte_extraction import __createPizzaDescription, analyzeSingleItem, analyzeCompositeItem, \
     analyzeTotalPrice, loadSpeisekarte
 
 

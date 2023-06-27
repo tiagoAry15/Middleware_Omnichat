@@ -3,9 +3,9 @@ import random
 import uuid
 from typing import List
 
-from dialogFlowSession import singleton, update_connection_decorator
-from firebaseFolder.firebaseConnection import FirebaseConnection
-from firebaseFolder.firebaseCoreWrapper import FirebaseWrapper
+from dialogflow_session import singleton, update_connection_decorator
+from firebaseFolder.firebase_connection import FirebaseConnection
+from firebaseFolder.firebase_coreWrapper import FirebaseWrapper
 
 
 @singleton

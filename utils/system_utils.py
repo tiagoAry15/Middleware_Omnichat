@@ -2,7 +2,7 @@ import os
 import json
 from typing import List
 
-from references.pathReference import getMainFolderPath
+from references.path_reference import getMainFolderPath
 
 
 def get_forbidden_folders() -> List[str]:

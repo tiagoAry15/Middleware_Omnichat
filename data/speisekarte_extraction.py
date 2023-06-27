@@ -1,7 +1,7 @@
 import json
 from typing import List
 
-from references.pathReference import getSpeisekartePath
+from references.path_reference import getSpeisekartePath
 
 
 def loadSpeisekarte() -> dict:

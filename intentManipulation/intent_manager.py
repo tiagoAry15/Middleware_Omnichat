@@ -2,9 +2,9 @@ from typing import List
 
 from colorama import Fore, Style
 
-from dialogFlowSession import singleton
-from firebaseFolder.firebaseUser import FirebaseUser
-from firebaseFolder.firebaseConnection import FirebaseConnection
+from dialogflow_session import singleton
+from firebaseFolder.firebase_user import FirebaseUser
+from firebaseFolder.firebase_connection import FirebaseConnection
 from intentManipulation.intentTypes.intentEntryText import EntryTextIntent
 from intentManipulation.intentTypes.intentFallback import InstantFallbackIntent
 from intentManipulation.intentTypes.intentMultipleChoice import MultipleChoiceIntent

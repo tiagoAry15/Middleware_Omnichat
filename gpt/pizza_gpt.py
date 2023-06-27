@@ -4,10 +4,10 @@ import openai
 from dotenv import load_dotenv
 import json
 
-from gpt import phraseEnum
-from gpt.phraseEnum import PhraseEnum
-from gpt.timeDecorator import timingDecorator
-from intentManipulation.intentManagerTiago import IntentManager
+from gpt import phrase_enum
+from gpt.phrase_enum import PhraseEnum
+from gpt.time_decorator import timingDecorator
+from intentManipulation.intent_manager_tiago import IntentManager
 
 
 def readTxtAndConvertToString(filepath: str):
@@ -20,7 +20,7 @@ def readTxtAndConvertToString(filepath: str):
 
 
 def getPizzaGPTPrompt(prompt: str):
-    baseString = readTxtAndConvertToString('./chatGPTPrompt.txt')
+    baseString = readTxtAndConvertToString('chat_gpt_prompt.txt')
     return f'{baseString} "{prompt}"?'
 
 

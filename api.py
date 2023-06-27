@@ -13,15 +13,15 @@ from flask_socketio import SocketIO
 from twilio.rest import Client
 
 from data.message_converter import MessageConverter, get_dialogflow_message_example, get_user_message_example
-from firebaseFolder.firebaseConnection import FirebaseConnection
-from firebaseFolder.firebaseConversation import FirebaseConversation, getDummyConversationDicts
-from firebaseFolder.firebaseUser import FirebaseUser
-from orderProcessing.orderHandler import structureDrink, buildFullOrder, parsePizzaOrder, \
+from firebaseFolder.firebase_connection import FirebaseConnection
+from firebaseFolder.firebase_conversation import FirebaseConversation, getDummyConversationDicts
+from firebaseFolder.firebase_user import FirebaseUser
+from orderProcessing.order_handler import structureDrink, buildFullOrder, parsePizzaOrder, \
     __convertPizzaOrderToText, convertMultiplePizzaOrderToText
-from dialogFlowSession import DialogFlowSession
-from gpt.PizzaGPT import getResponseDefaultGPT
-from intentManipulation.intentManager import IntentManager
-from socketEmissions.socketEmissor import pulseEmit
+from dialogflow_session import DialogFlowSession
+from gpt.pizza_gpt import getResponseDefaultGPT
+from intentManipulation.intent_manager import IntentManager
+from socketEmissions.socket_emissor import pulseEmit
 from utils import extractDictFromBytesRequest, sendWebhookCallback, _sendTwilioResponse
 import json
 

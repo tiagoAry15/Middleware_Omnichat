@@ -1,7 +1,7 @@
 import os
 import json
 
-from references.pathReference import getEnvPath, getTokenJsonPath
+from references.path_reference import getEnvPath, getTokenJsonPath
 
 
 def convert_env_to_json(env_file, json_file):

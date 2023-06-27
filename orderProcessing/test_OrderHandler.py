@@ -1,8 +1,8 @@
 import pytest
 
-from orderProcessing.orderHandler import (structureDrink, buildFullOrder, _splitOrder, _translateOrder,
-                                          parsePizzaOrder, __convertPizzaOrderToText
-                                          )
+from orderProcessing.order_handler import (structureDrink, buildFullOrder, _splitOrder, _translateOrder,
+                                           parsePizzaOrder, __convertPizzaOrderToText
+                                           )
 
 
 @pytest.mark.parametrize("userMessage, parameters, expected_output", [
