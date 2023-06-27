@@ -1,4 +1,4 @@
-from intentManipulation.intentTypes.baseIntent import BaseIntent
+from intentManipulation.intentTypes.base_intent import BaseIntent
 from intentManipulation.intentTypes.replies import Replies, Types
 
 

@@ -5,7 +5,7 @@ from typing import List
 
 from dialogflow_session import singleton, update_connection_decorator
 from firebaseFolder.firebase_connection import FirebaseConnection
-from firebaseFolder.firebase_coreWrapper import FirebaseWrapper
+from firebaseFolder.firebase_core_wrapper import FirebaseWrapper
 
 
 @singleton

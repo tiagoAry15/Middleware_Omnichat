@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 
-from intentManipulation.intentTypes.baseIntent import BaseIntent
+from intentManipulation.intentTypes.base_intent import BaseIntent
 from intentManipulation.intentTypes.replies import Replies, Types
 
 # Constants for regular expressions
