@@ -55,7 +55,6 @@ def structureDrink(parameters: dict, inputUserMessage: str) -> dict:
         if drinkReplaced in reverseDrinkMap:
             originalDrinkName = reverseDrinkMap[drinkReplaced]
             drinkOrder[originalDrinkName] = drinkOrder.pop(drinkReplaced)
-
     return drinkOrder
 
 
@@ -198,12 +197,14 @@ def __testBuildFullOrder():
 
 
 def __main():
-    __testBuildFullOrder()
+    # __testBuildFullOrder()
     # output = structureFullOrder(parameterInput)
     # output = parsePizzaOrder(
     #     "Vou querer duas pizzas de calabresa, uma meio pepperoni meio portuguesa e uma pizza meio calabresa meio "
     #     "pepperoni",
     #     {'flavor': ['calabresa', 'pepperoni', 'portuguesa']})
+    orderList = [{'calabresa': 2.0}, {'pepperoni': 0.5, 'portuguesa': 0.5}, {'calabresa': 0.5, 'pepperoni': 0.5}]
+    output = convertMultiplePizzaOrderToText(orderList)
 
     # parameterInput = {'drinks': [{'guaraná': 1.0, 'suco de laranja': 2.0}],
     #                   'pizzas': [[{'calabresa': 2.0}, {'calabresa': 0.5, 'frango': 0.5}]],
