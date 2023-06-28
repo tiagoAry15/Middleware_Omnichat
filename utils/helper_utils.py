@@ -1,12 +1,12 @@
 import base64
+import copy
 import json
 import os
-
 from dotenv import load_dotenv
-from flask import request, make_response, jsonify, Response
+from flask import request, make_response, Response
 from urllib.parse import parse_qs
-
 from twilio.twiml.messaging_response import MessagingResponse
+from utils.api_core import mc, fcm
 
 
 def __prepareOutputResponse(myResult) -> Response:
@@ -69,19 +69,56 @@ def getJsonCredentialsData() -> dict:
         return json.load(f)
 
 
-def __main():
-    data = getJsonCredentialsData()
-    return
+def __getAllUsersMappedByPhone() -> dict:
+    """Retrieve all users from the Firebase and map them by phone number."""
+    users = fu.getAllUsers()
+    return {user["phoneNumber"]: user for user in users.values()} if users is not None else {}
 
 
-if __name__ == '__main__':
-    __main()
+def __getUserByWhatsappNumber(whatsappNumber: str) -> dict or None:
+    """Returns a dict like this:
+        {'address': 'Rua das Flores 4984',
+        'cpf': '14587544589',
+        'name': 'João',
+        'phoneNumber': '+5585997548654'}"""
+    users = __getAllUsersMappedByPhone()
+    return users.get(whatsappNumber)
 
 
-def _sendTwilioResponse(body: str, media: str = None) -> str:
+def __detectIncomingMessage(userMessage: dict) -> dict:
+    twilioKeys = ['AccountSid', 'SmsMessageSid', 'NumMedia', 'ProfileName', 'SmsSid', 'WaId', 'SmsStatus', 'To',
+                  'NumSegments', 'ReferralNumMedia', 'MessageSid', 'AccountSid', 'From', 'ApiVersion']
+    incomingKeys = set(userMessage.keys())
+    commonKeys = incomingKeys.intersection(twilioKeys)
+    isTwilio = len(commonKeys) / len(twilioKeys) > 50 / 100
+    if isTwilio:
+        return __processTwilioIncomingMessage(userMessage)
+
+
+def __addBotMessageToFirebase(phoneNumber, userMessageJSON):
+    msgDict = copy.deepcopy(userMessageJSON)
+    msgDict["sender"] = "ChatBot"
+    fcm.appendMessageToWhatsappNumber(msgDict, phoneNumber)
+
+
+def sendTwilioResponse(body: str, media: str = None) -> str:
     response = MessagingResponse()
     message = response.message()
     message.body(body)
     if media is not None:
         message.media(media)
     return str(response)
+
+
+def __processTwilioIncomingMessage(twilioMessage: dict):
+    userMessageJSON = mc.convertUserMessage(twilioMessage)
+    return {"userMessageJSON": userMessageJSON, "phoneNumber": userMessageJSON["phoneNumber"],
+            "receivedMessage": userMessageJSON["body"]}
+
+
+def __main():
+    return
+
+
+if __name__ == '__main__':
+    __main()

@@ -1,134 +1,36 @@
-import copy
 import datetime
 import logging
 import os
-import uuid
-from threading import Thread
-
 import requests
-from dotenv import load_dotenv
-from flask import Flask, request, jsonify, Response, abort
-from flask_cors import CORS
-from flask_socketio import SocketIO
-from twilio.rest import Client
-
+from flask import request, jsonify, Response, abort
 from data.message_converter import MessageConverter, get_dialogflow_message_example, get_user_message_example
-from firebaseFolder.firebase_connection import FirebaseConnection
-from firebaseFolder.firebase_conversation import FirebaseConversation, getDummyConversationDicts
-from firebaseFolder.firebase_user import FirebaseUser
+from firebaseFolder.firebase_conversation import getDummyConversationDicts
 from orderProcessing.order_handler import structureDrink, buildFullOrder, parsePizzaOrder, \
-    __convertPizzaOrderToText, convertMultiplePizzaOrderToText
-from dialogflow_session import DialogFlowSession
+    convertMultiplePizzaOrderToText
 from gpt.pizza_gpt import getResponseDefaultGPT
-from intentManipulation.intent_manager import IntentManager
 from socketEmissions.socket_emissor import pulseEmit
-from utils import extractDictFromBytesRequest, sendWebhookCallback, _sendTwilioResponse
 import json
-
-load_dotenv()
+from utils.api_core import app, socketInstance, dialogFlowInstance, fu, fcm, mc
+from utils.core_utils import processTwilioSandboxIncomingMessage
+from utils.helper_utils import extractDictFromBytesRequest, sendTwilioResponse, sendWebhookCallback, \
+    __getUserByWhatsappNumber
 
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
-
-twilio_account_ssid = os.environ["TWILIO_ACCOUNT_SID"]
-twilio_auth_token = os.environ["TWILIO_AUTH_TOKEN"]
-twilio_phone_number = f'whatsapp:{os.environ["TWILIO_PHONE_NUMBER"]}'
-twilioClient = Client(twilio_account_ssid, twilio_auth_token)
-app = Flask(__name__)
-originList = ["http://localhost:5173", "https://dbc1-187-18-142-212.ngrok-free.app"]
-CORS(app, support_credentials=True)
-socketInstance = SocketIO(app, cors_allowed_origins=originList)
-dialogFlowInstance = DialogFlowSession()
-fc = FirebaseConnection()
-fu = FirebaseUser(fc)
-fcm = FirebaseConversation(fc)
-mc = MessageConverter()
-
-
-def __getAllUsersMappedByPhone() -> dict:
-    """Retrieve all users from the Firebase and map them by phone number."""
-    users = fu.getAllUsers()
-    return {user["phoneNumber"]: user for user in users.values()} if users is not None else {}
-
-
-def __getUserByWhatsappNumber(whatsappNumber: str) -> dict or None:
-    """Returns a dict like this:
-        {'address': 'Rua das Flores 4984',
-        'cpf': '14587544589',
-        'name': 'João',
-        'phoneNumber': '+5585997548654'}"""
-    users = __getAllUsersMappedByPhone()
-    return users.get(whatsappNumber)
-
-
-def __detectIncomingMessage(userMessage: dict) -> dict:
-    twilioKeys = ['AccountSid', 'SmsMessageSid', 'NumMedia', 'ProfileName', 'SmsSid', 'WaId', 'SmsStatus', 'To',
-                  'NumSegments', 'ReferralNumMedia', 'MessageSid', 'AccountSid', 'From', 'ApiVersion']
-    incomingKeys = set(userMessage.keys())
-    commonKeys = incomingKeys.intersection(twilioKeys)
-    isTwilio = len(commonKeys) / len(twilioKeys) > 50 / 100
-    if isTwilio:
-        return __processTwilioIncomingMessage(userMessage)
-
-
-def __processTwilioIncomingMessage(twilioMessage: dict):
-    userMessageJSON = mc.convertUserMessage(twilioMessage)
-    return {"userMessageJSON": userMessageJSON, "phoneNumber": userMessageJSON["phoneNumber"],
-            "receivedMessage": userMessageJSON["body"]}
 
 
 @app.route("/twilioSandbox", methods=['POST'])
 def sandbox():  # sourcery skip: use-named-expression
     data = extractDictFromBytesRequest()
-    mainResponseDict = __processTwilioSandboxIncomingMessage(data)
+    mainResponseDict = processTwilioSandboxIncomingMessage(data)
     rawResponse = mainResponseDict["body"]
 
     image_url = "https://shorturl.at/lEFT0"
     pulseEmit(socketInstance, mainResponseDict)
-    return _sendTwilioResponse(body=rawResponse, media=None)
+    return sendTwilioResponse(body=rawResponse, media=None)
 
 
-def __processTwilioSandboxIncomingMessage(data: dict):
-    print("__processTwilioSandboxIncomingMessage")
-    processedData = __processTwilioIncomingMessage(data)
-    userMessageJSON = processedData["userMessageJSON"]
-    pulseEmit(socketInstance, userMessageJSON)
-    # socketInstance.emit('message', userMessageJSON)
-    im = IntentManager()
-    phoneNumber = processedData["phoneNumber"]
-    receivedMessage = processedData["receivedMessage"]
-    needsToSignUp = not im.existingWhatsapp(phoneNumber)
-    output = {"body": None, "formattedBody": None}
-    if needsToSignUp:
-        logging.info("Needs to sign up!")
-        im.extractedParameters["phoneNumber"] = phoneNumber
-        botAnswer = im.twilioSingleStep(receivedMessage)
-        dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(botAnswer, phoneNumber)
-        pulseEmit(socketInstance, dialogflowResponseJSON)
-        # socketInstance.emit('message', dialogflowResponseJSON)
-        output["body"] = botAnswer
-        output["formattedBody"] = _sendTwilioResponse(body=botAnswer)
-        # __addBotMessageToFirebase(phoneNumber, userMessageJSON)
-        return output
-    logging.info("Already signup!")
-    dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
-    dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(
-        dialogflowResponse.query_result.fulfillment_text, phoneNumber)
-    # socketInstance.emit('message', dialogflowResponseJSON)
-    # pulseEmit(socketInstance, dialogflowResponseJSON)
-    output["body"] = dialogflowResponse.query_result.fulfillment_text
-    output["formattedBody"] = dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
-    # __addBotMessageToFirebase(phoneNumber, userMessageJSON)
-    return dialogflowResponseJSON
-
-
-def __addBotMessageToFirebase(phoneNumber, userMessageJSON):
-    msgDict = copy.deepcopy(userMessageJSON)
-    msgDict["sender"] = "ChatBot"
-    fcm.appendMessageToWhatsappNumber(msgDict, phoneNumber)
-
-
-@app.route("/ChatTest", methods=['GET'])
+@app.route("/chatTest", methods=['GET'])
 def chatTest():
     dialogflow_message = get_dialogflow_message_example()
     user_message = get_user_message_example()
@@ -136,9 +38,7 @@ def chatTest():
 
     dialogFlowJSON = MessageConverter.convert_dialogflow_message(dialogflow_message, userMessageJSON['phoneNumber'])
     for _ in range(4):
-        # socketInstance.emit('message', userMessageJSON)
         pulseEmit(socketInstance, userMessageJSON)
-        # socketInstance.emit('message', dialogFlowJSON)
         pulseEmit(socketInstance, dialogFlowJSON)
     return [], 200
 
@@ -325,7 +225,7 @@ def handle_response():
     receivedMessage = data.get("Body")[0]
     mainResponse = getResponseDefaultGPT(receivedMessage)
     image_url = "https://shorturl.at/lEFT0"
-    return _sendTwilioResponse(body=mainResponse)
+    return sendTwilioResponse(body=mainResponse)
 
 
 # Hello World endpoint
@@ -354,7 +254,7 @@ def _processInstagramIncomingMessage(data):
     sender_id = data['entry'][0]['messaging'][0]['sender']['id']
     message_text = data['entry'][0]['messaging'][0]['message']['text']
     structuredMessage = {'Body': [message_text], 'From': [f'whatsapp:+5585{sender_id}'], 'ProfileName': [sender_id]}
-    mainResponse = __processTwilioSandboxIncomingMessage(structuredMessage)
+    mainResponse = processTwilioSandboxIncomingMessage(structuredMessage)
     txtResponse = mainResponse["body"]
     __sendInstagramMessage(sender_id, txtResponse)
     currentFormattedTime = datetime.datetime.now().strftime("%H:%M")

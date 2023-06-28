@@ -9,7 +9,6 @@ from intentManipulation.intentTypes.intent_entry_text import EntryTextIntent
 from intentManipulation.intentTypes.intent_fallback import InstantFallbackIntent
 from intentManipulation.intentTypes.intent_multiple_choice import MultipleChoiceIntent
 from intentManipulation.intentTypes.replies import Replies, Types
-from utils import _sendTwilioResponse
 
 
 class IntentNotFoundException(Exception):
