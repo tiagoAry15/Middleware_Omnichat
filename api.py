@@ -10,7 +10,7 @@ from orderProcessing.order_handler import structureDrink, buildFullOrder, parseP
 from gpt.pizza_gpt import getResponseDefaultGPT
 from socketEmissions.socket_emissor import pulseEmit
 import json
-from utils.api_core import app, socketInstance, dialogFlowInstance, fu, fcm, mc
+from api.api_core import app, socketInstance, dialogFlowInstance, fu, fcm, mc
 from utils.core_utils import processTwilioSandboxIncomingMessage
 from utils.helper_utils import extractDictFromBytesRequest, sendTwilioResponse, sendWebhookCallback, \
     __getUserByWhatsappNumber

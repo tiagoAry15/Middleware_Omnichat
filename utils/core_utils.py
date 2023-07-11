@@ -3,7 +3,7 @@ import logging
 from data.message_converter import MessageConverter
 from intentManipulation.intent_manager import IntentManager
 from socketEmissions.socket_emissor import pulseEmit
-from utils.api_core import dialogFlowInstance, socketInstance
+from api.api_core import dialogFlowInstance, socketInstance
 from utils.helper_utils import sendTwilioResponse, __processTwilioIncomingMessage
 
 
