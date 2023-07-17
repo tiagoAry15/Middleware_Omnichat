@@ -1,8 +1,7 @@
 import os
-
 from dotenv import load_dotenv
 from twilio.rest import Client
-from flask import Flask
+from flask import Flask, current_app
 from flask_cors import CORS
 from flask_socketio import SocketIO as FlaskSocketIO
 from dialogflow_session import DialogFlowSession
@@ -27,10 +26,14 @@ fcm = FirebaseConversation(fc)
 mc = MessageConverter()
 
 
+@app.route('/')
+def hello():
+    return 'Hello, World!', 200
+
+
 def __main():
-    print("Loading API...")
-    socketInstance.run(app=app, port=4000, host="0.0.0.0")
     print("API loaded!")
+    socketInstance.run(app=app, port=3000, host="0.0.0.0", debug=True)
 
 
 if __name__ == '__main__':

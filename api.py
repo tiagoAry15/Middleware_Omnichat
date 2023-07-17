@@ -10,7 +10,7 @@ from orderProcessing.order_handler import structureDrink, buildFullOrder, parseP
 from gpt.pizza_gpt import getResponseDefaultGPT
 from socketEmissions.socket_emissor import pulseEmit
 import json
-from api.api_core import app, socketInstance, dialogFlowInstance, fu, fcm, mc
+from api.api_config import app, socketInstance, dialogFlowInstance, fu, fcm, mc
 from utils.core_utils import processTwilioSandboxIncomingMessage
 from utils.helper_utils import extractDictFromBytesRequest, sendTwilioResponse, sendWebhookCallback, \
     __getUserByWhatsappNumber
@@ -228,12 +228,6 @@ def handle_response():
     return sendTwilioResponse(body=mainResponse)
 
 
-# Hello World endpoint
-@app.route('/')
-def hello():
-    return 'Hello, World!', 200
-
-
 @app.route("/instagram", methods=['GET', 'POST'])
 def instagram():
     if request.method == 'GET':
@@ -275,7 +269,7 @@ def __sendInstagramMessage(recipient_id, message_text):
 
 
 def __main():
-    socketInstance.run(app=app, port=3000, host="0.0.0.0")
+    socketInstance.run(app=app, port=3000, host="0.0.0.0", debug=True)
 
 
 if __name__ == '__main__':
