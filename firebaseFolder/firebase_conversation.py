@@ -123,19 +123,19 @@ def getDummyConversationDicts(username: str = "John", phoneNumber: str = "+55859
     return {"dummyMessagePot": dummyMessagePot, "dummyPot": dummyPot}
 
 
-def __createDummyConversations():
-    fc = FirebaseConnection()
-    fcm = FirebaseConversation(fc)
-    dictPot = []
-    dictParameters = ("John", "+558599171902", "whatsapp",
-                      "Maria", "+558599171903", "instagram",
-                      "Anthony", "+558599171904", "facebook")
-    for username, phoneNumber, _from in zip(dictParameters[::3], dictParameters[1::3], dictParameters[2::3]):
-        dicts = getDummyConversationDicts(username=username, phoneNumber=phoneNumber, _from=_from)
-        dictPot.append(dicts)
-    for _dict in dictPot:
-        for conversation in _dict["dummyPot"]:
-            fcm.createConversation(conversation)
+# def __createDummyConversations():
+#     fc = FirebaseConnection()
+#     fcm = FirebaseConversation(fc)
+#     dictPot = []
+#     dictParameters = ("John", "+558599171902", "whatsapp",
+#                       "Maria", "+558599171903", "instagram",
+#                       "Anthony", "+558599171904", "facebook")
+#     for username, phoneNumber, _from in zip(dictParameters[::3], dictParameters[1::3], dictParameters[2::3]):
+#         dicts = getDummyConversationDicts(username=username, phoneNumber=phoneNumber, _from=_from)
+#         dictPot.append(dicts)
+#     for _dict in dictPot:
+#         for conversation in _dict["dummyPot"]:
+#             fcm.createConversation(conversation)
 
 
 def checkNewUser(whatsappNumber: str, numberPot: List[str],
