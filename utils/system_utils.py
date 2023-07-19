@@ -9,6 +9,10 @@ def get_forbidden_folders() -> List[str]:
     return ["venv"]
 
 
+def get_forbidden_extensions() -> List[str]:
+    return [".png", ".jpeg"]
+
+
 def get_file_structure(folder_path):
     forbidden_folders = get_forbidden_folders()
     folder_name = os.path.basename(folder_path)
@@ -34,7 +38,6 @@ def get_file_structure(folder_path):
 def __main():
     root_folder = getMainFolderPath()
     file_structure = get_file_structure(root_folder)
-
     output_json = json.dumps(file_structure, indent=4)
     print(output_json)
 
