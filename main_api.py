@@ -3,7 +3,7 @@ import logging
 import os
 import requests
 from flask import request, jsonify, Response, abort
-from data.message_converter import MessageConverter, get_dialogflow_message_example, get_user_message_example
+from data.message_converter import MessageConverterObject, get_dialogflow_message_example, get_user_message_example
 from firebaseFolder.firebase_conversation import getDummyConversationDicts
 from orderProcessing.order_handler import structureDrink, buildFullOrder, parsePizzaOrder, \
     convertMultiplePizzaOrderToText
@@ -21,10 +21,9 @@ log.setLevel(logging.ERROR)
 
 @app.route("/twilioSandbox", methods=['POST'])
 def sandbox():  # sourcery skip: use-named-expression
-    data = extractDictFromBytesRequest()
-    mainResponseDict = processTwilioSandboxIncomingMessage(data)
+    data: dict = extractDictFromBytesRequest()
+    mainResponseDict: dict = processTwilioSandboxIncomingMessage(data)
     rawResponse = mainResponseDict["body"]
-
     image_url = "https://shorturl.at/lEFT0"
     pulseEmit(socketInstance, mainResponseDict)
     return sendTwilioResponse(body=rawResponse, media=None)
@@ -34,9 +33,9 @@ def sandbox():  # sourcery skip: use-named-expression
 def chatTest():
     dialogflow_message = get_dialogflow_message_example()
     user_message = get_user_message_example()
-    userMessageJSON = MessageConverter.convertUserMessage(user_message)
+    userMessageJSON = MessageConverterObject.convertUserMessage(user_message)
 
-    dialogFlowJSON = MessageConverter.convert_dialogflow_message(dialogflow_message, userMessageJSON['phoneNumber'])
+    dialogFlowJSON = MessageConverterObject.convert_dialogflow_message(dialogflow_message, userMessageJSON['phoneNumber'])
     for _ in range(4):
         pulseEmit(socketInstance, userMessageJSON)
         pulseEmit(socketInstance, dialogFlowJSON)
@@ -48,7 +47,7 @@ def send():
     """This is a dialogflow callback endpoint. Everytime a message is sent to the bot, a POST request is sent to this
     endpoint.
     This is under DialogflowEssentials -> Fulfillment"""
-    logging.info("FULLFILLMENT ENDPOINT")
+    logging.info("FULFILLMENT ENDPOINT")
     dialogFlowInstance.params["secret"] = "Mensagem secreta"
     requestContent = request.get_json()
     contexts = [item['name'].split("/")[-1] for item in requestContent['queryResult']['outputContexts']]

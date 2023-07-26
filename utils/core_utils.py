@@ -1,6 +1,6 @@
 import logging
 
-from data.message_converter import MessageConverter
+from data.message_converter import MessageConverterObject
 from intentManipulation.intent_manager import IntentManager
 from socketEmissions.socket_emissor import pulseEmit
 from api.api_config import dialogFlowInstance, socketInstance
@@ -27,7 +27,7 @@ def __handleNewUser(phoneNumber: str, receivedMessage: str):
     im = IntentManager()
     im.extractedParameters["phoneNumber"] = phoneNumber
     botAnswer = im.twilioSingleStep(receivedMessage)
-    dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(botAnswer, phoneNumber)
+    dialogflowResponseJSON = MessageConverterObject.convert_dialogflow_message(botAnswer, phoneNumber)
     output = {
         "body": botAnswer,
         "formattedBody": sendTwilioResponse(body=botAnswer)
@@ -38,7 +38,7 @@ def __handleNewUser(phoneNumber: str, receivedMessage: str):
 def __handleExistingUser(phoneNumber: str, receivedMessage: str):
     logging.info("Already signup!")
     dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
-    dialogflowResponseJSON = MessageConverter.convert_dialogflow_message(
+    dialogflowResponseJSON = MessageConverterObject.convert_dialogflow_message(
         dialogflowResponse.query_result.fulfillment_text, phoneNumber)
     output = {
         "body": dialogflowResponse.query_result.fulfillment_text,

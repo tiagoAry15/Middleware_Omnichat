@@ -65,7 +65,7 @@ def get_dialogflow_message_example():
     }
 
 
-class MessageConverter:
+class MessageConverterObject:
     def __init__(self):
         self._from = ""
         self.phoneNumber = ""
@@ -110,8 +110,8 @@ class MessageConverter:
 
 
 def __main():
-    print(MessageConverter.convertUserMessage(json.dumps(get_user_message_example())))
-    print(MessageConverter.convert_dialogflow_message(json.dumps(get_dialogflow_message_example())))
+    print(MessageConverterObject.convertUserMessage(json.dumps(get_user_message_example())))
+    print(MessageConverterObject.convert_dialogflow_message(json.dumps(get_dialogflow_message_example())))
 
 
 if __name__ == '__main__':

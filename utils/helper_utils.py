@@ -7,6 +7,7 @@ from flask import request, make_response, Response
 from urllib.parse import parse_qs
 from twilio.twiml.messaging_response import MessagingResponse
 from api.api_config import mc, fcm
+from data.message_converter import MessageConverterObject
 
 
 def __prepareOutputResponse(myResult) -> Response:
@@ -57,7 +58,7 @@ def getDialogFlowAuth():
     print(base64_auth_string)
 
 
-def extractDictFromBytesRequest():
+def extractDictFromBytesRequest() -> dict:
     payload = request.get_data()
     stringData = payload.decode('utf-8')
     return parse_qs(stringData)
@@ -111,7 +112,7 @@ def sendTwilioResponse(body: str, media: str = None) -> str:
 
 
 def __processTwilioIncomingMessage(twilioMessage: dict):
-    userMessageJSON = mc.convertUserMessage(twilioMessage)
+    userMessageJSON = MessageConverterObject.convertUserMessage(twilioMessage)
     return {"userMessageJSON": userMessageJSON, "phoneNumber": userMessageJSON["phoneNumber"],
             "receivedMessage": userMessageJSON["body"]}
 
