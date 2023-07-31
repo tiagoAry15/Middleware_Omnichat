@@ -21,9 +21,13 @@ log.setLevel(logging.ERROR)
 
 @app.route("/twilioSandbox", methods=['POST'])
 def sandbox():  # sourcery skip: use-named-expression
+    """
+    This function is
+    :return:
+    """
     data: dict = extractDictFromBytesRequest()
     mainResponseDict: dict = processTwilioSandboxIncomingMessage(data)
-    rawResponse = mainResponseDict["body"]
+    rawResponse: str = mainResponseDict["body"]
     image_url = "https://shorturl.at/lEFT0"
     pulseEmit(socketInstance, mainResponseDict)
     return sendTwilioResponse(body=rawResponse, media=None)
