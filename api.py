@@ -86,11 +86,6 @@ def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
     return sendWebhookCallback(finalMessage)
 
 
-@app.route("/staticReply", methods=['POST'])
-def staticReply():
-    return sendWebhookCallback("This is a message from the server!")
-
-
 @app.route("/twilioPreEvent", methods=['POST'])
 def preEvent():
     """This is a twilio pre-webhook target. It intercepts events, and fires before twilio does anything."""
