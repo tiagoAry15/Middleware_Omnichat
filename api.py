@@ -1,22 +1,15 @@
-import datetime
 import logging
-import os
-import requests
 from flask import request, jsonify, Response, abort
-
 from api_routes.conversation_routes import conversation_blueprint
 from api_routes.test_routes import test_blueprint
 from api_routes.user_routes import user_blueprint
-
-from data.message_converter import MessageConverterObject, get_user_message_example, get_dialogflow_message_example
 from orderProcessing.order_handler import structureDrink, buildFullOrder, parsePizzaOrder, \
     convertMultiplePizzaOrderToText
-from gpt.pizza_gpt import getResponseDefaultGPT
 from socketEmissions.socket_emissor import pulseEmit
 from api_config.api_config import app, socketio, dialogFlowInstance, fu, mc
+from utils import instagram_utils
 from utils.core_utils import processTwilioSandboxIncomingMessage
-from utils.helper_utils import extractDictFromBytesRequest, sendTwilioResponse, sendWebhookCallback, \
-    __getUserByWhatsappNumber
+from utils.helper_utils import extractDictFromBytesRequest, sendTwilioResponse, sendWebhookCallback
 import time
 
 app.register_blueprint(conversation_blueprint, url_prefix='/conversations')
@@ -26,10 +19,7 @@ app.register_blueprint(test_blueprint, url_prefix='/test')
 
 @app.route("/twilioSandbox", methods=['POST'])
 def sandbox():  # sourcery skip: use-named-expression
-    """
-    This function is
-    :return:
-    """
+
     inicio = time.time()
     data: dict = extractDictFromBytesRequest()
     print(data)
@@ -96,11 +86,6 @@ def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
     return sendWebhookCallback(finalMessage)
 
 
-@app.route("/socket_test", methods=['GET'])
-def socket_test():
-    socketio.emit('mensagem', {'data': 'got it!'})
-
-
 @app.route("/staticReply", methods=['POST'])
 def staticReply():
     return sendWebhookCallback("This is a message from the server!")
@@ -141,32 +126,8 @@ def instagram():
         data = request.get_json()
         is_echo = data['entry'][0]['messaging'][0]['message'].get('is_echo')
         if not is_echo:
-            _processInstagramIncomingMessage(data)
+            instagram_utils.processInstagramIncomingMessage(data)
         return jsonify({'status': 'success', 'response': 'Message sent'}), 200
-
-
-def _processInstagramIncomingMessage(data):
-    sender_id = data['entry'][0]['messaging'][0]['sender']['id']
-    message_text = data['entry'][0]['messaging'][0]['message']['text']
-    structuredMessage = {'Body': [message_text], 'From': [f'whatsapp:+5585{sender_id}'], 'ProfileName': [sender_id]}
-    mainResponse = processTwilioSandboxIncomingMessage(structuredMessage)
-    txtResponse = mainResponse["body"]
-    __sendInstagramMessage(sender_id, txtResponse)
-    currentFormattedTime = datetime.datetime.now().strftime("%H:%M")
-    emitDict = {'body': message_text, 'from': 'instagram', 'phoneNumber': sender_id, 'sender': 'Mateus',
-                'time': currentFormattedTime}
-    # socketInstance.emit('message', emitDict)
-    pulseEmit(socketio, emitDict)
-
-
-def __sendInstagramMessage(recipient_id, message_text):
-    access_token = os.environ["INSTAGRAM_ACCESS_TOKEN"]
-    headers = {'Content-Type': 'application/json'}
-    data = {'recipient': {'id': recipient_id}, 'message': {'text': message_text}}
-    params = {'access_token': access_token}
-    response = requests.post('https://graph.facebook.com/v13.0/me/messages', headers=headers, params=params, json=data)
-    if response.status_code != 200:
-        print(f"Unable to send message: {response.text}")
 
 
 def __main():
