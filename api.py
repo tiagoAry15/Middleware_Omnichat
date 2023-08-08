@@ -3,20 +3,25 @@ import logging
 import os
 import requests
 from flask import request, jsonify, Response, abort
-from data.message_converter import MessageConverterObject, get_dialogflow_message_example, get_user_message_example
-from firebaseFolder.firebase_conversation import getDummyConversationDicts
+
+from api_routes.conversation_routes import conversation_blueprint
+from api_routes.test_routes import test_blueprint
+from api_routes.user_routes import user_blueprint
+
+from data.message_converter import MessageConverterObject, get_user_message_example, get_dialogflow_message_example
 from orderProcessing.order_handler import structureDrink, buildFullOrder, parsePizzaOrder, \
     convertMultiplePizzaOrderToText
 from gpt.pizza_gpt import getResponseDefaultGPT
 from socketEmissions.socket_emissor import pulseEmit
-import json
-from api.api_config import app, socketInstance, dialogFlowInstance, fu, fcm, mc
+from api_config.api_config import app, socketio, dialogFlowInstance, fu, mc
 from utils.core_utils import processTwilioSandboxIncomingMessage
 from utils.helper_utils import extractDictFromBytesRequest, sendTwilioResponse, sendWebhookCallback, \
     __getUserByWhatsappNumber
+import time
 
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
+app.register_blueprint(conversation_blueprint, url_prefix='/conversations')
+app.register_blueprint(user_blueprint, url_prefix='/users')
+app.register_blueprint(test_blueprint, url_prefix='/test')
 
 
 @app.route("/twilioSandbox", methods=['POST'])
@@ -25,25 +30,13 @@ def sandbox():  # sourcery skip: use-named-expression
     This function is
     :return:
     """
+    inicio = time.time()
     data: dict = extractDictFromBytesRequest()
+    print(data)
     mainResponseDict: dict = processTwilioSandboxIncomingMessage(data)
     rawResponse: str = mainResponseDict["body"]
-    image_url = "https://shorturl.at/lEFT0"
-    pulseEmit(socketInstance, mainResponseDict)
+    print(f"Tempo de execução do envio do socket: {time.time() - inicio}")
     return sendTwilioResponse(body=rawResponse, media=None)
-
-
-@app.route("/chatTest", methods=['GET'])
-def chatTest():
-    dialogflow_message = get_dialogflow_message_example()
-    user_message = get_user_message_example()
-    userMessageJSON = MessageConverterObject.convertUserMessage(user_message)
-
-    dialogFlowJSON = MessageConverterObject.convert_dialogflow_message(dialogflow_message, userMessageJSON['phoneNumber'])
-    for _ in range(4):
-        pulseEmit(socketInstance, userMessageJSON)
-        pulseEmit(socketInstance, dialogFlowJSON)
-    return [], 200
 
 
 @app.route("/webhookForIntent", methods=['POST'])
@@ -59,7 +52,7 @@ def send():
     userMessage = [item["name"] for item in queryText] if isinstance(queryText, list) else queryText
     socketMessage = mc.dynamicConversion(userMessage)
     # socketInstance.emit('message', socketMessage)
-    pulseEmit(socketInstance, socketMessage)
+    pulseEmit(socketio, socketMessage)
     currentIntent = requestContent['queryResult']['intent']['displayName']
     logging.info(f"current Intent: {currentIntent}")
     params = requestContent['queryResult']['parameters']
@@ -103,95 +96,9 @@ def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
     return sendWebhookCallback(finalMessage)
 
 
-@app.route("/get_all_users", methods=['GET'])
-def get_all_users():
-    aux = fu.getAllUsers()
-    return jsonify(aux), 200
-
-
-@app.route("/get_user/<whatsapp_number>", methods=['GET'])
-def get_user_by_whatsapp(whatsapp_number: str):
-    user = __getUserByWhatsappNumber(whatsapp_number)
-    return ((jsonify(user), 200) if user
-            else (jsonify({"Error": f"Could not find an user with whatsapp {whatsapp_number}"}), 404))
-
-
-@app.route("/delete_user/<whatsapp_number>", methods=['DELETE'])
-def delete_user_by_whatsapp(whatsapp_number: str):
-    user = __getUserByWhatsappNumber(whatsapp_number)
-    if not user:
-        return jsonify({"Error": f"Could not find an user with whatsapp {whatsapp_number}"}), 404
-    fu.deleteUser(user)
-    return jsonify({"Success": f"User with whatsapp {whatsapp_number} deleted"}), 200
-
-
-@app.route("/get_user_conversations/<whatsapp_number>", methods=['GET'])
-def get_user_conversations_by_whatsapp(whatsapp_number: str):
-    response = fcm.retrieveAllMessagesByWhatsappNumber(whatsapp_number)
-    # if response is None:
-    #     response = fcm.createFirstDummyConversationByWhatsappNumber(whatsapp_number)
-    return ((jsonify(response), 200)
-            if response
-            else (
-        jsonify({"Error": f"Could not find conversations for the user with whatsapp {whatsapp_number}"}), 404))
-
-
-@app.route("/add_message", methods=['POST'])
-def add_message():
-    data = json.loads(request.data)
-    whatsapp_number = data['phoneNumber']
-
-    response = fcm.appendMessageToWhatsappNumber(
-        messageData=data, whatsappNumber=whatsapp_number
-    )
-    return jsonify(response), 200
-
-
-@app.route("/push_new_message_by_whatsapp_number/", methods=['POST'])
-def push_new_message_by_whatsapp_number():
-    data = dict(request.form)
-    whatsapp_number = data.get("whatsapp")
-    user = __getUserByWhatsappNumber(whatsapp_number)
-    if not user:
-        return jsonify({"Error": f"Could not find an user with whatsapp {whatsapp_number}"}), 404
-    conversations = fcm.retrieveAllMessagesByWhatsappNumber(whatsapp_number)
-    # if not conversations:
-    #     return jsonify({"Error": f"Could not find conversations for the user with whatsapp {whatsapp_number}"}), 404
-    message = {"content": data.get("message")}
-    fcm.appendMessageToWhatsappNumber(messageData=message, whatsappNumber=whatsapp_number)
-    return jsonify({"Success": f"New message pushed for user with whatsapp {whatsapp_number}"}), 200
-
-
-@app.route("/create_conversation", methods=['POST'])
-def create_conversation():
-    print("Creating new conversation!")
-    data = json.loads(request.data.decode("utf-8"))
-    response = fcm.createConversation(data)
-    finalResponse = data if response else False
-    return jsonify(finalResponse), 200
-
-
-@app.route("/create_dummy_conversation", methods=['POST'])
-def create_dummy_conversation():
-    data = json.loads(request.data.decode("utf-8"))
-    dummyMessagePot, dummyPot = getDummyConversationDicts().values()
-    for message in dummyPot:
-        fcm.createConversation(message)
-    return jsonify({"Success": "Dummy conversation created"}), 200
-
-
-@app.route("/update_conversation", methods=['PUT'])
-def update_conversation():
-    messageData = json.loads(request.data.decode("utf-8"))
-    response = fcm.updateConversationAddingUnreadMessages(messageData)
-    return jsonify(response), 200
-
-
-@app.route("/get_all_conversations", methods=['GET'])
-def get_all_conversations():
-    data = fcm.getAllConversations()
-    trimmedData = list(data.values()) if data else None
-    return jsonify(trimmedData), 200
+@app.route("/socket_test", methods=['GET'])
+def socket_test():
+    socketio.emit('mensagem', {'data': 'got it!'})
 
 
 @app.route("/staticReply", methods=['POST'])
@@ -222,15 +129,6 @@ def handle_whatsapp():
     return 'OK', 200
 
 
-@app.route('/twilioSandboxGPT', methods=['POST'])
-def handle_response():
-    data = extractDictFromBytesRequest()
-    receivedMessage = data.get("Body")[0]
-    mainResponse = getResponseDefaultGPT(receivedMessage)
-    image_url = "https://shorturl.at/lEFT0"
-    return sendTwilioResponse(body=mainResponse)
-
-
 @app.route("/instagram", methods=['GET', 'POST'])
 def instagram():
     if request.method == 'GET':
@@ -258,7 +156,7 @@ def _processInstagramIncomingMessage(data):
     emitDict = {'body': message_text, 'from': 'instagram', 'phoneNumber': sender_id, 'sender': 'Mateus',
                 'time': currentFormattedTime}
     # socketInstance.emit('message', emitDict)
-    pulseEmit(socketInstance, emitDict)
+    pulseEmit(socketio, emitDict)
 
 
 def __sendInstagramMessage(recipient_id, message_text):
@@ -272,7 +170,7 @@ def __sendInstagramMessage(recipient_id, message_text):
 
 
 def __main():
-    socketInstance.run(app=app, port=3000, host="0.0.0.0", debug=True)
+    socketio.run(app, host='0.0.0.0', port=5000)
 
 
 if __name__ == '__main__':

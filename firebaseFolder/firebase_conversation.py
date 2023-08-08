@@ -20,6 +20,15 @@ class FirebaseConversation(FirebaseWrapper):
     def getAllConversations(self):
         return self.firebaseConnection.readData()
 
+    def getConversationByWhatsappNumber(self, whatsappNumber: str) -> dict or None:
+        allConversations = self.getAllConversations()
+        if allConversations is None:
+            return None
+        for uniqueId, conversationData in allConversations.items():
+            phoneNumber = conversationData.get("phoneNumber", None)
+            if phoneNumber == whatsappNumber:
+                return conversationData
+        return None
     def getUniqueIdByWhatsappNumber(self, whatsappNumber: str) -> str or None:
         # sourcery skip: use-next
         allConversations = self.getAllConversations()
@@ -34,13 +43,28 @@ class FirebaseConversation(FirebaseWrapper):
     def appendMessageToWhatsappNumber(self, messageData: dict, whatsappNumber: str):
         uniqueId = self.getUniqueIdByWhatsappNumber(whatsappNumber)
         if not uniqueId:
-            return False
-        conversationData = self.firebaseConnection.readData(path=uniqueId)
-        if "messagePot" not in conversationData:
-            conversationData["messagePot"] = []
-        messageData["id"] = str(uuid.uuid4())
-        conversationData["messagePot"].append(messageData)
-        self.firebaseConnection.overWriteData(path=uniqueId, data=conversationData)
+            messageData["id"] = str(uuid.uuid4())
+            new_conversationData = {
+                "id": str(uuid.uuid4()),
+                "name": messageData['sender'],
+                "status": "active",
+                "phoneNumber": messageData['phoneNumber'],
+                "from": messageData['from'],
+                "messagePot": [messageData],
+                "unreadMessages": 1,
+                "lastMessage_timestamp": datetime.datetime.now()
+            }
+            self.createConversation(new_conversationData)
+        else:
+            conversationData = self.firebaseConnection.readData(path=uniqueId)
+            if "messagePot" not in conversationData:
+                conversationData["messagePot"] = []
+            messageData["id"] = str(uuid.uuid4())
+            conversationData["messagePot"].append(messageData)
+            if messageData["sender"] != "ChatBot":
+                conversationData['lastMessage_timestamp'] = datetime.datetime.now().timestamp()
+            conversationData['unreadMessages'] += 1
+            self.firebaseConnection.overWriteData(path=uniqueId, data=conversationData)
         return messageData
 
     def retrieveAllMessagesByWhatsappNumber(self, whatsappNumber: str) -> List[dict] or None:

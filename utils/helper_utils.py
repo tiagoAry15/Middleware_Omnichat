@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from flask import request, make_response, Response
 from urllib.parse import parse_qs
 from twilio.twiml.messaging_response import MessagingResponse
-from api.api_config import mc, fcm
+from api_config.api_config import mc, fcm, fu
 from data.message_converter import MessageConverterObject
 
 

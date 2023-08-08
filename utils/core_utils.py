@@ -3,7 +3,7 @@ import logging
 from data.message_converter import MessageConverterObject
 from intentManipulation.intent_manager import IntentManager
 from socketEmissions.socket_emissor import pulseEmit
-from api.api_config import dialogFlowInstance, socketInstance
+from api_config.api_config import dialogFlowInstance, socketio, fcm
 from utils.helper_utils import sendTwilioResponse, __processTwilioIncomingMessage
 
 
@@ -46,16 +46,20 @@ def __handleExistingUser(phoneNumber: str, receivedMessage: str):
     }
     return output, dialogflowResponseJSON
 
-
 def processTwilioSandboxIncomingMessage(data: dict):
     userMessageJSON, phoneNumber, receivedMessage = __preprocessIncomingMessage(data)
-    pulseEmit(socketInstance, userMessageJSON)
+    userMessageJSON["phoneNumber"] = None
+    fcm.appendMessageToWhatsappNumber(messageData=userMessageJSON, whatsappNumber=phoneNumber)
+    socketio.emit('message', userMessageJSON)
     needsToSignUp = __checkUserRegistration(phoneNumber)
     if needsToSignUp:
         output, dialogflowResponseJSON = __handleNewUser(phoneNumber, receivedMessage)
-        pulseEmit(socketInstance, dialogflowResponseJSON)
+
+
     else:
         output, dialogflowResponseJSON = __handleExistingUser(phoneNumber, receivedMessage)
+        fcm.appendMessageToWhatsappNumber(messageData=dialogflowResponseJSON, whatsappNumber=phoneNumber)
+    socketio.emit('message', dialogflowResponseJSON)
     return dialogflowResponseJSON
 
 
