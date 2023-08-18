@@ -49,9 +49,9 @@ def send():
     contexts = [item['name'].split("/")[-1] for item in requestContent['queryResult']['outputContexts']]
     queryText = requestContent['queryResult']['queryText']
     userMessage = [item["name"] for item in queryText] if isinstance(queryText, list) else queryText
-    socketMessage = mc.dynamicConversion(userMessage)
+    # socketMessage = mc.dynamicConversion(userMessage)
     # socketInstance.emit('message', socketMessage)
-    pulseEmit(socketio, socketMessage)
+    # pulseEmit(socketio, socketMessage)
     currentIntent = requestContent['queryResult']['intent']['displayName']
     logging.info(f"current Intent: {currentIntent}")
     params = requestContent['queryResult']['parameters']

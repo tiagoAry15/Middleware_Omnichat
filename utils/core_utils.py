@@ -68,7 +68,7 @@ def processDialogFlowMessage(messageData: dict):
         output, dialogflowResponseJSON = __handleNewUser(phoneNumber, receivedMessage)
     else:
         output, dialogflowResponseJSON = __handleExistingUser(phoneNumber, receivedMessage)
-        fcm.appendMessageToWhatsappNumber(messageData=dialogflowResponseJSON, whatsappNumber=phoneNumber)
+    fcm.appendMessageToWhatsappNumber(messageData=dialogflowResponseJSON, whatsappNumber=phoneNumber)
     return dialogflowResponseJSON
 
 
