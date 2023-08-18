@@ -40,14 +40,11 @@ class DialogFlowSession:
 
     def getDialogFlowResponse(self, message: str, intent_name: str = None, user_number: str = None):
         session = self.session
-
         session_params = dialogflow.types.QueryParameters(payload={"phone-number": user_number})
-
         if intent_name:
             session = f"{self.session}/contexts/{intent_name}"
         textInput = dialogflow.types.TextInput(text=message, language_code='pt-BR')
         queryInput = dialogflow.types.QueryInput(text=textInput)
-
         requests = dialogflow.types.DetectIntentRequest(
             session=session, query_input=queryInput, query_params=session_params
         )
