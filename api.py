@@ -6,11 +6,12 @@ from api_routes.user_routes import user_blueprint
 from orderProcessing.order_handler import structureDrink, buildFullOrder, parsePizzaOrder, \
     convertMultiplePizzaOrderToText
 from socketEmissions.socket_emissor import pulseEmit
-from api_config.api_config import app, socketio, dialogFlowInstance, fu, mc
+from api_config.api_config import app, socketio, dialogFlowInstance, fu, mc, twilioClient, twilio_phone_number
 from utils import instagram_utils
-from utils.core_utils import processTwilioSandboxIncomingMessage
+from utils.core_utils import processUserMessage, processDialogFlowMessage
 from utils.helper_utils import extractDictFromBytesRequest, sendTwilioResponse, sendWebhookCallback
 import time
+from twilio.rest import Client
 
 app.register_blueprint(conversation_blueprint, url_prefix='/conversations')
 app.register_blueprint(user_blueprint, url_prefix='/users')
@@ -18,15 +19,25 @@ app.register_blueprint(test_blueprint, url_prefix='/test')
 
 
 @app.route("/twilioSandbox", methods=['POST'])
-def sandbox():  # sourcery skip: use-named-expression
-
+def sandbox():
     inicio = time.time()
     data: dict = extractDictFromBytesRequest()
     print(data)
-    mainResponseDict: dict = processTwilioSandboxIncomingMessage(data)
-    rawResponse: str = mainResponseDict["body"]
-    print(f"Tempo de execução do envio do socket: {time.time() - inicio}")
-    return sendTwilioResponse(body=rawResponse, media=None)
+
+    userMessageJSON, chatData = processUserMessage(data)
+    socketio.start_background_task(target=emitMessage, message=userMessageJSON)
+    if 'isBotActive' in chatData:
+        dialogflowMessageJSON = processDialogFlowMessage(userMessageJSON)
+        emitMessage(dialogflowMessageJSON)
+        response_body = dialogflowMessageJSON["body"]
+
+        print(f"Tempo de execução do envio do socket: {time.time() - inicio}")
+        return sendTwilioResponse(body=response_body, media=None)
+    return jsonify({"status": "success", "response": "Message sent"}), 200
+
+
+def emitMessage(message):
+    socketio.emit('message', message)
 
 
 @app.route("/webhookForIntent", methods=['POST'])
