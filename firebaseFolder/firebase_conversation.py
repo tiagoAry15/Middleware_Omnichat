@@ -35,24 +35,25 @@ class FirebaseConversation(FirebaseWrapper):
         if allConversations is None:
             return None
         for uniqueId, conversationData in allConversations.items():
-            phoneNumber = conversationData.get("phoneNumber", None)
+            phoneNumber = conversationData["phoneNumber"]
             if phoneNumber == whatsappNumber:
                 return uniqueId
         return None
 
-    def appendMessageToWhatsappNumber(self, messageData: dict, whatsappNumber: str):
+
+    def appendMessageToWhatsappNumber(self, messageData: List[dict], whatsappNumber: str):
         uniqueId = self.getUniqueIdByWhatsappNumber(whatsappNumber)
         if not uniqueId:
-            messageData["id"] = str(uuid.uuid4())
+            # messageData["id"] = str(uuid.uuid4())
             new_conversationData = {
                 "id": str(uuid.uuid4()),
-                "name": messageData['sender'],
+                "name": messageData[0]['sender'],
                 "status": "active",
-                "phoneNumber": messageData['phoneNumber'],
-                "from": messageData['from'],
-                "messagePot": [messageData],
+                "from": messageData[0]['from'],
+                "messagePot": messageData,
                 "unreadMessages": 1,
-                "lastMessage_timestamp": datetime.datetime.now()
+                "lastMessage_timestamp": str(datetime.datetime.now()),
+                "phoneNumber": whatsappNumber
             }
             self.createConversation(new_conversationData)
         else:
@@ -177,7 +178,7 @@ def __main():
     fcm = FirebaseConversation(fc)
     randomUniqueId = str(uuid.uuid4())
     currentTime = datetime.datetime.now().strftime("%H:%M")
-    msgDict = {"body": "Olá, tudo bem?", "id": str(uuid.uuid4()), "phoneNumber": "+5585999171902",
+    msgDict = {"body": "Olá, tudo bem?", "id": str(uuid.uuid4()), "phoneNumber": "+5585999171902", "from": "whatsapp",
                "sender": "Mateus", "time": datetime.datetime.now().strftime("%H:%M")}
     fcm.appendMessageToWhatsappNumber(msgDict, "+5585999171902")
     # msgDict = {"phoneNumber": "+5585994875485", "body": "Olá, tudo bem?", "name": "Maria", "from": "facebook"}

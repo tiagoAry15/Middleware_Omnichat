@@ -19,13 +19,11 @@ app.register_blueprint(test_blueprint, url_prefix='/test')
 
 @app.route("/twilioSandbox", methods=['POST'])
 def sandbox():  # sourcery skip: use-named-expression
-
-    inicio = time.time()
+    start = time.time()
     data: dict = extractDictFromBytesRequest()
-    print(data)
     mainResponseDict: dict = processTwilioSandboxIncomingMessage(data)
     rawResponse: str = mainResponseDict["body"]
-    print(f"Tempo de execução do envio do socket: {time.time() - inicio}")
+    print(f"Tempo de execução do envio do socket: {time.time() - start}")
     return sendTwilioResponse(body=rawResponse, media=None)
 
 
@@ -40,9 +38,9 @@ def send():
     contexts = [item['name'].split("/")[-1] for item in requestContent['queryResult']['outputContexts']]
     queryText = requestContent['queryResult']['queryText']
     userMessage = [item["name"] for item in queryText] if isinstance(queryText, list) else queryText
-    socketMessage = mc.dynamicConversion(userMessage)
+    # socketMessage = mc.dynamicConversion(userMessage)
     # socketInstance.emit('message', socketMessage)
-    pulseEmit(socketio, socketMessage)
+    # pulseEmit(socketio, socketMessage)
     currentIntent = requestContent['queryResult']['intent']['displayName']
     logging.info(f"current Intent: {currentIntent}")
     params = requestContent['queryResult']['parameters']
@@ -126,7 +124,7 @@ def instagram():
 
 
 def __main():
-    socketio.run(app, host='0.0.0.0', port=5000)
+    socketio.run(app, host='0.0.0.0', port=3000, allow_unsafe_werkzeug=True)
 
 
 if __name__ == '__main__':
