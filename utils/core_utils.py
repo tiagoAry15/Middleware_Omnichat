@@ -5,6 +5,7 @@ from intentManipulation.intent_manager import IntentManager
 from socketEmissions.socket_emissor import pulseEmit
 from api_config.api_config import dialogFlowInstance, socketio, fcm
 from utils.helper_utils import sendTwilioResponse, __processTwilioIncomingMessage
+import asyncio
 
 
 def __preprocessIncomingMessage(data: dict):
@@ -46,6 +47,25 @@ def __handleExistingUser(phoneNumber: str, receivedMessage: str):
     }
     return output, dialogflowResponseJSON
 
+
+def processUserMessage(data: dict):
+    userMessageJSON, phoneNumber, receivedMessage = __preprocessIncomingMessage(data)
+    conversation = fcm.appendMessageToWhatsappNumber(messageData=userMessageJSON, whatsappNumber=phoneNumber)
+    return userMessageJSON, conversation
+
+
+def processDialogFlowMessage(messageData: dict):
+    phoneNumber = messageData["phoneNumber"]
+    receivedMessage = messageData["body"]
+    needsToSignUp = __checkUserRegistration(phoneNumber)
+    if needsToSignUp:
+        output, dialogflowResponseJSON = __handleNewUser(phoneNumber, receivedMessage)
+    else:
+        output, dialogflowResponseJSON = __handleExistingUser(phoneNumber, receivedMessage)
+        fcm.appendMessageToWhatsappNumber(messageData=dialogflowResponseJSON, whatsappNumber=phoneNumber)
+    return dialogflowResponseJSON
+
+
 def processTwilioSandboxIncomingMessage(data: dict):
     userMessageJSON, phoneNumber, receivedMessage = __preprocessIncomingMessage(data)
     userMessageJSON["phoneNumber"] = None
@@ -77,7 +97,6 @@ def __main():
         "From": "whatsapp:+558599663533",
         "ApiVersion": "2010-04-01"
     }
-    response = processTwilioSandboxIncomingMessage(d1)
 
 
 if __name__ == "__main__":

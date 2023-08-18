@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import random
 import uuid
 from typing import List
@@ -29,6 +29,7 @@ class FirebaseConversation(FirebaseWrapper):
             if phoneNumber == whatsappNumber:
                 return conversationData
         return None
+
     def getUniqueIdByWhatsappNumber(self, whatsappNumber: str) -> str or None:
         # sourcery skip: use-next
         allConversations = self.getAllConversations()
@@ -42,30 +43,36 @@ class FirebaseConversation(FirebaseWrapper):
 
     def appendMessageToWhatsappNumber(self, messageData: dict, whatsappNumber: str):
         uniqueId = self.getUniqueIdByWhatsappNumber(whatsappNumber)
+        timestamp = datetime.now().strftime("%d/%m/%Y %H:%M")
+        new_message = dict(messageData)
+        new_message['id'] = str(uuid.uuid4())
+        # Copia todas as chaves de messageData
+        if 'from' in new_message:
+            del new_message['from']
+        if 'phoneNumber' in new_message:
+            del new_message['phoneNumber']
         if not uniqueId:
-            messageData["id"] = str(uuid.uuid4())
-            new_conversationData = {
-                "id": str(uuid.uuid4()),
+            conversationData = {
                 "name": messageData['sender'],
                 "status": "active",
-                "phoneNumber": messageData['phoneNumber'],
+                "phoneNumber": whatsappNumber,
                 "from": messageData['from'],
-                "messagePot": [messageData],
+                "messagePot": [new_message],
                 "unreadMessages": 1,
-                "lastMessage_timestamp": datetime.datetime.now()
+                "lastMessage_timestamp": timestamp,
+                "isBotActive": True,
             }
-            self.createConversation(new_conversationData)
+            self.createConversation(conversationData)
+            return conversationData
         else:
             conversationData = self.firebaseConnection.readData(path=uniqueId)
-            if "messagePot" not in conversationData:
-                conversationData["messagePot"] = []
-            messageData["id"] = str(uuid.uuid4())
-            conversationData["messagePot"].append(messageData)
-            if messageData["sender"] != "ChatBot":
-                conversationData['lastMessage_timestamp'] = datetime.datetime.now().timestamp()
-            conversationData['unreadMessages'] += 1
+            conversationData["messagePot"].append(new_message)
+            conversationData['lastMessage_timestamp'] = timestamp
+            if messageData['sender'] == "ChatBot" or messageData['sender'] == conversationData['name']:
+                conversationData['unreadMessages'] += 1
+
             self.firebaseConnection.overWriteData(path=uniqueId, data=conversationData)
-        return messageData
+            return messageData
 
     def retrieveAllMessagesByWhatsappNumber(self, whatsappNumber: str) -> List[dict] or None:
         uniqueId = self.getUniqueIdByWhatsappNumber(whatsappNumber)
@@ -81,7 +88,7 @@ class FirebaseConversation(FirebaseWrapper):
         body = msgDict.get("body", None)
         name = msgDict.get("name", None)
         platform = msgDict.get("from", None)
-        currentTime = datetime.datetime.now().strftime("%H:%M")
+        currentTime = datetime.now().strftime("%H:%M")
         conversationData = {"from": platform, "whatsappNumber": whatsappNumber, "id": 0, "name": name,
                             "status": "active", "unreadMessages": 1,
                             "msgPot": [{"body": body, "id": str(uuid.uuid4()), "phoneNumber": "+5585999171902",
@@ -136,7 +143,7 @@ def getDummyConversationDicts(username: str = "John", phoneNumber: str = "+55859
     dummyBodyMessages = ["Olá, tudo bem?", "Sim estou bem, e você?", "Estou bem também, obrigado por perguntar!"]
     dummyMessagePot = []
     for index, body in enumerate(dummyBodyMessages):
-        currentFormattedTimestamp = datetime.datetime.now().strftime("%H:%M")
+        currentFormattedTimestamp = datetime.now().strftime("%H:%M")
         sender = "ChatBot" if index % 2 == 1 else username
         message = {"body": body, "id": random.randint(0, 10000000000), "phoneNumber": phoneNumber,
                    "sender": sender, "timestamp": currentFormattedTimestamp}
@@ -176,9 +183,9 @@ def __main():
     fc = FirebaseConnection()
     fcm = FirebaseConversation(fc)
     randomUniqueId = str(uuid.uuid4())
-    currentTime = datetime.datetime.now().strftime("%H:%M")
+    currentTime = datetime.now().strftime("%H:%M")
     msgDict = {"body": "Olá, tudo bem?", "id": str(uuid.uuid4()), "phoneNumber": "+5585999171902",
-               "sender": "Mateus", "time": datetime.datetime.now().strftime("%H:%M")}
+               "sender": "Mateus", "time": datetime.now().strftime("%d/%m/%Y %H:%M"),'from': "whatsapp"}
     fcm.appendMessageToWhatsappNumber(msgDict, "+5585999171902")
     # msgDict = {"phoneNumber": "+5585994875485", "body": "Olá, tudo bem?", "name": "Maria", "from": "facebook"}
     # fcm.createFirstDummyConversationByWhatsappNumber(msgDict)

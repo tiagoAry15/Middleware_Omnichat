@@ -89,7 +89,7 @@ class MessageConverterObject:
     def convertUserMessage(userMessage: dict) -> dict:
         social_network, userNumber = userMessage['From'][0].split(":")
         sender = userMessage['ProfileName'][0] if social_network == "whatsapp" else userNumber
-        receivedMessage = userMessage['Body'][0]
+        receivedMessage = userMessage['Body'][0] if 'Body' in userMessage else userMessage['MediaUrl0'][0]
 
         return {
             'sender': sender,
