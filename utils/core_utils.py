@@ -1,3 +1,4 @@
+import datetime
 import logging
 
 from data.message_converter import MessageConverterObject
@@ -7,15 +8,26 @@ from api_config.api_config import dialogFlowInstance, socketio, fcm
 from utils.helper_utils import sendTwilioResponse, __processTwilioIncomingMessage
 import asyncio
 
+def processUserMessage(data: dict):
+    processedData = __transformTwilioDataIntoStructuredFirebaseData(data)
+    userMessageJSON, phoneNumber, receivedMessage = (processedData["userMessageJSON"], processedData["phoneNumber"],
+                                                     processedData["receivedMessage"])
+    conversation = fcm.appendMessageToWhatsappNumber(messageData=userMessageJSON, whatsappNumber=phoneNumber)
+    return userMessageJSON, conversation
 
-def __preprocessIncomingMessage(data: dict):
-    print("Preprocess Incoming Message")
-    processedData = __processTwilioIncomingMessage(data)
-    userMessageJSON = processedData["userMessageJSON"]
-    phoneNumber = processedData["phoneNumber"]
-    receivedMessage = processedData["receivedMessage"]
-    return userMessageJSON, phoneNumber, receivedMessage
-
+def __transformTwilioDataIntoStructuredFirebaseData(data: dict) -> dict:
+    currentTime = datetime.datetime.now().strftime('%H:%M')
+    return {
+        'phoneNumber': data['WaId'][0],
+        'receivedMessage': data['Body'][0],
+        'userMessageJSON': {
+            'body': data['Body'][0],
+            'from': 'whatsapp',
+            'phoneNumber': data['WaId'][0],
+            'sender': data['ProfileName'][0],
+            'time': currentTime
+        }
+    }
 
 def __checkUserRegistration(phoneNumber: str):
     im = IntentManager()
@@ -48,12 +60,6 @@ def __handleExistingUser(phoneNumber: str, receivedMessage: str):
     return output, dialogflowResponseJSON
 
 
-def processUserMessage(data: dict):
-    userMessageJSON, phoneNumber, receivedMessage = __preprocessIncomingMessage(data)
-    conversation = fcm.appendMessageToWhatsappNumber(messageData=userMessageJSON, whatsappNumber=phoneNumber)
-    return userMessageJSON, conversation
-
-
 def processDialogFlowMessage(messageData: dict):
     phoneNumber = messageData["phoneNumber"]
     receivedMessage = messageData["body"]
@@ -67,18 +73,16 @@ def processDialogFlowMessage(messageData: dict):
 
 
 def processTwilioSandboxIncomingMessage(data: dict):
-    userMessageJSON, phoneNumber, receivedMessage = __preprocessIncomingMessage(data)
+    userMessageJSON, phoneNumber, receivedMessage = __preProcessIncomingMessage(data)
     userMessageJSON["phoneNumber"] = None
     fcm.appendMessageToWhatsappNumber(messageData=userMessageJSON, whatsappNumber=phoneNumber)
     socketio.emit('message', userMessageJSON)
     needsToSignUp = __checkUserRegistration(phoneNumber)
     if needsToSignUp:
         output, dialogflowResponseJSON = __handleNewUser(phoneNumber, receivedMessage)
-
-
     else:
         output, dialogflowResponseJSON = __handleExistingUser(phoneNumber, receivedMessage)
-        fcm.appendMessageToWhatsappNumber(messageData=dialogflowResponseJSON, whatsappNumber=phoneNumber)
+    fcm.appendMessageToWhatsappNumber(messageData=dialogflowResponseJSON, whatsappNumber=phoneNumber)
     socketio.emit('message', dialogflowResponseJSON)
     return dialogflowResponseJSON
 

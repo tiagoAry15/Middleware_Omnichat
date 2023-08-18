@@ -20,18 +20,16 @@ app.register_blueprint(test_blueprint, url_prefix='/test')
 
 @app.route("/twilioSandbox", methods=['POST'])
 def sandbox():
-    inicio = time.time()
+    start = time.time()
     data: dict = extractDictFromBytesRequest()
     print(data)
-
     userMessageJSON, chatData = processUserMessage(data)
     socketio.start_background_task(target=emitMessage, message=userMessageJSON)
     if 'isBotActive' in chatData:
         dialogflowMessageJSON = processDialogFlowMessage(userMessageJSON)
         emitMessage(dialogflowMessageJSON)
         response_body = dialogflowMessageJSON["body"]
-
-        print(f"Tempo de execução do envio do socket: {time.time() - inicio}")
+        print(f"Tempo de execução do envio do socket: {time.time() - start}")
         return sendTwilioResponse(body=response_body, media=None)
     return jsonify({"status": "success", "response": "Message sent"}), 200
 
@@ -137,7 +135,8 @@ def instagram():
 
 
 def __main():
-    socketio.run(app, host='0.0.0.0', port=5000)
+    app.debug = False
+    socketio.run(app, host='0.0.0.0', port=3000, allow_unsafe_werkzeug=True)
 
 
 if __name__ == '__main__':
