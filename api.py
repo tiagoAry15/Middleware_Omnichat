@@ -25,13 +25,14 @@ def sandbox():
     print(data)
     userMessageJSON, chatData = processUserMessage(data)
     socketio.start_background_task(target=emitMessage, message=userMessageJSON)
-    if 'isBotActive' in chatData:
-        dialogflowMessageJSON = processDialogFlowMessage(userMessageJSON)
-        emitMessage(dialogflowMessageJSON)
-        response_body = dialogflowMessageJSON["body"]
-        print(f"Tempo de execução do envio do socket: {time.time() - start}")
-        return sendTwilioResponse(body=response_body, media=None)
-    return jsonify({"status": "success", "response": "Message sent"}), 200
+    if 'isHumanActive' in chatData:
+        return jsonify({"status": "success", "response": "Message sent"}), 200
+    dialogflowMessageJSON = processDialogFlowMessage(userMessageJSON)
+    emitMessage(dialogflowMessageJSON)
+    response_body = dialogflowMessageJSON["body"]
+    print(f"Tempo de execução do envio do socket: {time.time() - start}")
+    return sendTwilioResponse(body=response_body, media=None)
+
 
 
 def emitMessage(message):
