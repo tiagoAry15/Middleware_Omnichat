@@ -103,5 +103,9 @@ def __main():
     }
 
 
+
+    list_with_extra_spaces = [ 1, 2, 3        ]
+
+
 if __name__ == "__main__":
     __main()
