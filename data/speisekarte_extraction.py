@@ -110,12 +110,16 @@ def __main():
     # structuredOrderExample = {'Bebida': [{'item': 'Suco de laranja', 'quantity': 1}],
     #                           'Pizza': [{'item': 'Calabresa', 'quantity': 0.5},
     #                                     {'item': 'Pepperoni', 'quantity': 0.5}]}
-    structuredOrderExample = {'Bebida': [{'guaraná': 2.0}, {'suco de laranja': 1.0}],
-                              'Pizza': [{'calabresa': 0.5, 'margherita': 0.5}, {'frango': 3.0}, {'calabresa': 2.0}]}
-    output = analyzeTotalPrice(structuredOrderExample, speisekarte)
-    finalMessage = output["finalMessage"]
-    price = output["totalPrice"]
-    return
+    # structuredOrderExample = {'Bebida': [{'guaraná': 2.0}, {'suco de laranja': 1.0}],
+    #                           'Pizza': [{'calabresa': 0.5, 'margherita': 0.5}, {'frango': 3.0}, {'calabresa': 2.0}]}
+    # output = analyzeTotalPrice(structuredOrderExample, speisekarte)
+    # finalMessage = output["finalMessage"]
+    # price = output["totalPrice"]
+    item_type = "Pizza de"
+    desired_items = [{'calabresa': 0.5, 'mussarela': 0.5}, {'frango': 1.0}]
+    price_dict = {'Calabresa': 17.5, 'Frango': 18.9, 'Margherita': 15.5, 'Pepperoni': 19.99, 'Portuguesa': 13.99,
+                  'Quatro Queijos': 16.9}
+    return __getItemDetails(item_type, desired_items, price_dict)
 
 
 if __name__ == '__main__':

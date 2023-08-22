@@ -34,9 +34,6 @@ def sandbox():
     return sendTwilioResponse(body=response_body, media=None)
 
 
-
-
-
 def emitMessage(message):
     socketio.emit('message', message)
 

@@ -8,12 +8,14 @@ from api_config.api_config import dialogFlowInstance, socketio, fcm
 from utils.helper_utils import sendTwilioResponse, __processTwilioIncomingMessage
 import asyncio
 
+
 def processUserMessage(data: dict):
     processedData = __transformTwilioDataIntoStructuredFirebaseData(data)
     userMessageJSON, phoneNumber, receivedMessage = (processedData["userMessageJSON"], processedData["phoneNumber"],
                                                      processedData["receivedMessage"])
     conversation = fcm.appendMessageToWhatsappNumber(messageData=userMessageJSON, whatsappNumber=phoneNumber)
     return userMessageJSON, conversation
+
 
 def __transformTwilioDataIntoStructuredFirebaseData(data: dict) -> dict:
     currentTime = datetime.datetime.now().strftime('%H:%M')
@@ -28,6 +30,7 @@ def __transformTwilioDataIntoStructuredFirebaseData(data: dict) -> dict:
             'time': currentTime
         }
     }
+
 
 def __checkUserRegistration(phoneNumber: str):
     im = IntentManager()
@@ -102,9 +105,7 @@ def __main():
         "ApiVersion": "2010-04-01"
     }
 
-
-
-    list_with_extra_spaces = [ 1, 2, 3        ]
+    list_with_extra_spaces = [1, 2, 3]
 
 
 if __name__ == "__main__":
