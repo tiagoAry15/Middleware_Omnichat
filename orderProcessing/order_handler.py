@@ -3,58 +3,35 @@ from typing import List
 
 def __getDrinkPluralForm(drinks: List[str]) -> dict:
     # Add plural forms to drinks list and create a reverse map for later use
-    drinks_plural = []
     reverse_map = {}
     for drink in drinks:
-        words = drink.split()
-        words[0] += 's'  # Add 's' to the first word
-        plural_form = ' '.join(words)
-        drinks_plural.append(plural_form)
-        reverse_map[plural_form.replace(' ', '@')] = drink
         reverse_map[drink.replace(' ', '@')] = drink  # Include original drink name with spaces replaced by '@'
-    drinks += drinks_plural
     return reverse_map
 
 
 def __replaceDrinkSynonym(drinks: List[str], userMessage: str) -> str:
-    words = userMessage.split()
-    finalMessage = userMessage
-    for word in words:
-        singular_word = word[:-1] if word.endswith('s') else word  # remove 's' at the end
-        isWordSubstring = any([singular_word in drink for drink in drinks])
-        if isWordSubstring:
-            detectedSubstring = [drink for drink in drinks if singular_word in drink][0]
-            finalMessage = finalMessage.replace(word, detectedSubstring)
-    return finalMessage
+    for drink in drinks:
+        if drink in userMessage:
+            userMessage = userMessage.replace(drink, drink.replace(' ', '@'))
+    return userMessage
 
 
 def structureDrink(parameters: dict, inputUserMessage: str) -> dict:
     drinks = parameters.get('Drinks', [])
     userMessage = __replaceDrinkSynonym(drinks, inputUserMessage)
-    numberEntity = {"uma": 1.0, "um": 1.0, "meio": 0.5, "meia": 0.5, "dois": 2.0, "duas": 2.0, "três": 3.0,
-                    "quatro": 4.0}
+    numberEntity = {"uma": 1.0, "um": 1.0, "meio": 0.5, "meia": 0.5, "dois": 2.0, "duas": 2.0, "três": 3.0, "quatro": 4.0}
 
     # Create a reverse map for later use
     reverseDrinkMap = __getDrinkPluralForm(drinks)
 
-    # Step 1: replace spaces in composite drinks with "@"
-    drinksReplaced = [drink.replace(' ', '@') for drink in drinks]
-
-    # Step 2: replace drinks in the user message with the replaced versions
-    for drink, drinkReplaced in zip(drinks, drinksReplaced):
-        userMessage = userMessage.replace(drink, drinkReplaced)
-
+    # Extract drink names and their quantities from the user message
     words = userMessage.split()
     drinkOrder = {
-        word: numberEntity[words[i - 1]]
+        reverseDrinkMap[word]: numberEntity[words[i - 1]]
         for i, word in enumerate(words)
-        if word in drinksReplaced and i > 0 and words[i - 1] in numberEntity
+        if word in reverseDrinkMap and i > 0 and words[i - 1] in numberEntity
     }
-    # Step 4: convert drink names back using the reverse_map
-    for drinkReplaced in drinkOrder.copy():
-        if drinkReplaced in reverseDrinkMap:
-            originalDrinkName = reverseDrinkMap[drinkReplaced]
-            drinkOrder[originalDrinkName] = drinkOrder.pop(drinkReplaced)
+
     return drinkOrder
 
 
@@ -66,7 +43,6 @@ def buildFullOrder(parameters: dict):
     drink = parameters["drinks"][0] if parameters.get("drinks") and parameters["drinks"] else None
     pizza = parameters["pizzas"][0] if parameters.get("pizzas") and parameters["pizzas"] else None
     return {"Bebida": [{key: value} for key, value in (drink.items() if drink else [])], "Pizza": pizza}
-
 
 
 def _splitOrder(order: str) -> List[str]:
@@ -203,6 +179,8 @@ def __main():
     #     "Vou querer duas pizzas de calabresa, uma meio pepperoni meio portuguesa e uma pizza meio calabresa meio "
     #     "pepperoni",
     #     {'flavor': ['calabresa', 'pepperoni', 'portuguesa']})
+    result1 = structureDrink(inputUserMessage='vou querer um guaraná', parameters={'Drinks': ['guaraná']})
+    result2 = structureDrink(inputUserMessage='vou querer um suco de laranja', parameters={'Drinks': ['suco de laranja']})
     orderList = [{'calabresa': 2.0}, {'pepperoni': 0.5, 'portuguesa': 0.5}, {'calabresa': 0.5, 'pepperoni': 0.5}]
     output = convertMultiplePizzaOrderToText(orderList)
 

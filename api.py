@@ -72,16 +72,16 @@ def send():
         pizzaMenu = dialogFlowInstance.getPizzasString()
         welcomeString = f"Olá! Bem-vindo à Pizza do Bill! Funcionamos das 17h às 22h.\n {pizzaMenu}." \
                         f" \nQual pizza você vai querer?"
-        fireContext = __structureNewDialogflowContext("FIRE")
-        return sendWebhookCallback(botMessage=welcomeString, outputContext=fireContext)
+        startContext = __structureNewDialogflowContext(contextName="Start", lifespan=1)
+        return sendWebhookCallback(botMessage=welcomeString, outputContext=startContext)
     return sendWebhookCallback(botMessage="a")
 
 
-def __structureNewDialogflowContext(outputContext: str):
+def __structureNewDialogflowContext(contextName: str, lifespan: int = 5):
     baseContextName = dialogFlowInstance.params["baseContextName"]
     newContext = {
-        "name": f"{baseContextName}/contexts/{outputContext}",
-        "lifespanCount": 5,
+        "name": f"{baseContextName}/contexts/{contextName}",
+        "lifespanCount": lifespan,
         "parameters": {}
     }
     return [newContext]
@@ -92,9 +92,9 @@ def __handleOrderPizzaIntent(queryText: str, requestContent: dict) -> Response:
     fullPizza = parsePizzaOrder(userMessage=queryText, parameters=parameters)
     fullPizzaText = convertMultiplePizzaOrderToText(fullPizza)
     dialogFlowInstance.params["pizzas"].append(fullPizza)
-    baseContextName = dialogFlowInstance.params.get("baseContextName")
+    followUpContext = __structureNewDialogflowContext("OrderPizza-followup")
     return sendWebhookCallback(botMessage=f"Maravilha! {fullPizzaText.capitalize()} então. "
-                                          f"Você vai querer alguma bebida?")
+                                          f"Você vai querer alguma bebida?", outputContext=followUpContext)
 
 
 def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
