@@ -2,6 +2,8 @@ import base64
 import copy
 import json
 import os
+from typing import List
+
 from dotenv import load_dotenv
 from flask import request, make_response, Response
 from urllib.parse import parse_qs
@@ -18,11 +20,13 @@ def __prepareOutputResponse(myResult) -> Response:
     return r
 
 
-def sendWebhookCallback(botMessage: str) -> Response:
+def sendWebhookCallback(botMessage: str, outputContext: List = None) -> Response:
     myResult = {
         "source": "dialogFlow",
         "fulfillmentText": botMessage
     }
+    if outputContext is not None:
+        myResult["outputContexts"] = outputContext
     return __prepareOutputResponse(myResult)
 
 

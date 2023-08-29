@@ -44,9 +44,9 @@ def send():
     endpoint.
     This is under DialogflowEssentials -> Fulfillment"""
     logging.info("FULFILLMENT ENDPOINT")
-    dialogFlowInstance.params["secret"] = "Mensagem secreta"
     requestContent = request.get_json()
-    contexts = [item['name'].split("/")[-1] for item in requestContent['queryResult']['outputContexts']]
+    outputContexts = requestContent['queryResult']['outputContexts']
+    dialogFlowInstance.params["baseContextName"] = outputContexts[0]['name'].rsplit('/contexts/', 1)[0]
     queryText = requestContent['queryResult']['queryText']
     userMessage = [item["name"] for item in queryText] if isinstance(queryText, list) else queryText
     # socketMessage = mc.dynamicConversion(userMessage)
@@ -72,8 +72,19 @@ def send():
         pizzaMenu = dialogFlowInstance.getPizzasString()
         welcomeString = f"Olá! Bem-vindo à Pizza do Bill! Funcionamos das 17h às 22h.\n {pizzaMenu}." \
                         f" \nQual pizza você vai querer?"
-        return sendWebhookCallback(welcomeString)
+        fireContext = __structureNewDialogflowContext("FIRE")
+        return sendWebhookCallback(botMessage=welcomeString, outputContext=fireContext)
     return sendWebhookCallback(botMessage="a")
+
+
+def __structureNewDialogflowContext(outputContext: str):
+    baseContextName = dialogFlowInstance.params["baseContextName"]
+    newContext = {
+        "name": f"{baseContextName}/contexts/{outputContext}",
+        "lifespanCount": 5,
+        "parameters": {}
+    }
+    return [newContext]
 
 
 def __handleOrderPizzaIntent(queryText: str, requestContent: dict) -> Response:
@@ -81,6 +92,7 @@ def __handleOrderPizzaIntent(queryText: str, requestContent: dict) -> Response:
     fullPizza = parsePizzaOrder(userMessage=queryText, parameters=parameters)
     fullPizzaText = convertMultiplePizzaOrderToText(fullPizza)
     dialogFlowInstance.params["pizzas"].append(fullPizza)
+    baseContextName = dialogFlowInstance.params.get("baseContextName")
     return sendWebhookCallback(botMessage=f"Maravilha! {fullPizzaText.capitalize()} então. "
                                           f"Você vai querer alguma bebida?")
 

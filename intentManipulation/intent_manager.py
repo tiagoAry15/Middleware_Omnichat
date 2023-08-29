@@ -151,7 +151,8 @@ class IntentManager:
 
 def __main():
     im = IntentManager()
-    existingUser = im.existingWhatsapp("+19574430239")
+    # existingUser = im.existingWhatsapp("+19574430239")
+    existingUser = False
     if not existingUser:
         messagePot = ["Oii", "João", "Rua das Flores 4874", "19574430239"]
         lastBotAnswer = ""
