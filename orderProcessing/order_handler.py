@@ -1,38 +1,90 @@
 from typing import List
 
 
+def __extra_s_count(original: str, word: str) -> int:
+    return word.count('s') - original.count('s')
+
+
+def __get_plural_form(drink: str) -> str:
+    words = drink.split()
+    # Words which should not be pluralized
+    skip_plural = ["de"]
+
+    # Assuming plurals just add an 's' to the last word, except for words in skip_plural
+    if len(words) > 1 and words[-2] not in skip_plural:
+        words[-2] += 's'
+    words[-1] += 's'
+
+    return ' '.join(words)
+
+
 def __getDrinkPluralForm(drinks: List[str]) -> dict:
-    # Add plural forms to drinks list and create a reverse map for later use
     reverse_map = {}
     for drink in drinks:
-        reverse_map[drink.replace(' ', '@')] = drink  # Include original drink name with spaces replaced by '@'
+        reverse_map[drink.replace(' ', '@')] = drink  # Singular form
+        words = drink.split()
+
+        # Handle plurals for last word
+        words[-1] += 's'
+        plural_drink_last = ' '.join(words)
+        reverse_map[plural_drink_last.replace(' ', '@')] = drink
+
+        # If the drink has multiple words, create more plural variations
+        if len(words) > 1:
+            # Only first word pluralized
+            words[0] += 's'
+            plural_drink_first = ' '.join(words)
+            reverse_map[plural_drink_first.replace(' ', '@')] = drink
+
+            # Remove the 's' added to the last word to get the sucos@de@laranja form
+            words[-1] = words[-1][:-1]
+            plural_drink_first_only = ' '.join(words)
+            reverse_map[plural_drink_first_only.replace(' ', '@')] = drink
+
     return reverse_map
 
 
 def __replaceDrinkSynonym(drinks: List[str], userMessage: str) -> str:
+    replacedWords = set()  # Track words we've already replaced
     for drink in drinks:
-        if drink in userMessage:
-            userMessage = userMessage.replace(drink, drink.replace(' ', '@'))
+        for word in userMessage.split():
+            if word in replacedWords:
+                continue
+            if __extra_s_count(drink, word) > 0:
+                userMessage = userMessage.replace(word, word.replace(' ', '@'))
+                replacedWords.add(word)
+            elif drink in word:
+                userMessage = userMessage.replace(word, word.replace(' ', '@'))
+                replacedWords.add(word)
     return userMessage
 
 
 def structureDrink(parameters: dict, inputUserMessage: str) -> dict:
     drinks = parameters.get('Drinks', [])
     userMessage = __replaceDrinkSynonym(drinks, inputUserMessage)
-    numberEntity = {"uma": 1.0, "um": 1.0, "meio": 0.5, "meia": 0.5, "dois": 2.0, "duas": 2.0, "três": 3.0, "quatro": 4.0}
+
+    numberEntity = {
+        "uma": 1.0, "um": 1.0, "meio": 0.5, "meia": 0.5,
+        "dois": 2.0, "duas": 2.0, "três": 3.0, "quatro": 4.0
+    }
 
     # Create a reverse map for later use
     reverseDrinkMap = __getDrinkPluralForm(drinks)
+    drinkOrder = {}
 
-    # Extract drink names and their quantities from the user message
+    order = {}
     words = userMessage.split()
-    drinkOrder = {
-        reverseDrinkMap[word]: numberEntity[words[i - 1]]
-        for i, word in enumerate(words)
-        if word in reverseDrinkMap and i > 0 and words[i - 1] in numberEntity
-    }
+    for i, word in enumerate(words):
+        if word in numberEntity:
+            # Check if the next word(s) form a valid drink name
+            for j in range(1, 5):  # Assume max length of drink name is 4 words
+                potential_drink = '@'.join(words[i + 1:i + 1 + j])
+                if potential_drink in reverseDrinkMap:
+                    # Update the order with the identified drink and its number
+                    order[reverseDrinkMap[potential_drink]] = numberEntity[word]
+                    break
 
-    return drinkOrder
+    return order
 
 
 def buildFullOrder(parameters: dict):
@@ -173,17 +225,20 @@ def __testBuildFullOrder():
 
 
 def __main():
+    result1 = structureDrink({'Drinks': ['guaraná']}, 'vou querer um guaraná')
+    result2 = structureDrink({'Drinks': ['guaraná']}, 'vou querer quatro guaranás')
+    result3 = structureDrink({'Drinks': ['suco de laranja']}, 'vou querer um suco de laranja')
+    result5 = structureDrink({'Drinks': ['guaraná', 'suco de laranja']},
+                             'vou querer três guaranás e dois sucos de laranja')
+    result4 = structureDrink({'Drinks': ['suco de laranja']}, 'vou querer dois sucos de laranja')
+    orderList = [{'calabresa': 2.0}, {'pepperoni': 0.5, 'portuguesa': 0.5}, {'calabresa': 0.5, 'pepperoni': 0.5}]
+    output = convertMultiplePizzaOrderToText(orderList)
     # __testBuildFullOrder()
     # output = structureFullOrder(parameterInput)
     # output = parsePizzaOrder(
     #     "Vou querer duas pizzas de calabresa, uma meio pepperoni meio portuguesa e uma pizza meio calabresa meio "
     #     "pepperoni",
     #     {'flavor': ['calabresa', 'pepperoni', 'portuguesa']})
-    result1 = structureDrink(inputUserMessage='vou querer um guaraná', parameters={'Drinks': ['guaraná']})
-    result2 = structureDrink(inputUserMessage='vou querer um suco de laranja', parameters={'Drinks': ['suco de laranja']})
-    orderList = [{'calabresa': 2.0}, {'pepperoni': 0.5, 'portuguesa': 0.5}, {'calabresa': 0.5, 'pepperoni': 0.5}]
-    output = convertMultiplePizzaOrderToText(orderList)
-
     # parameterInput = {'drinks': [{'guaraná': 1.0, 'suco de laranja': 2.0}],
     #                   'pizzas': [[{'calabresa': 2.0}, {'calabresa': 0.5, 'frango': 0.5}]],
     #                   'secret': 'Mensagem secreta'}
