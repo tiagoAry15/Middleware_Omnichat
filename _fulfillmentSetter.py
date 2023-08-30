@@ -25,14 +25,11 @@ def getDialogflowCredentials():
 def setNewFulfillment(newUrl: str = "https://www.facebook.com"):
     dotenv.load_dotenv()
     dialogFlowCredentials = getDialogflowCredentials()
-
     project_id = os.environ["DIALOGFLOW_PROJECT_ID"]
-
     client = dialogflow_v2.FulfillmentsClient(credentials=dialogFlowCredentials)
     fulfillment = dialogflow_v2.Fulfillment()
     fulfillment.generic_web_service.uri = newUrl
     fulfillment.name = f"projects/{project_id}/locations/global/agent/fulfillment"
-
     mask = field_mask_pb2.FieldMask(paths=["generic_web_service.uri", "name"])
 
     request = dialogflow_v2.UpdateFulfillmentRequest(
@@ -40,9 +37,7 @@ def setNewFulfillment(newUrl: str = "https://www.facebook.com"):
         update_mask=mask
     )
 
-    response = client.update_fulfillment(request=request)
-    print(response)
-    return
+    return client.update_fulfillment(request=request)
 
 
 def __main():
