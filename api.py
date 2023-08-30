@@ -73,7 +73,7 @@ def send():
         welcomeString = f"Olá! Bem-vindo à Pizza do Bill! Funcionamos das 17h às 22h.\n {pizzaMenu}." \
                         f" \nQual pizza você vai querer?"
         startContext = __structureNewDialogflowContext(contextName="Start", lifespan=1)
-        return sendWebhookCallback(botMessage=welcomeString, outputContext=startContext)
+        return sendWebhookCallback(botMessage=welcomeString, nextContext=startContext)
     return sendWebhookCallback(botMessage="a")
 
 
@@ -94,7 +94,7 @@ def __handleOrderPizzaIntent(queryText: str, requestContent: dict) -> Response:
     dialogFlowInstance.params["pizzas"].append(fullPizza)
     followUpContext = __structureNewDialogflowContext("OrderPizza-followup")
     return sendWebhookCallback(botMessage=f"Maravilha! {fullPizzaText.capitalize()} então. "
-                                          f"Você vai querer alguma bebida?", outputContext=followUpContext)
+                                          f"Você vai querer alguma bebida?", nextContext=followUpContext)
 
 
 def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:

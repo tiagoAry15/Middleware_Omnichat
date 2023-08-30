@@ -20,13 +20,13 @@ def __prepareOutputResponse(myResult) -> Response:
     return r
 
 
-def sendWebhookCallback(botMessage: str, outputContext: List = None) -> Response:
+def sendWebhookCallback(botMessage: str, nextContext: List = None) -> Response:
     myResult = {
         "source": "dialogFlow",
         "fulfillmentText": botMessage
     }
-    if outputContext is not None:
-        myResult["outputContexts"] = outputContext
+    if nextContext is not None:
+        myResult["outputContexts"] = nextContext
     return __prepareOutputResponse(myResult)
 
 
