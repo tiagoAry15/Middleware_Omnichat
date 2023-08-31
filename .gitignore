@@ -2,3 +2,5 @@
 /dialogflow.json
 /firebaseFolder/firebase_sdk.json
 /tokens/token.json
+/webscrapping/geckodriver.exe
+/webscrapping/geckodriver.log

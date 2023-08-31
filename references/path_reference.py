@@ -26,6 +26,10 @@ def getDialogflowJsonPath() -> str:
     return str(getMainFolderPath() / 'dialogflow.json')
 
 
+def getWebdriverPath() -> Path:
+    return getMainFolderPath() / 'webscrapping/geckodriver.exe'
+
+
 def __main():
     sdkFile = getDialogflowJsonPath()
     existingSdkFile = sdkFile.exists()

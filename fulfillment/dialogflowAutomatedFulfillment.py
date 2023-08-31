@@ -1,4 +1,4 @@
-from _fulfillmentSetter import setNewFulfillment
+from fulfillment.dialogflowFulfillmentSetter import setNewFulfillment
 from fulfillment.ngrokGetter import get_ngrok_url
 
 
