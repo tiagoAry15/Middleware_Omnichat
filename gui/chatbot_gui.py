@@ -10,6 +10,7 @@ class ChatbotTesterGUI(tk.Tk):
 
     def __init__(self):
         super().__init__()
+        self.pizza_check_var = None
         self.geometry("+800+250")
         self.title("Chatbot Tester GUI")
 
@@ -54,7 +55,7 @@ class ChatbotTesterGUI(tk.Tk):
 
         elif chosen_option == "2- Pizza Choose":
             pizza_a_dropdown, pizza_b_dropdown = self.create_pizza_dropdowns("First Pizza")
-            self.create_pizza_dropdowns("Second Pizza")
+            self.create_pizza_dropdowns("Second Pizza", right_label_padding=35)
             self.update_pizza_input(None)
 
         elif chosen_option == "3- Drink Choose":
@@ -101,21 +102,33 @@ class ChatbotTesterGUI(tk.Tk):
         return self.create_dropdown("Payment Method:", ["Cartão", "Dinheiro", "Pix"],
                                     "Vou pagar com {}")
 
-    def create_pizza_dropdowns(self, label_text):
+    def create_pizza_dropdowns(self, label_text: str, right_label_padding: int = 40):
+        # Calculate row_position based on label_text
+        row_position = 0 if label_text == "First Pizza" else 4
+
+        # Common check button for both pizzas
+        pizza_check_var = tk.IntVar(value=1)  # starts checked
+        pizza_check_btn = ttk.Checkbutton(self.frame_options, text="", variable=pizza_check_var)
+        pizza_check_btn.grid(row=row_position, column=1, pady=5)
+
+        if label_text == "Second Pizza":
+            self.pizza_check_var = pizza_check_var
+            pizza_check_btn.config(command=self.toggle_second_pizza)  # Only add command to the second pizza's checkbox
+
         pizza_label = ttk.Label(self.frame_options, text=label_text)
-        pizza_label.pack(pady=10)
+        pizza_label.grid(row=row_position + 1, column=1, pady=5, sticky=tk.W, padx=(right_label_padding, 0))
 
         pizza_a_options = ["Calabresa", "Frango", "Queijo"]
         pizza_a_dropdown = ttk.Combobox(self.frame_options, values=pizza_a_options, width=self.DROPDOWN_WIDTH,
                                         style=self.DROPDOWN_STYLE)
-        pizza_a_dropdown.pack(pady=10)
+        pizza_a_dropdown.grid(row=row_position + 2, column=1, pady=5)
         pizza_a_default_option = pizza_a_options[0]
         pizza_a_dropdown.set(pizza_a_default_option)
 
         pizza_b_options = ["Calabresa", "Frango", "Queijo"]
         pizza_b_dropdown = ttk.Combobox(self.frame_options, values=pizza_b_options, width=self.DROPDOWN_WIDTH,
                                         style=self.DROPDOWN_STYLE)
-        pizza_b_dropdown.pack(pady=10)
+        pizza_b_dropdown.grid(row=row_position + 3, column=1, pady=5)
         pizza_b_default_option = pizza_b_options[1]
         pizza_b_dropdown.set(pizza_b_default_option)
 
@@ -129,6 +142,21 @@ class ChatbotTesterGUI(tk.Tk):
         pizzas = '+'.join(pizza_values)
         self.user_input.delete(1.0, tk.END)
         self.user_input.insert(tk.END, pizzas)
+
+    def toggle_second_pizza(self):
+        children = self.frame_options.winfo_children()
+        dropdowns = [child for child in children if isinstance(child, ttk.Combobox)]
+
+        # If the check button is unchecked, set the dropdowns to ""
+        if not self.pizza_check_var.get():
+            for dropdown in dropdowns[2:4]:  # Assuming these are the second pizza dropdowns
+                dropdown.set("")
+        else:
+            # Reset the dropdowns to their default values
+            dropdowns[2].set("Calabresa")
+            dropdowns[3].set("Frango")
+
+        self.update_pizza_input(None)
 
 
 def __main():
