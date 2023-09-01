@@ -1,5 +1,5 @@
 def buildFullOrder(parameters: dict):
-    """parameters example:  {'drinks': ['2 suco de laranja'],
+    """parameters example:  {'drinks': {'suco de laranja': 2.0},
                             'pizzas': [{'calabresa': 2.0}, {'pepperoni': 0.5, 'portuguesa': 0.5},
                              {'calabresa': 0.5, 'pepperoni': 0.5}],
                             'secret': 'Mensagem secreta'}"""
@@ -9,7 +9,7 @@ def buildFullOrder(parameters: dict):
 
 
 def __getBuildFullOrderInputExample():
-    return {'drinks': ['2 suco de laranja'],
+    return {'drinks': [{'suco de laranja': 2.0}],
             'pizzas': [{'calabresa': 2.0}, {'pepperoni': 0.5, 'portuguesa': 0.5},
                        {'calabresa': 0.5, 'pepperoni': 0.5}],
             'secret': 'Mensagem secreta'}
