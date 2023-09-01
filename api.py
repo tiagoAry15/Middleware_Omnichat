@@ -3,8 +3,9 @@ from flask import request, jsonify, Response, abort
 from api_routes.conversation_routes import conversation_blueprint
 from api_routes.test_routes import test_blueprint
 from api_routes.user_routes import user_blueprint
-from orderProcessing.order_handler import structureDrink, buildFullOrder, parsePizzaOrder, \
-    convertMultiplePizzaOrderToText
+from orderProcessing.order_builder import buildFullOrder
+from orderProcessing.pizza_processor import parsePizzaOrder, convertMultiplePizzaOrderToText
+from orderProcessing.drink_processor import structureDrink
 from socketEmissions.socket_emissor import pulseEmit
 from api_config.api_config import app, socketio, dialogFlowInstance, fu, mc, twilioClient, twilio_phone_number
 from utils import instagram_utils

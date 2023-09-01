@@ -1,4 +1,4 @@
-from orderProcessing.order_handler import structureDrink
+from orderProcessing.drink_processor import structureDrink
 
 
 class TestOrderHandlerDrink:

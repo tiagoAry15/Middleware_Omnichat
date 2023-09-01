@@ -1,4 +1,4 @@
-from orderProcessing.order_handler import parsePizzaOrder
+from orderProcessing.pizza_processor import parsePizzaOrder
 
 
 class TestOrderHandlerPizza:

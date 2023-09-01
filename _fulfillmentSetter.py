@@ -6,7 +6,7 @@ from fulfillment.ngrokGetter import get_ngrok_url
 def fulfillmentPipeline():
     url = get_ngrok_url()
     response = setNewFulfillment(newUrl=f"{url}/webhookForIntent")
-    setNewInstagramWebhookCallbackURL(newUrl=f"{url}/instagram")
+    # setNewInstagramWebhookCallbackURL(newUrl=f"{url}/instagram")
     return
 
 
