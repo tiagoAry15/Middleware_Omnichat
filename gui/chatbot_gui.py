@@ -47,18 +47,24 @@ class ChatbotTesterGUI(tk.Tk):
         for widget in self.frame_options.winfo_children():
             widget.destroy()
 
+        dropdown = None
+
         if chosen_option == "1- Greeting":
-            self.create_greeting_dropdown()
+            dropdown = self.create_greeting_dropdown()
 
         elif chosen_option == "2- Pizza Choose":
-            self.create_pizza_dropdowns("First Pizza")
+            pizza_a_dropdown, pizza_b_dropdown = self.create_pizza_dropdowns("First Pizza")
             self.create_pizza_dropdowns("Second Pizza")
+            self.update_pizza_input(None)
 
         elif chosen_option == "3- Drink Choose":
-            self.create_drink_dropdown()
+            dropdown = self.create_drink_dropdown()
 
         elif chosen_option == "4- Finish":
-            self.create_finish_dropdown()
+            dropdown = self.create_finish_dropdown()
+
+        if 'dropdown' in locals() and dropdown:
+            dropdown.event_generate("<<ComboboxSelected>>")
 
     def create_dropdown(self, label_text, options, message_format, initial_option=None):
         label = ttk.Label(self.frame_options, text=label_text)
@@ -71,6 +77,7 @@ class ChatbotTesterGUI(tk.Tk):
         dropdown.set(default_option)
 
         dropdown.bind("<<ComboboxSelected>>", self.generate_input_callback(message_format, dropdown))
+        return dropdown
 
     def generate_input_callback(self, message_format, dropdown):
         def callback(event):
@@ -79,19 +86,20 @@ class ChatbotTesterGUI(tk.Tk):
                 self.user_input.insert(tk.END, message_format.format(dropdown.get()))
             else:
                 self.user_input.insert(tk.END, dropdown.get())
+
         return callback
 
     def create_greeting_dropdown(self):
-        self.create_dropdown("Select Greeting:", ["Oi", "Olá", "Boa tarde", "Boa noite"],
-                             "{}", initial_option="Oi")
+        return self.create_dropdown("Select Greeting:", ["Oi", "Olá", "Boa tarde", "Boa noite"],
+                                    "{}", initial_option="Oi")
 
     def create_drink_dropdown(self):
-        self.create_dropdown("Select Drink:", ["Coca", "Guaraná", "Fanta"],
-                             "Vou querer uma {}")
+        return self.create_dropdown("Select Drink:", ["Coca", "Guaraná", "Fanta"],
+                                    "Vou querer uma {}")
 
     def create_finish_dropdown(self):
-        self.create_dropdown("Payment Method:", ["Cartão", "Dinheiro", "Pix"],
-                             "Vou pagar com {}")
+        return self.create_dropdown("Payment Method:", ["Cartão", "Dinheiro", "Pix"],
+                                    "Vou pagar com {}")
 
     def create_pizza_dropdowns(self, label_text):
         pizza_label = ttk.Label(self.frame_options, text=label_text)
@@ -113,6 +121,7 @@ class ChatbotTesterGUI(tk.Tk):
 
         pizza_a_dropdown.bind("<<ComboboxSelected>>", self.update_pizza_input)
         pizza_b_dropdown.bind("<<ComboboxSelected>>", self.update_pizza_input)
+        return pizza_a_dropdown, pizza_b_dropdown
 
     def update_pizza_input(self, event):
         children = self.frame_options.winfo_children()
