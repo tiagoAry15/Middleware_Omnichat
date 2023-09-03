@@ -10,6 +10,12 @@ class MainUI(tk.Tk):
     PAD_Y = 40
     DROPDOWN_WIDTH = 20
     DROPDOWN_STYLE = 'Clam.TCombobox'
+    MAIN_DROPDOWN_FORMATS = {
+        "1- Greeting": "{}",
+        "2- Pizza Choose": "{}",
+        "3- Drink Choose": "Vou querer uma {}",
+        "4- Finish": "Vou pagar com {}"
+    }
 
     def __init__(self):
         super().__init__()
@@ -25,18 +31,18 @@ class MainUI(tk.Tk):
         self.main_dropdown = ttk.Combobox(self, values=self.main_options, width=self.DROPDOWN_WIDTH,
                                           style=self.DROPDOWN_STYLE)
         self.main_dropdown.bind("<<ComboboxSelected>>", self.on_main_dropdown_change)
-        self.main_dropdown.pack(padx=self.PAD_X - 2, pady=self.PAD_Y)
+        self.main_dropdown.pack(padx=self.PAD_X-2, pady=self.PAD_Y)
         self.main_dropdown.set(self.main_options[0])
 
         self.user_input = tk.Text(self, width=35, height=3)
 
         self.option_frame: OptionFrame = OptionFrame(self, self.user_input)
-        self.option_frame.pack(padx=self.PAD_X - 2, pady=self.PAD_Y - 2)
+        self.option_frame.pack(padx=self.PAD_X-2, pady=self.PAD_Y-2)
 
-        self.user_input.pack(pady=self.PAD_Y - 2)
+        self.user_input.pack(pady=1)
 
         self.send_button = ttk.Button(self, text="Send", command=self.on_send_click)
-        self.send_button.pack(pady=self.PAD_Y - 2)
+        self.send_button.pack(pady=self.PAD_Y-2)
 
         self.__update_text_field()
 
@@ -48,7 +54,10 @@ class MainUI(tk.Tk):
         chosen_option = self.main_dropdown.get()
         self.option_frame.update_frame(chosen_option)
         default_message = self.option_frame.update_frame(chosen_option)
-        self.__update_text_field(message=default_message)
+
+        format_str = self.MAIN_DROPDOWN_FORMATS.get(chosen_option, "{}")
+        formatted_message = format_str.format(default_message)
+        self.__update_text_field(message=formatted_message)
 
     def __update_text_field(self, message: str = None):
         self.user_input.delete(1.0, tk.END)
