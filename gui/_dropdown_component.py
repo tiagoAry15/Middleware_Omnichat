@@ -1,11 +1,13 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter.ttk import Combobox
+from typing import List, Callable
 
 
 class DropdownComponent:
-
-    def __init__(self, parent, label_text, options, message_format, user_input, initial_option=None, callback=None,
-                 name=None):
+    def __init__(self, parent, label_text: str, options: List[str], message_format: str, user_input: tk.Text,
+                 initial_option=None, callback: Callable[[tk.Event], None] = None,
+                 name: str = None):
         self.user_input = user_input
         label = ttk.Label(parent, text=label_text)
         label.pack(pady=10)
@@ -20,7 +22,7 @@ class DropdownComponent:
         else:
             dropdown.bind("<<ComboboxSelected>>", self.generate_input_callback(message_format, dropdown))
 
-    def generate_input_callback(self, message_format, dropdown):
+    def generate_input_callback(self, message_format: str, dropdown: Combobox):
         def callback(event):
             self.user_input.delete(1.0, tk.END)
             if "{}" in message_format:

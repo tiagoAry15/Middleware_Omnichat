@@ -15,12 +15,16 @@ class OptionFrame(ttk.Frame):
 
     def update_frame(self, chosen_option: str):
         clear_frame(self)
+        default_message = ""
 
         if chosen_option == "1- Greeting":
-            DropdownComponent(self, "Select Greeting:", ["Oi", "Olá", "Boa tarde", "Boa noite"],
+            greeting_options = ["Oi", "Olá", "Boa tarde", "Boa noite"]
+            default_message = greeting_options[0]
+            DropdownComponent(self, "Select Greeting:", greeting_options,
                               "{}", self.user_input)
         elif chosen_option == "2- Pizza Choose":
             pizzaFlavors = ["Margherita", "Pepperoni", "Veggie", "BBQ Chicken"]
+            default_message = pizzaFlavors[0]
             self.pizza_dropdown_values = [tk.StringVar(value=pizzaFlavors[0]),
                                           tk.StringVar(value=pizzaFlavors[0])]
             # Add your pizza dropdown components here
@@ -32,11 +36,16 @@ class OptionFrame(ttk.Frame):
 
             self.__update_pizza_text()
         elif chosen_option == "3- Drink Choose":
-            DropdownComponent(self, "Select Drink:", ["Coca", "Guaraná", "Fanta"],
+            drink_options = ["Coca", "Guaraná", "Fanta"]
+            default_message = drink_options[0]
+            DropdownComponent(self, "Select Drink:", drink_options,
                               "Vou querer uma {}", self.user_input)
         elif chosen_option == "4- Finish":
-            DropdownComponent(self, "Payment Method:", ["Cartão", "Dinheiro", "Pix"],
+            payment_options = ["Cartão", "Dinheiro", "Pix"]
+            default_message = payment_options[0]
+            DropdownComponent(self, "Payment Method:", payment_options,
                               "Vou pagar com {}", self.user_input)
+        return default_message
 
     def on_pizza_change(self, event: tk.Event):
         widget = event.widget

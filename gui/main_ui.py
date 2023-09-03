@@ -47,10 +47,13 @@ class MainUI(tk.Tk):
     def on_main_dropdown_change(self, event: tk.Event):
         chosen_option = self.main_dropdown.get()
         self.option_frame.update_frame(chosen_option)
+        default_message = self.option_frame.update_frame(chosen_option)
+        self.__update_text_field(message=default_message)
 
-    def __update_text_field(self):
+    def __update_text_field(self, message: str = None):
         self.user_input.delete(1.0, tk.END)
-        self.user_input.insert(tk.END, self.main_dropdown.get())
+        message = self.main_dropdown.get() if message is None else message
+        self.user_input.insert(tk.END, message)
 
 
 if __name__ == "__main__":
