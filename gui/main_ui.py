@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import tkinter as tk
 from tkinter import ttk
-
 from gui._option_frame import OptionFrame
 
 
@@ -29,7 +30,7 @@ class MainUI(tk.Tk):
 
         self.user_input = tk.Text(self, width=35, height=3)
 
-        self.option_frame = OptionFrame(self, self.user_input)
+        self.option_frame: OptionFrame = OptionFrame(self, self.user_input)
         self.option_frame.pack(padx=self.PAD_X - 2, pady=self.PAD_Y - 2)
 
         self.user_input.pack(pady=self.PAD_Y - 2)
@@ -43,7 +44,7 @@ class MainUI(tk.Tk):
         # Logic for when the Send button is clicked
         print("Send button clicked!")  # For now, it just prints a message.
 
-    def on_main_dropdown_change(self, event):
+    def on_main_dropdown_change(self, event: tk.Event):
         chosen_option = self.main_dropdown.get()
         self.option_frame.update_frame(chosen_option)
 

@@ -4,17 +4,21 @@ from tkinter import ttk
 
 class DropdownComponent:
 
-    def __init__(self, parent, label_text, options, message_format, user_input, initial_option=None):
+    def __init__(self, parent, label_text, options, message_format, user_input, initial_option=None, callback=None,
+                 name=None):
         self.user_input = user_input
         label = ttk.Label(parent, text=label_text)
         label.pack(pady=10)
 
-        dropdown = ttk.Combobox(parent, values=options, width=20, style='Clam.TCombobox')
+        dropdown = ttk.Combobox(parent, values=options, width=20, style='Clam.TCombobox', name=name)
         dropdown.pack(pady=10)
         default_option = initial_option or options[0]
         dropdown.set(default_option)
 
-        dropdown.bind("<<ComboboxSelected>>", self.generate_input_callback(message_format, dropdown))
+        if callback:
+            dropdown.bind("<<ComboboxSelected>>", callback)
+        else:
+            dropdown.bind("<<ComboboxSelected>>", self.generate_input_callback(message_format, dropdown))
 
     def generate_input_callback(self, message_format, dropdown):
         def callback(event):
