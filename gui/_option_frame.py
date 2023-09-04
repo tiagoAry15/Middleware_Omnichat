@@ -28,13 +28,15 @@ class OptionFrame(ttk.Frame):
             self.pizza_dropdown_values = [tk.StringVar(value=pizzaFlavors[0]),
                                           tk.StringVar(value=pizzaFlavors[0])]
             # Add your pizza dropdown components here
-            DropdownComponent(self, "Select First Pizza:", pizzaFlavors,
-                              "", self.user_input, callback=self.on_pizza_change, name="first_pizza")
-
-            DropdownComponent(self, "Select Second Pizza:", pizzaFlavors,
-                              "", self.user_input, callback=self.on_pizza_change, name="second_pizza")
-
-            self.__update_pizza_text()
+            first_pizza_dropdown = DropdownComponent(self, "Select First Pizza:", pizzaFlavors,
+                                                     "", self.user_input, callback=self.on_pizza_change,
+                                                     name="first_pizza")
+            second_pizza_dropdown = DropdownComponent(self, "Select Second Pizza:", pizzaFlavors,
+                                                      "", self.user_input, callback=self.on_pizza_change,
+                                                      name="second_pizza")
+            self.pizza_dropdown_values[0].set(first_pizza_dropdown.dropdown.get())
+            self.pizza_dropdown_values[1].set(second_pizza_dropdown.dropdown.get())
+            self.update_pizza_text()
         elif chosen_option == "3- Drink Choose":
             drink_options = ["Coca", "Guaraná", "Fanta"]
             default_message = drink_options[0]
@@ -54,9 +56,10 @@ class OptionFrame(ttk.Frame):
         else:
             idx = 1
         self.pizza_dropdown_values[idx].set(widget.get())
-        self.__update_pizza_text()
+        self.update_pizza_text()
 
-    def __update_pizza_text(self):
+    def update_pizza_text(self):
         self.user_input.delete(1.0, tk.END)
         pizzas = [val.get() for val in self.pizza_dropdown_values]
-        self.user_input.insert(tk.END, '+'.join(pizzas))
+        newValue = '+'.join(pizzas)
+        self.user_input.insert(tk.END, newValue)

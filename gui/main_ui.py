@@ -45,7 +45,8 @@ class MainUI(tk.Tk):
 
         # New text field for the second column
         self.conversation_text_field = tk.Text(self, width=35, height=10)
-        self.conversation_text_field.grid(row=0, column=1, rowspan=5, padx=self.PAD_X - 2, pady=self.PAD_Y, sticky="nsew")
+        self.conversation_text_field.grid(row=0, column=1, rowspan=5, padx=self.PAD_X - 2, pady=self.PAD_Y,
+                                          sticky="nsew")
 
         # Configuring the columns and rows for a balanced look
         self.grid_columnconfigure(0, weight=1)
@@ -67,9 +68,12 @@ class MainUI(tk.Tk):
         self.option_frame.update_frame(chosen_option)
         default_message = self.option_frame.update_frame(chosen_option)
 
-        format_str = self.MAIN_DROPDOWN_FORMATS.get(chosen_option, "{}")
-        formatted_message = format_str.format(default_message)
-        self.__update_text_field(message=formatted_message)
+        if chosen_option == "2- Pizza Choose":
+            self.option_frame.update_pizza_text()
+        else:
+            format_str = self.MAIN_DROPDOWN_FORMATS.get(chosen_option, "{}")
+            formatted_message = format_str.format(default_message)
+            self.__update_text_field(message=formatted_message)
 
     def __update_text_field(self, message: str = None):
         self.user_input.delete(1.0, tk.END)

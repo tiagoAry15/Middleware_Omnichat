@@ -12,15 +12,15 @@ class DropdownComponent:
         label = ttk.Label(parent, text=label_text)
         label.pack(pady=10)
 
-        dropdown = ttk.Combobox(parent, values=options, width=20, style='Clam.TCombobox', name=name)
-        dropdown.pack(pady=10)
+        self.dropdown = ttk.Combobox(parent, values=options, width=20, style='Clam.TCombobox', name=name)
+        self.dropdown.pack(pady=10)
         default_option = initial_option or options[0]
-        dropdown.set(default_option)
+        self.dropdown.set(default_option)
 
         if callback:
-            dropdown.bind("<<ComboboxSelected>>", callback)
+            self.dropdown.bind("<<ComboboxSelected>>", callback)
         else:
-            dropdown.bind("<<ComboboxSelected>>", self.generate_input_callback(message_format, dropdown))
+            self.dropdown.bind("<<ComboboxSelected>>", self.generate_input_callback(message_format, self.dropdown))
 
     def generate_input_callback(self, message_format: str, dropdown: Combobox):
         def callback(event):
