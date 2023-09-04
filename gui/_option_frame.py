@@ -31,11 +31,9 @@ class OptionFrame(ttk.Frame):
             first_pizza_dropdown = DropdownComponent(self, "Select First Pizza:", pizzaFlavors,
                                                      "", self.user_input, callback=self.on_pizza_change,
                                                      name="first_pizza")
-            second_pizza_dropdown = DropdownComponent(self, "Select Second Pizza:", pizzaFlavors,
-                                                      "", self.user_input, callback=self.on_pizza_change,
-                                                      name="second_pizza")
-            self.pizza_dropdown_values[0].set(first_pizza_dropdown.dropdown.get())
-            self.pizza_dropdown_values[1].set(second_pizza_dropdown.dropdown.get())
+            first_pizza_dropdown.create_extra_dropdown(pizzaFlavors, callback=self.on_pizza_change, name="second_pizza")
+            self.pizza_dropdown_values[0].set(first_pizza_dropdown.dropdowns[0].get())
+            self.pizza_dropdown_values[1].set(first_pizza_dropdown.dropdowns[1].get())
             self.update_pizza_text()
         elif chosen_option == "3- Drink Choose":
             drink_options = ["Coca", "Guaraná", "Fanta"]
