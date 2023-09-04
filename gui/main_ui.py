@@ -25,23 +25,23 @@ class MainUI(tk.Tk):
 
         # Initialize the main label
         self.main_label = ttk.Label(self, text="Choose a Category:")
-        self.main_label.grid(row=0, column=0, padx=(self.PAD_X+10, 0), pady=(self.PAD_Y, 0), sticky="w")
+        self.main_label.grid(row=0, column=0, padx=(self.PAD_X + 10, 0), pady=(self.PAD_Y, 0), sticky="w")
 
         self.main_options = ["1- Greeting", "2- Pizza Choose", "3- Drink Choose", "4- Finish"]
         self.main_dropdown = ttk.Combobox(self, values=self.main_options, width=self.DROPDOWN_WIDTH,
                                           style=self.DROPDOWN_STYLE)
         self.main_dropdown.bind("<<ComboboxSelected>>", self.on_main_dropdown_change)
-        self.main_dropdown.grid(row=1, column=0, padx=(self.PAD_X, 0), pady=(self.PAD_Y-10, 0), sticky="w")
+        self.main_dropdown.grid(row=1, column=0, padx=(self.PAD_X, 0), pady=(self.PAD_Y - 10, 0), sticky="w")
         self.main_dropdown.set(self.main_options[0])
 
         self.user_input = tk.Text(self, width=35, height=3)
-        self.user_input.grid(row=3, column=0, padx=(self.PAD_X-40, 0), pady=1, sticky="w")
+        self.user_input.grid(row=3, column=0, padx=(self.PAD_X - 40, 0), pady=1, sticky="w")
 
         self.option_frame: OptionFrame = OptionFrame(self, self.user_input)
-        self.option_frame.grid(row=2, column=0, padx=self.PAD_X-2, pady=self.PAD_Y-2, sticky="w")
+        self.option_frame.grid(row=2, column=0, padx=self.PAD_X - 2, pady=self.PAD_Y - 2, sticky="w")
 
         self.send_button = ttk.Button(self, text="Send", command=self.on_send_click)
-        self.send_button.grid(row=4, column=0, padx=(self.PAD_X+30, 0), pady=self.PAD_Y-2, sticky="w")
+        self.send_button.grid(row=4, column=0, padx=(self.PAD_X + 30, 0), pady=self.PAD_Y - 2, sticky="w")
 
         # New text field for the second column
         self.conversation_text_field = tk.Text(self, width=35, height=10)
