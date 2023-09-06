@@ -61,7 +61,7 @@ def __replaceDrinkSynonym(drinks: List[str], userMessage: str) -> str:
 
 def structureDrink(parameters: dict, inputUserMessage: str) -> dict:
     drinks = parameters.get('Drinks', [])
-    userMessage = __replaceDrinkSynonym(drinks, inputUserMessage)
+    userMessage = __replaceDrinkSynonym(drinks, inputUserMessage.lower())
 
     numberEntity = {
         "uma": 1.0, "um": 1.0, "meio": 0.5, "meia": 0.5,
@@ -87,6 +87,8 @@ def structureDrink(parameters: dict, inputUserMessage: str) -> dict:
 
 
 def __main():
+    result0 = structureDrink({'Drinks': ['suco de laranja']},
+                             'Vou querer dois Sucos de Laranja')
     result1 = structureDrink({'Drinks': ['guaraná']}, 'vou querer um guaraná')
     result2 = structureDrink({'Drinks': ['guaraná']}, 'vou querer quatro guaranás')
     result3 = structureDrink({'Drinks': ['suco de laranja']}, 'vou querer um suco de laranja')
