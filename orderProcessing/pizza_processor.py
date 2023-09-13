@@ -88,3 +88,15 @@ def convertMultiplePizzaOrderToText(pizzaOrders: List[dict]) -> str:
         order_text = __convertPizzaOrderToText(pizzaOrder)
         result.append(order_text)
     return ', '.join(result)
+
+
+def __main():
+    userMessage = "Vou querer uma de calabresa e uma meio portuguesa meio margherita"
+    parameters = {'flavor': ['calabresa', 'portuguesa', 'margherita']}
+    result = parsePizzaOrder(userMessage, parameters)
+    orderText = convertMultiplePizzaOrderToText(result)
+    print(result)
+
+
+if __name__ == '__main__':
+    __main()

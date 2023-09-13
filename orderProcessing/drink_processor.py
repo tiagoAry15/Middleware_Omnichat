@@ -92,9 +92,9 @@ def __main():
     result1 = structureDrink({'Drinks': ['guaraná']}, 'vou querer um guaraná')
     result2 = structureDrink({'Drinks': ['guaraná']}, 'vou querer quatro guaranás')
     result3 = structureDrink({'Drinks': ['suco de laranja']}, 'vou querer um suco de laranja')
+    result4 = structureDrink({'Drinks': ['suco de laranja']}, 'vou querer dois sucos de laranja')
     result5 = structureDrink({'Drinks': ['guaraná', 'suco de laranja']},
                              'vou querer três guaranás e dois sucos de laranja')
-    result4 = structureDrink({'Drinks': ['suco de laranja']}, 'vou querer dois sucos de laranja')
     orderList = [{'calabresa': 2.0}, {'pepperoni': 0.5, 'portuguesa': 0.5}, {'calabresa': 0.5, 'pepperoni': 0.5}]
 
 
