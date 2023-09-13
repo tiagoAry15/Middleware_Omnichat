@@ -25,9 +25,74 @@ This module is responsible for handling the operations related to the "Speisekar
 ### Usage:
 This module can be imported wherever menu handling functionalities are needed, especially in routes where orders are being processed and the total price is being calculated.
 
-### Example:
+### load_speisekarte() example:
 ```python
-from speisekarte_extraction import loadSpeisekarte, createMenuString, analyzeTotalPrice
+menu = load_speisekarte()
 ```
 
-This line of code imports the necessary functions from the speisekarte_extraction.py module, ready to be used in other parts of the application for menu handling tasks.
+```python
+menu = {'Pizzas': [{'nome': 'Calabresa', 'tamanho': 'Grande', 'preço': 17.5}, {'nome': 'Frango', 'tamanho': 'Grande', 'preço': 18.9}, {'nome': 'Portuguesa', 'tamanho': 'Grande', 'preço': 13.99}, {'nome': 'Margherita', 'tamanho': 'Média', 'preço': 15.5}, {'nome': 'Quatro Queijos', 'tamanho': 'Grande', 'preço': 16.9}, {'nome': 'Pepperoni', 'tamanho': 'Grande', 'preço': 19.99}], 'Bebidas': [{'nome': 'Coca-cola', 'tamanho': '300ml', 'preço': 5.99}, {'nome': 'Guaraná', 'tamanho': '300ml', 'preço': 4.99}, {'nome': 'Suco de laranja', 'tamanho': '500ml', 'preço': 6.5}], 'HorárioDeFuncionamento': '17h às 22h'}
+```
+
+This line of code imports the menu from the JSON file and stores it in a variable called `menu`.
+
+### createMenuString() example:
+```python
+menu = [{'nome': 'Calabresa', 'tamanho': 'Grande', 'preço': 17.5}, {'nome': 'Frango', 'tamanho': 'Grande', 'preço': 18.9}, {'nome': 'Portuguesa', 'tamanho': 'Grande', 'preço': 13.99}, {'nome': 'Margherita', 'tamanho': 'Média', 'preço': 15.5}, {'nome': 'Quatro Queijos', 'tamanho': 'Grande', 'preço': 16.9}, {'nome': 'Pepperoni', 'tamanho': 'Grande', 'preço': 19.99}]
+category = 'pizzas'
+menuString = createMenuString(menu, category)
+```
+
+```python
+menuString = "Cardápio de pizzas:"
+"- Calabresa - R$17.50"
+"- Frango - R$18.90"
+"- Portuguesa - R$13.99"
+"- Margherita - R$15.50"
+"- Quatro Queijos - R$16.90"
+"- Pepperoni - R$19.99"
+```
+
+This line of code creates a menu string for pizzas and stores it in a variable called `menuString`.
+
+### analyzeSingleItem() example:
+```python
+desiredItem = {'calabresa': 2.0}
+priceDict = {'Calabresa': 17.5, 'Frango': 18.9, 'Margherita': 15.5, 'Pepperoni': 19.99, 'Portuguesa': 13.99,
+                 'Quatro Queijos': 16.9}
+itemType = 'Pizza de'
+tag = analyzeSingleItem(desiredItem, priceDict, itemType)
+```
+
+```python
+tag = {'price': 35.0, 'tag': '2 x Pizza de calabresa (R$35.00)'}
+```
+
+This line of code analyzes a single item in the order and stores its details in a variable called `tag`.
+
+### analyzeCompositeItem() example:
+```python
+desiredItem = {'calabresa': 0.5, 'margherita': 0.5}
+priceDict = {'Calabresa': 17.5, 'Frango': 18.9, 'Margherita': 15.5, 'Pepperoni': 19.99, 'Portuguesa': 13.99, 'Quatro Queijos': 16.9}
+itemType = 'Pizza de'
+tag = analyseCompositeItem(desiredItem, priceDict, itemType)
+```
+
+```python
+tag = {'price': 16.5, 'tag': '1 x Pizza meio calabresa meio margherita (R$16.50)'}
+```
+
+This line of code analyzes a composite item in the order and stores its details in a variable called `tag`.
+
+### analyzeTotalPrice() example:
+```python
+menu = {'Pizzas': [{'nome': 'Calabresa', 'tamanho': 'Grande', 'preço': 17.5}, {'nome': 'Frango', 'tamanho': 'Grande', 'preço': 18.9}, {'nome': 'Portuguesa', 'tamanho': 'Grande', 'preço': 13.99}, {'nome': 'Margherita', 'tamanho': 'Média', 'preço': 15.5}, {'nome': 'Quatro Queijos', 'tamanho': 'Grande', 'preço': 16.9}, {'nome': 'Pepperoni', 'tamanho': 'Grande', 'preço': 19.99}], 'Bebidas': [{'nome': 'Coca-cola', 'tamanho': '300ml', 'preço': 5.99}, {'nome': 'Guaraná', 'tamanho': '300ml', 'preço': 4.99}, {'nome': 'Suco de laranja', 'tamanho': '500ml', 'preço': 6.5}], 'HorárioDeFuncionamento': '17h às 22h'}
+structuredOrder = {'Bebida': [{'guaraná': 1.0}, {'suco de laranja': 2.0}], 'Pizza': [{'calabresa': 0.5, 'margherita': 0.5}, {'frango': 1.0}]}
+totalPriceDict = analyzeTotalPrice(structuredOrder, menu)
+```
+
+```python
+totalPriceDict = {'totalPrice': 53.39, 'finalMessage': 'Vai ser 1 x Pizza meio calabresa meio margherita (R$16.50), 1 x Pizza de frango (R$18.90), 1 x Guaraná (R$4.99), 2 x Suco de laranja (R$13.00), totalizando R$53.39. Qual vai ser a forma de pagamento? (pix/cartão/dinheiro)'}
+```
+
+This line of code analyzes the total price of the order and stores the details in a variable called `totalPriceDict`.

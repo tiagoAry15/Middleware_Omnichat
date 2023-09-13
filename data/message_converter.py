@@ -110,8 +110,7 @@ class MessageConverterObject:
 
 
 def __main():
-    print(MessageConverterObject.convertUserMessage(json.dumps(get_user_message_example())))
-    print(MessageConverterObject.convert_dialogflow_message(json.dumps(get_dialogflow_message_example())))
+    pass
 
 
 if __name__ == '__main__':

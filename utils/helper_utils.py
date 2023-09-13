@@ -90,16 +90,6 @@ def __getUserByWhatsappNumber(whatsappNumber: str) -> dict or None:
     return users.get(whatsappNumber)
 
 
-def __detectIncomingMessage(userMessage: dict) -> dict:
-    twilioKeys = ['AccountSid', 'SmsMessageSid', 'NumMedia', 'ProfileName', 'SmsSid', 'WaId', 'SmsStatus', 'To',
-                  'NumSegments', 'ReferralNumMedia', 'MessageSid', 'AccountSid', 'From', 'ApiVersion']
-    incomingKeys = set(userMessage.keys())
-    commonKeys = incomingKeys.intersection(twilioKeys)
-    isTwilio = len(commonKeys) / len(twilioKeys) > 50 / 100
-    if isTwilio:
-        return __processTwilioIncomingMessage(userMessage)
-
-
 def __addBotMessageToFirebase(phoneNumber, userMessageJSON):
     msgDict = copy.deepcopy(userMessageJSON)
     msgDict["sender"] = "ChatBot"
@@ -113,12 +103,6 @@ def sendTwilioResponse(body: str, media: str = None) -> str:
     if media is not None:
         message.media(media)
     return str(response)
-
-
-def __processTwilioIncomingMessage(twilioMessage: dict):
-    userMessageJSON = MessageConverterObject.convertUserMessage(twilioMessage)
-    return {"userMessageJSON": userMessageJSON, "phoneNumber": userMessageJSON["phoneNumber"],
-            "receivedMessage": userMessageJSON["body"]}
 
 
 def __main():

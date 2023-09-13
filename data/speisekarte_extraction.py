@@ -104,6 +104,11 @@ def analyzeTotalPrice(structuredOrder: dict, menu: dict):
 
 def __main():
     speisekarte = loadSpeisekarte()
+    desiredItem = {'calabresa': 2.0}
+    priceDict = {'Calabresa': 17.5, 'Frango': 18.9, 'Margherita': 15.5, 'Pepperoni': 19.99, 'Portuguesa': 13.99,
+                 'Quatro Queijos': 16.9}
+    itemType = 'Pizza de'
+    tag = analyzeSingleItem(desiredItem, priceDict, itemType)
     # structuredOrderExample = {'Bebida': {'item': 'Suco de laranja', 'quantity': 1},
     # 'Pizza': {'item': 'Calabresa', 'quantity': 1}}
     # structuredOrderExample = {'Bebida': {}, 'Pizza': {'item': 'Calabresa', 'quantity': 1}}
@@ -115,11 +120,12 @@ def __main():
     # output = analyzeTotalPrice(structuredOrderExample, speisekarte)
     # finalMessage = output["finalMessage"]
     # price = output["totalPrice"]
-    item_type = "Pizza de"
-    desired_items = [{'calabresa': 0.5, 'mussarela': 0.5}, {'frango': 1.0}]
-    price_dict = {'Calabresa': 17.5, 'Frango': 18.9, 'Margherita': 15.5, 'Pepperoni': 19.99, 'Portuguesa': 13.99,
-                  'Quatro Queijos': 16.9}
-    return __getItemDetails(item_type, desired_items, price_dict)
+    # item_type = "Pizza de"
+    # desired_items = [{'calabresa': 0.5, 'mussarela': 0.5}, {'frango': 1.0}]
+    # price_dict = {'Calabresa': 17.5, 'Frango': 18.9, 'Margherita': 15.5, 'Pepperoni': 19.99, 'Portuguesa': 13.99,
+    #               'Quatro Queijos': 16.9}
+    # return __getItemDetails(item_type, desired_items, price_dict)
+    return
 
 
 if __name__ == '__main__':

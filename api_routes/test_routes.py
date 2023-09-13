@@ -16,7 +16,6 @@ def chatTest():
     dialogflow_message = get_dialogflow_message_example()
     user_message = get_user_message_example()
     userMessageJSON = MessageConverterObject.convertUserMessage(user_message)
-
     dialogFlowJSON = MessageConverterObject.convert_dialogflow_message(dialogflow_message,
                                                                        userMessageJSON['phoneNumber'])
     for _ in range(4):

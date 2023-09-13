@@ -3,10 +3,8 @@ import logging
 
 from data.message_converter import MessageConverterObject
 from intentManipulation.intent_manager import IntentManager
-from socketEmissions.socket_emissor import pulseEmit
 from api_config.api_config import dialogFlowInstance, socketio, fcm
-from utils.helper_utils import sendTwilioResponse, __processTwilioIncomingMessage
-import asyncio
+from utils.helper_utils import sendTwilioResponse
 
 
 def processUserMessage(data: dict):
