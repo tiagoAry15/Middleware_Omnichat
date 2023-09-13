@@ -2,7 +2,7 @@ import os
 import firebase_admin
 from dotenv import load_dotenv
 from firebase_admin import db
-from dialogflow_session import singleton
+from utils.decorators.singleton_decorator import singleton
 from firebaseFolder.firebase_credentials import getFirebaseCredentials
 
 

@@ -1,5 +1,5 @@
 from fulfillment.ngrokGetter import get_ngrok_url
-from gpt.time_decorator import timingDecorator
+from utils.decorators.time_decorator import timingDecorator
 from webscrapping.instagramWebhookChanger import TwilioScrapper
 
 

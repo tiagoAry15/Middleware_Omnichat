@@ -1,11 +1,10 @@
 import os
 import dotenv
 from google.oauth2 import service_account
-from google.cloud import dialogflow, dialogflow_v2
+from google.cloud import dialogflow_v2
 from google.protobuf import field_mask_pb2
-from google.protobuf.internal.field_mask import FieldMask
 
-from gpt.time_decorator import timingDecorator
+from utils.decorators.time_decorator import timingDecorator
 
 
 def getDialogflowCredentials():

@@ -4,9 +4,8 @@ import openai
 from dotenv import load_dotenv
 import json
 
-from gpt import phrase_enum
 from gpt.phrase_enum import PhraseEnum
-from gpt.time_decorator import timingDecorator
+from utils.decorators.time_decorator import timingDecorator
 from intentManipulation.intent_manager_tiago import IntentManager
 
 

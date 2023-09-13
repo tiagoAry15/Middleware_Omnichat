@@ -1,14 +1,11 @@
-from typing import List
-
 from colorama import Fore, Style
 
-from dialogflow_session import singleton
+from utils.decorators.singleton_decorator import singleton
 from firebaseFolder.firebase_user import FirebaseUser
 from firebaseFolder.firebase_connection import FirebaseConnection
 from intentManipulation.intentTypes.intent_entry_text import EntryTextIntent
 from intentManipulation.intentTypes.intent_fallback import InstantFallbackIntent
-from intentManipulation.intentTypes.intent_multiple_choice import MultipleChoiceIntent
-from intentManipulation.intentTypes.replies import Replies, Types
+from intentManipulation.intentTypes.replies import Replies
 
 
 class IntentNotFoundException(Exception):

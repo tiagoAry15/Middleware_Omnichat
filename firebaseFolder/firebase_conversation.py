@@ -3,7 +3,7 @@ import random
 import uuid
 from typing import List
 
-from dialogflow_session import singleton, update_connection_decorator
+from utils.decorators.singleton_decorator import singleton
 from firebaseFolder.firebase_connection import FirebaseConnection
 from firebaseFolder.firebase_core_wrapper import FirebaseWrapper
 

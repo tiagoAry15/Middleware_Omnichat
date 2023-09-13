@@ -1,7 +1,7 @@
 import subprocess
 
 import requests
-from gpt.time_decorator import timingDecorator
+from utils.decorators.time_decorator import timingDecorator
 
 NGROK_PATH = "C:\\Users\\Mateus\\Desktop\\ngrok.exe"
 
