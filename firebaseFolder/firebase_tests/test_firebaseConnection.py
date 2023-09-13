@@ -5,7 +5,8 @@ import pytest
 from unittest.mock import MagicMock, patch
 from dotenv import load_dotenv
 
-from firebaseFolder.firebase_connection import FirebaseConnection, getFirebaseCredentials
+from firebaseFolder.firebase_connection import FirebaseConnection
+from firebaseFolder.firebase_credentials import getFirebaseCredentials
 from firebaseFolder.firebase_tests.firebase_mock import MockedDbRef
 
 
