@@ -6,7 +6,6 @@ from flask import Flask, current_app
 from flask_cors import CORS
 from flask_socketio import SocketIO as FlaskSocketIO
 
-
 from dialogflow_session import DialogFlowSession
 from firebaseFolder.firebase_connection import FirebaseConnection
 from firebaseFolder.firebase_conversation import FirebaseConversation
@@ -26,12 +25,9 @@ fcm = FirebaseConversation(fc)
 mc = MessageConverter()
 app = Flask(__name__)
 
-
 originList = ["http://localhost:5173", "https://dbc1-187-18-142-212.ngrok-free.app"]
 CORS(app, support_credentials=True, origins='*')
 socketio = FlaskSocketIO(app, cors_allowed_origins='*')
-
-
 
 
 @app.route('/')

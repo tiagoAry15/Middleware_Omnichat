@@ -13,6 +13,11 @@ and sets it up in to the corresponding component. It is a wrapup of several indi
 - Instagram
 - Twilio
 
+## dialogflow_session.py
+This module is responsible for setting up the session for Dialogflow. It is responsible for
+- Loading the menu
+- Sending the user message to dialogflow and returning the bot adequate response
+
 ## Functions
 
 ### [Get All Conversations](api_docs/get_all_conversations.md)
