@@ -18,3 +18,13 @@ To use this module, simply run the script. It will automatically execute the `__
 
 - `__main__()`: This function calls the `setInstagramFulfillment` function to initiate the process of setting the new webhook URL for Instagram integrations.
 
+### Decorators
+
+- `timingDecorator`: This decorator is used to measure the execution time of the `setNewInstagramWebhookCallbackURL` function. It is imported from the `time_decorator` module.
+
+### External Modules
+
+- `fulfillment.ngrokGetter`: This module contains the `get_ngrok_url` function, which is used to retrieve the current URL exposed by ngrok.
+- `webscrapping.instagramWebhookChanger`: This module contains the `TwilioScrapper` class, which is used to update the webhook URL for Instagram integrations.
+
+Ensure to have the necessary modules and dependencies installed before running the script.
