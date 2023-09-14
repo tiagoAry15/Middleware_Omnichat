@@ -24,7 +24,7 @@ def getDialogflowCredentials():
 
 
 @timingDecorator
-def setNewFulfillment(newUrl: str = "https://www.facebook.com"):
+def setDialogflowFulfillment(newUrl: str = "https://www.facebook.com"):
     dotenv.load_dotenv()
     dialogFlowCredentials = getDialogflowCredentials()
     project_id = os.environ["DIALOGFLOW_PROJECT_ID"]
@@ -43,7 +43,7 @@ def setNewFulfillment(newUrl: str = "https://www.facebook.com"):
 
 
 def __main():
-    setNewFulfillment()
+    setDialogflowFulfillment()
 
 
 if __name__ == "__main__":

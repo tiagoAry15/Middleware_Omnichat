@@ -1,11 +1,11 @@
-from fulfillment.dialogflowFulfillmentSetter import setNewFulfillment
+from fulfillment.dialogflowFulfillmentSetter import setDialogflowFulfillment
 from fulfillment.instagramAutomatedFulfillment import setNewInstagramWebhookCallbackURL
 from fulfillment.ngrokGetter import get_ngrok_url
 
 
 def fulfillmentPipeline():
     url = get_ngrok_url()
-    response = setNewFulfillment(newUrl=f"{url}/webhookForIntent")
+    response = setDialogflowFulfillment(newUrl=f"{url}/webhookForIntent")
     # setNewInstagramWebhookCallbackURL(newUrl=f"{url}/instagram")
     return
 

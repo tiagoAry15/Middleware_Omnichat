@@ -214,3 +214,32 @@ Click on "Edit Callback URL" button
 Paste the ngrok URL in the "Callback URL" field
 
 ![Instagram Webhook Step 3](docs/pictures/webhook_steps/instagram_webhook_step_3.png)
+
+## Automatically setting up the webhooks
+Manually setting up webhooks can be very painful, especially if you are testing the application in different machines.
+To avoid this, we have created a script that automatically sets up the webhooks for you.
+
+Unfortunately right now it only works for dialogflow and instagram. We are still working on the twilio part.
+
+- Start the ngrok service
+
+![Run Api Step 4](docs/pictures/run_api_steps/api_step_4.png)
+
+- Go to _fulfillmentSetter.py
+
+![Automated Webhook](docs/pictures/webhook_steps/automated_webhook.png)
+
+This function performs the whole pipeline of setting up the webhooks.
+
+- It automatically gets the current ngrok URL
+- It sets up the dialogflow webhook
+- It sets up the instagram webhook
+
+### Note
+The instagram automated webhook setter works using a webscrapper with the selenium package. In order to make it work,
+you need to pass your username and password to the .env file
+
+- INSTAGRAM_EMAIL=value
+- INSTAGRAM_PASSWORD=value
+
+If you want to check how these values are used, go to `webscrapping/instagramWebhookChanger.py`
