@@ -98,3 +98,51 @@ Now we need to get the FIREBASE_DATABASE_URL variable.
 With the .json file and the database URL in hands, here is what we have got so far:
 
 ![Firebase Env](docs/pictures/firebase_steps/env_file.png)
+- FIREBASE_DATABASE_URL=value
+- FIREBASE_SDK_TYPE=value
+- FIREBASE_SDK_PROJECT_ID=value
+- FIREBASE_SDK_PRIVATE_KEY_ID=value
+- FIREBASE_SDK_PRIVATE_KEY=value
+- FIREBASE_SDK_CLIENT_EMAIL=value
+- FIREBASE_SDK_CLIENT_ID=value
+- FIREBASE_SDK_AUTH_URI=value
+- FIREBASE_SDK_TOKEN_URI=value
+- FIREBASE_SDK_AUTH_PROVIDER_X509_CERT_URL=value
+- FIREBASE_SDK_CLIENT_X509_CERT_URL=value
+
+### Dialogflow variables
+
+In order to get the dialogflow variables, the process is quite similar. You just need to set up your dialogflow project
+to use the same google account that you used to set up the firebase project. Then, you can get the same .json file and
+rename the variables that start with FIREBASE_ to start with DIALOGFLOW_.
+
+- DIALOGFLOW_TYPE=value
+- DIALOGFLOW_PROJECT_ID=value
+- DIALOGFLOW_PRIVATE_KEY_ID=value
+- DIALOGFLOW_PRIVATE_KEY=value
+- DIALOGFLOW_CLIENT_EMAIL=value
+- DIALOGFLOW_CLIENT_ID=value
+- DIALOGFLOW_AUTH_URI=value
+- DIALOGFLOW_TOKEN_URI=value
+- DIALOGFLOW_AUTH_PROVIDER_X509_CERT_URL=value
+- DIALOGFLOW_CLIENT_X509_CERT_URL=value
+
+### Twilio variables
+
+Twilio is even more straightforward. You just need to login and see these 3 variables on the front page
+
+![Twilio Env](docs/pictures/twilio_steps.png)
+
+- TWILIO_ACCOUNT_SID=value
+- TWILIO_AUTH_TOKEN=value
+- TWILIO_PHONE_NUMBER=value
+
+### Instagram variables
+
+You just need to login in your application front page (on the Meta for Developers website)
+
+![Instagram Env](docs/pictures/instagram_steps.png)
+
+- INSTAGRAM_ACCESS_TOKEN=value
+
+## Setting up the webhooks
