@@ -59,19 +59,42 @@ It is built using Dialogflow and Firebase.
 - [Instagram Utils](docs/utils/instagram_utils.md)
 - [System Utils](docs/utils/system_utils.md)
 
-# Helper Components
-## _fulfillmentSetter.py
-This module is responsible for setting up the fulfillment URL for the chatbot. It takes the current exposed URL by ngrok 
-and sets it up in to the corresponding component. It is a wrapup of several individual fulfillment's
-- Dialogflow
-- Instagram
-- Twilio
-
-## dialogflow_session.py
-This module is responsible for setting up the session for Dialogflow. It is responsible for
-- Loading the menu
-- Sending the user message to dialogflow and returning the bot adequate response
+# Helper Component
+- [Helper Files](docs/helper_components.md)
 
 # Setup Guide
 
-# Running the Application
+## Building your .env file
+
+The .env file can be break down into 4 main parts:
+
+- Firebase variables
+- Dialogflow variables
+- Instagram variables
+- Twilio variables
+
+### Firebase variables
+
+We need to get the SDK .json file. To do so, follow the steps according to the pictures below:
+
+![Firebase Step 1](docs/pictures/firebase_steps/firebase_1.png)
+
+![Firebase Step 2](docs/pictures/firebase_steps/firebase_2.png)
+
+![Firebase Step 3](docs/pictures/firebase_steps/firebase_3.png)
+
+![Firebase Step 4](docs/pictures/firebase_steps/firebase_4.png)
+
+Your .json file should look like this
+
+![Firebase Step 5](docs/pictures/firebase_steps/firebase_5.png)
+
+Now we need to get the FIREBASE_DATABASE_URL variable.
+
+![Firebase Step 6](docs/pictures/firebase_steps/firebase_6.png)
+
+![Firebase Step 7](docs/pictures/firebase_steps/firebase_7.png)
+
+With the .json file and the database URL in hands, here is what we have got so far:
+
+![Firebase Env](docs/pictures/firebase_steps/env_file.png)
