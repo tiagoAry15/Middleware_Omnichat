@@ -139,10 +139,78 @@ Twilio is even more straightforward. You just need to login and see these 3 vari
 
 ### Instagram variables
 
-You just need to login in your application front page (on the Meta for Developers website)
+You just need to log in your application front page (on the Meta for Developers website)
 
 ![Instagram Env](docs/pictures/instagram_steps.png)
 
 - INSTAGRAM_ACCESS_TOKEN=value
 
-## Setting up the webhooks
+## Running the server and exposing the URL using ngrok
+
+Run the api.py file, located in the root folder of the project.
+
+![Run Api Step 1](docs/pictures/run_api_steps/api_step_1.png)
+
+If everything is running correctly, you should get a "Hello World" response when trying to access the localhost:3000 URL
+
+![Run Api Step 2](docs/pictures/run_api_steps/api_step_2.png)
+
+Now open ngrok and type "ngrok http 3000" in the terminal.
+
+![Run Api Step 3](docs/pictures/run_api_steps/api_step_3.png)
+
+You should get something like this:
+
+![Run Api Step 4](docs/pictures/run_api_steps/api_step_4.png)
+
+You can visit the URL exposed by ngrok to check if everything is running correctly
+
+![Run Api Step 5](docs/pictures/run_api_steps/api_step_5.png)
+
+## Manually setting up the webhooks with the new exposed URL
+
+We have 3 different webhooks to set.
+- dialogflow webhook
+- twilio webhook
+- instagram webhook
+
+Let's start with the first one
+
+### Setting up the dialogflow webhook
+
+Go to the dialogflow console and click on the "Fulfillment" tab
+
+![Dialogflow Webhook Step 1](docs/pictures/webhook_steps/dialogflow_webhook_step_1.png)
+
+Enable the webhook and paste the ngrok URL in the URL field
+
+![Dialogflow Webhook Step 2](docs/pictures/webhook_steps/dialogflow_webhook_step_2.png)
+
+### Setting up the twilio webhook
+
+Go to the twilio console and click on Messaging -> Try it out -> Send a Whatsapp message
+
+![Twilio Webhook Step 1](docs/pictures/webhook_steps/twilio_webhook_step_1.png)
+
+Click on "Sandbox settings"
+
+![Twilio Webhook Step 2](docs/pictures/webhook_steps/twilio_webhook_step_2.png)
+
+Paste the ngrok URL in the "WHEN A MESSAGE COMES IN" field
+
+![Twilio Webhook Step 3](docs/pictures/webhook_steps/twilio_webhook_step_3.png)
+
+### Setting up the instagram webhook
+
+Access the "Meta for Developers" website and choose your app in order to open the console. Once you are on the console
+page, go to Messenger -> Instagram settings
+
+![Instagram Webhook Step 1](docs/pictures/webhook_steps/instagram_webhook_step_1.png)
+
+Click on "Edit Callback URL" button
+
+![Instagram Webhook Step 2](docs/pictures/webhook_steps/instagram_webhook_step_2.png)
+
+Paste the ngrok URL in the "Callback URL" field
+
+![Instagram Webhook Step 3](docs/pictures/webhook_steps/instagram_webhook_step_3.png)
