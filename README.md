@@ -243,3 +243,10 @@ you need to pass your username and password to the .env file
 - INSTAGRAM_PASSWORD=value
 
 If you want to check how these values are used, go to `webscrapping/instagramWebhookChanger.py`
+
+<details>
+<summary>Click to reveal spoiler</summary>
+
+This is the hidden content that will be revealed when the user clicks the "Click to reveal spoiler" text.
+
+</details>
