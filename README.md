@@ -298,3 +298,5 @@ What is left to do:
 - Choose one of the platforms to test the application 📱
 - Start a conversation with the chatbot using the platform 🤖
 - See how the bot responds 💬
+
+![Whatsapp Test](docs/pictures/application_usage/whatsapp_test.jpeg)
