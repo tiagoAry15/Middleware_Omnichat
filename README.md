@@ -215,10 +215,10 @@ Paste the ngrok URL in the "Callback URL" field
 
 ![Instagram Webhook Step 3](docs/pictures/webhook_steps/instagram_webhook_step_3.png)
 
-<details>
-<summary>Automatically setting up the webhooks</summary>
-
 ## Automatically setting up the webhooks
+
+<details>
+<summary>Click to reveal how to automatically set up the webhooks 🚀</summary>
 Manually setting up webhooks can be very painful, especially if you are testing the application in different machines.
 To avoid this, we have created a script that automatically sets up the webhooks for you.
 
