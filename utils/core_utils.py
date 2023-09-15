@@ -1,3 +1,4 @@
+import copy
 import datetime
 import logging
 
@@ -74,8 +75,12 @@ def processDialogFlowMessage(messageData: dict):
 
 
 def processTwilioSandboxIncomingMessage(data: dict):
-    userMessageJSON, phoneNumber, receivedMessage = __preProcessIncomingMessage(data)
+    phoneNumber = data["From"][0].split(":+")[1]
+    receivedMessage = data["Body"]
+    userMessageJSON = copy.deepcopy(data)
     userMessageJSON["phoneNumber"] = None
+    userMessageJSON["sender"] = phoneNumber
+    userMessageJSON["from"] = "instagram"
     fcm.appendMessageToWhatsappNumber(messageData=userMessageJSON, whatsappNumber=phoneNumber)
     socketio.emit('message', userMessageJSON)
     needsToSignUp = __checkUserRegistration(phoneNumber)

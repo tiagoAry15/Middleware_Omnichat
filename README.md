@@ -64,6 +64,42 @@ It is built using Dialogflow and Firebase.
 
 # Setup Guide
 
+## Setting up the necessary configuration
+
+### Dialogflow
+
+![Extra Step 1](docs/pictures/extra_steps/extra_steps_1.png)
+
+Obviously, in order to create a ChatBot, you will need a Dialogflow agent.
+You can create one by clicking on the "Create Agent" button.
+
+Let's say we are trying to create an agent for automated doctor appointments. 
+Here is a high-level guide on how to achieve this:
+
+#### Step 1: Understanding the Requirements 📚
+- *Research the Audience*
+- *Define the Use Case*
+- *Legal and Privacy Considerations and Definitions*
+
+#### Step 2: Structuring the Agent 🏗️
+- *Set up your Dialogflow Agent*
+- *Create the Intents*
+- *Create the Entities*
+- *Create the Conversational Workflow*
+
+#### Step 3: Development and Integration 🛠️
+- *Create the Fulfillment*
+- *Integrate it with External Systems*
+
+#### Step 4: Test and Deployment 🚀
+- *Test the Agent*
+- *Enable User Testing*
+
+#### Step 5: Maintenance and Improvement 🔄
+- *Continuous Monitoring*
+- *Interactive Improvement*
+- *Documentation and Learning*
+
 ## Building your .env file
 
 The .env file can be break down into 4 main parts:
@@ -250,40 +286,15 @@ If you want to check how these values are used, go to `webscrapping/instagramWeb
 
 </details>
 
-## Setting up the necessary configuration
-
-### Dialogflow
-
-![Extra Step 1](docs/pictures/extra_steps/extra_steps_1.png)
-
-Obviously, in order to create a ChatBot, you will need a Dialogflow agent.
-You can create one by clicking on the "Create Agent" button.
-
-Let's say we are trying to create an agent for automated doctor appointments. 
-Here is a high-level guide on how to achieve this:
-
-#### Step 1: Understanding the Requirements 📚
-- *Research the Audience*
-- *Define the Use Case*
-- *Legal and Privacy Considerations and Definitions*
-
-#### Step 2: Structuring the Agent 🏗️
-- *Set up your Dialogflow Agent*
-- *Create the Intents*
-- *Create the Entities*
-- *Create the Conversational Workflow*
-
-#### Step 3: Development and Integration 🛠️
-- *Create the Fulfillment*
-- *Integrate it with External Systems*
-
-#### Step 4: Test and Deployment 🚀
-- *Test the Agent*
-- *Enable User Testing*
-
-#### Step 5: Maintenance and Improvement 🔄
-- *Continuous Monitoring*
-- *Interactive Improvement*
-- *Documentation and Learning*
-
 # Using the application
+
+What we have done so far:
+
+- Ran the flask server 🌐
+- Exposed the URL using ngrok 🔗
+- Used the exposed URL to set up the webhook connection for dialogflow, twilio and instagram 🔄
+
+What is left to do:
+- Choose one of the platforms to test the application 📱
+- Start a conversation with the chatbot using the platform 🤖
+- See how the bot responds 💬
