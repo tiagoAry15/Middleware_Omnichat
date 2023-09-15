@@ -299,4 +299,4 @@ What is left to do:
 - Start a conversation with the chatbot using the platform 🤖
 - See how the bot responds 💬
 
-![Whatsapp Test](docs/pictures/application_usage/whatsapp_test.jpeg)
+![Whatsapp Test](docs/pictures/application_usage/whatsapp_test.jpg)
