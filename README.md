@@ -59,7 +59,7 @@ It is built using Dialogflow and Firebase.
 - [Instagram Utils](docs/utils/instagram_utils.md)
 - [System Utils](docs/utils/system_utils.md)
 
-# Helper Component
+## Helper Component
 - [Helper Files](docs/helper_components.md)
 
 # Setup Guide
@@ -219,6 +219,7 @@ Paste the ngrok URL in the "Callback URL" field
 
 <details>
 <summary>Click to reveal how to automatically set up the webhooks 🚀</summary>
+<br>
 Manually setting up webhooks can be very painful, especially if you are testing the application in different machines.
 To avoid this, we have created a script that automatically sets up the webhooks for you.
 
@@ -248,3 +249,41 @@ you need to pass your username and password to the .env file
 If you want to check how these values are used, go to `webscrapping/instagramWebhookChanger.py`
 
 </details>
+
+## Setting up the necessary configuration
+
+### Dialogflow
+
+![Extra Step 1](docs/pictures/extra_steps/extra_steps_1.png)
+
+Obviously, in order to create a ChatBot, you will need a Dialogflow agent.
+You can create one by clicking on the "Create Agent" button.
+
+Let's say we are trying to create an agent for automated doctor appointments. 
+Here is a high-level guide on how to achieve this:
+
+#### Step 1: Understanding the Requirements 📚
+- *Research the Audience*
+- *Define the Use Case*
+- *Legal and Privacy Considerations and Definitions*
+
+#### Step 2: Structuring the Agent 🏗️
+- *Set up your Dialogflow Agent*
+- *Create the Intents*
+- *Create the Entities*
+- *Create the Conversational Workflow*
+
+#### Step 3: Development and Integration 🛠️
+- *Create the Fulfillment*
+- *Integrate it with External Systems*
+
+#### Step 4: Test and Deployment 🚀
+- *Test the Agent*
+- *Enable User Testing*
+
+#### Step 5: Maintenance and Improvement 🔄
+- *Continuous Monitoring*
+- *Interactive Improvement*
+- *Documentation and Learning*
+
+# Using the application
