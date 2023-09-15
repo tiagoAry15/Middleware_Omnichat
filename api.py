@@ -143,7 +143,8 @@ def instagram():
         data = request.get_json()
         is_echo = data['entry'][0]['messaging'][0]['message'].get('is_echo')
         if not is_echo:
-            instagram_utils.processInstagramIncomingMessage(data)
+            properMessage = instagram_utils.convertIncomingInstagramMessageToProperFormat(data)
+            instagram_utils.processInstagramIncomingMessage(properMessage)
         return jsonify({'status': 'success', 'response': 'Message sent'}), 200
 
 
