@@ -25,7 +25,7 @@ def createMenuString(menu: dict, category: str = None) -> str:
     return menuString
 
 
-def __createPizzaDescription(pizza_dict: dict) -> str:
+def _createPizzaDescription(pizza_dict: dict) -> str:
     toppings = list(pizza_dict.keys())
     if len(toppings) == 1:
         return f"Pizza de {toppings[0]}"
@@ -44,7 +44,7 @@ def analyzeSingleItem(desiredItem: dict, priceDict: dict, itemType: str) -> dict
     itemPrice = priceDict[itemName]
     adjustedPrice = itemPrice * itemQuantity
     if itemType == 'Pizza de':
-        fullTag = __createPizzaDescription(desiredItem)
+        fullTag = _createPizzaDescription(desiredItem)
         itemTag = f"{itemQuantity} x {fullTag} (R${adjustedPrice:.2f})"
     else:
         itemTag = f"{itemQuantity} x {itemName} (R${adjustedPrice:.2f})"
@@ -57,7 +57,7 @@ def analyzeCompositeItem(desiredItem: dict, priceDict: dict, itemType: str) -> d
     itemQuantities = [desiredItem[i.lower()] for i in itemNames]
     itemPrices = [priceDict[i] for i in itemNames]
     adjustedPrice = sum(i * j for i, j in zip(itemQuantities, itemPrices))
-    fullTag = __createPizzaDescription(desiredItem)
+    fullTag = _createPizzaDescription(desiredItem)
     itemTag = f"1 x {fullTag} (R${adjustedPrice:.2f})"
     return {"tag": itemTag, "price": adjustedPrice}
 
