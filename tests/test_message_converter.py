@@ -15,7 +15,7 @@ def mock_datetime(monkeypatch):
     return mock
 
 
-@patch('omnichatTests.classes.message_converter.datetime')
+@patch('twillioPizza.message_converter.datetime')
 def test_convert_user_message(mock_datetime):
     mock_now = datetime(2021, 7, 14, 16, 0)
     mock_datetime.now.return_value = mock_now
@@ -36,7 +36,7 @@ def test_convert_user_message(mock_datetime):
     assert result == expected, f"Erro: Esperado {expected}, mas obteve {result}"
 
 
-@patch('omnichatTests.classes.message_converter.datetime')
+@patch('twillioPizza.message_converter.datetime')
 def test_convert_dialogflow_message(mock_datetime):
     mock_now = datetime(2021, 7, 14, 16, 0)
     mock_datetime.now.return_value = mock_now
