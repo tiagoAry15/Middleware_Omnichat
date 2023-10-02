@@ -12,4 +12,7 @@ googleapis-common-protos==1.60.0
 firebase==4.0.1
 firebase-admin==6.2.0
 Flask-SocketIO==5.3.5
-
+Flask-CORS~=3.0.10
+gunicorn
+eventlet
+locust

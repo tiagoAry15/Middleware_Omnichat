@@ -1,5 +1,5 @@
-# Usa uma imagem base oficial de Python
-FROM python:3.9-slim
+# Usa a imagem base oficial de Python 3.11
+FROM python:3.11-slim
 
 # Define o diretório de trabalho no contêiner
 WORKDIR /app
@@ -14,8 +14,8 @@ COPY . .
 # Define a variável de ambiente para indicar que o Flask deve ser executado em modo de produção
 ENV FLASK_ENV=production
 
-# Expõe a porta 3000 para conexão
-EXPOSE 3000
+# Expõe as portas 3000 para o Flask e 8089 para o Locust
+EXPOSE 3000 8089
 
-# Define o comando padrão para ser executado ao iniciar o contêiner com gunicorn
-CMD ["gunicorn","-k","eventlet","-w","1","-b", "0.0.0.0:3000", "api:app"]
+# Define o comando padrão para ser executado ao iniciar o contêiner com gunicorn e Locust
+CMD ["sh", "-c", "gunicorn -k eventlet -w 1 -b 0.0.0.0:3000 api:app & locust --host=http://localhost:3000"]

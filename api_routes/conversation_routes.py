@@ -33,11 +33,20 @@ def create_conversation():
 
 @conversation_blueprint.route("/update_conversation", methods=['PUT'])
 def update_conversation():
-    print("Updating conversation!", request.data.decode("utf-8"))
-    data = json.loads(request.data.decode("utf-8"))
-    response = fcm.updateConversation(data)
-    finalResponse = data if response else False
-    return jsonify(finalResponse), 200
+    try:
+        print('updating')
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Invalid data"}), 400
+
+        response = fcm.updateConversation(data)
+
+        if response:
+            return jsonify({"success": True, "data": data}), 200
+        else:
+            return jsonify({"success": False, "error": "Failed to update, conversation does not exist"}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": e}), 500
 
 
 @conversation_blueprint.route("/update_conversation_adding_unread_messages", methods=['PUT'])

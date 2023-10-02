@@ -2,7 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from twilio.rest import Client
-from flask import Flask, current_app
+from flask import Flask
 from flask_cors import CORS
 from flask_socketio import SocketIO as FlaskSocketIO
 
@@ -10,7 +10,7 @@ from dialogflow_session import DialogFlowSession
 from firebaseFolder.firebase_connection import FirebaseConnection
 from firebaseFolder.firebase_conversation import FirebaseConversation
 from firebaseFolder.firebase_user import FirebaseUser
-from message_converter import MessageConverter
+from utils.message_converter import MessageConverter
 
 load_dotenv()
 twilio_account_ssid = os.environ["TWILIO_ACCOUNT_SID"]

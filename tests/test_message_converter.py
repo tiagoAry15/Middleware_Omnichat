@@ -3,7 +3,7 @@ import pytest
 
 from unittest.mock import patch, Mock
 
-from message_converter import MessageConverter
+from utils.message_converter import MessageConverter
 
 
 @pytest.fixture
