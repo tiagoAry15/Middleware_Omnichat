@@ -8,7 +8,7 @@ on:
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
-  IMAGE_NAME: your-image-name
+  IMAGE_NAME: flask/omnichat
 
 jobs:
   setup-build-deploy:
