@@ -8,7 +8,7 @@ from selenium.webdriver.firefox.service import Service
 from references.path_reference import getWebdriverPath
 
 
-class TwilioScrapper:
+class InstagramScrapper:
     def __init__(self):
         load_dotenv()
         s = Service(str(getWebdriverPath()), log_output="geckodriver.log")
@@ -67,7 +67,7 @@ class TwilioScrapper:
 
 
 def __main():
-    ts = TwilioScrapper()
+    ts = InstagramScrapper()
     ts.run()
 
 

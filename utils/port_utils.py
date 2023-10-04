@@ -41,7 +41,6 @@ def get_service_details(pid):
     return 'Unknown', None
 
 
-
 def __main__():
     username = os.getlogin()  # Get the current logged-in username
 
