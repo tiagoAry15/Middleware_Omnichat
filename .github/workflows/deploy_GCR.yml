@@ -8,7 +8,7 @@ on:
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
-  IMAGE_NAME: flask/omnichat
+  IMAGE_NAME: flaskOmnichat
 
 jobs:
   setup-build-deploy:
@@ -19,11 +19,17 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
+    - name: Extract client_email field
+      id: extract_field
+      run: echo "CLIENT_EMAIL=$(echo $GCP_SA_KEY | jq -r '.client_email')" >> $GITHUB_ENV
+      env:
+        GCP_SA_KEY: ${{ secrets.GCP_SA_KEY}}
+
     - name: Setup Google Cloud CLI
-      uses: google-github-actions/setup-gcloud@main
+      uses: google-github-actions/setup-gcloud@v1
       with:
         project_id: ${{ env.PROJECT_ID }}
-        service_account_key: ${{ env.GCP_SA_KEY }}
+        service_account: ${{ env.GCP_SA_KEY }}
         export_default_credentials: true
 
     - name: Build Docker Image
