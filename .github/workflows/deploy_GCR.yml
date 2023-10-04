@@ -23,14 +23,20 @@ jobs:
       id: extract_field
       run: echo "CLIENT_EMAIL=$(echo $GCP_SA_KEY | jq -r '.client_email')" >> $GITHUB_ENV
       env:
-        GCP_SA_KEY: ${{ secrets.GCP_SA_KEY}}
+        GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
 
     - name: Setup Google Cloud CLI
       uses: google-github-actions/setup-gcloud@v1
       with:
         project_id: ${{ env.PROJECT_ID }}
-        service_account: ${{ env.GCP_SA_KEY }}
-        export_default_credentials: true
+
+    # Adicionando a autenticação com Workload Identity Provider
+    - id: 'auth'
+      name: 'Authenticate to Google Cloud'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        workload_identity_provider: 'projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider'
+        service_account: ${{ env.CLIENT_EMAIL }}
 
     - name: Build Docker Image
       run: | 
@@ -47,4 +53,4 @@ jobs:
         gcloud run deploy ${{ env.IMAGE_NAME }} \
           --image gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }} \
           --platform managed \
-          --region us-central1 
+          --region us-central1
