@@ -1,11 +1,11 @@
 from fulfillment.ngrokGetter import get_ngrok_url
 from utils.decorators.time_decorator import timingDecorator
-from webscrapping.instagramWebhookChanger import TwilioScrapper
+from webscrapping.instagramWebhookChanger import InstagramScrapper
 
 
 @timingDecorator
 def setNewInstagramWebhookCallbackURL(newUrl: str):
-    ts = TwilioScrapper()
+    ts = InstagramScrapper()
     ts.setNewWebhookURL(newURL=newUrl)
     ts.run()
 
