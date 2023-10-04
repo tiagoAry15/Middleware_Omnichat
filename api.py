@@ -150,7 +150,7 @@ def instagram():
 
 def __main():
     app.debug = False
-    socketio.run(app, host='0.0.0.0', port=3000, allow_unsafe_werkzeug=True)
+    socketio.run(app, host='0.0.0.0', port=8080, allow_unsafe_werkzeug=True)
 
 
 if __name__ == '__main__':
