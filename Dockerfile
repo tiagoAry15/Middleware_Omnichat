@@ -17,5 +17,5 @@ ENV FLASK_ENV=production
 # Expõe as portas 3000 para o Flask e 8089 para o Locust
 EXPOSE 3000 8089 8080
 
-# Define o comando padrão para ser executado ao iniciar o contêiner com gunicorn e Locust
+# Define o comando padrão para ser executado ao iniciar o contâiner com gunicorn e Locust
 CMD ["sh", "-c", "gunicorn -k eventlet -w 1 -b 0.0.0.0:$PORT api:app & locust --host=http://localhost:$PORT"]
