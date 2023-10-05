@@ -1,4 +1,6 @@
 import logging
+import os
+
 from flask import request, jsonify, Response, abort
 from api_routes.conversation_routes import conversation_blueprint
 from api_routes.test_routes import test_blueprint
@@ -149,8 +151,9 @@ def instagram():
 
 
 def __main():
+    port = int(os.environ.get("PORT", 3000))
     app.debug = False
-    socketio.run(app, host='0.0.0.0', port=3000, allow_unsafe_werkzeug=True)
+    socketio.run(app, host='0.0.0.0', port=port, allow_unsafe_werkzeug=True)
 
 
 if __name__ == '__main__':
