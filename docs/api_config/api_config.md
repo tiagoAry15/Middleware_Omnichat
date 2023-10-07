@@ -1,6 +1,28 @@
 ## api_config.py
 
-This module is responsible for configuring the essential components and settings for the API. It initializes various instances and settings that are crucial for the functioning of the API. Here's a breakdown of its functionalities:
+This module encapsulates the core functionalities of webhooks, order processing, and route handling for the main API. 
+It's seamlessly integrated with key components like DialogFlow, Twilio, and Instagram, paving the way for dynamic user 
+interactions and data flows.
+
+### 🛠 Key Components:
+
+1. **📦 API Blueprints**
+    - Registration of various API blueprints related to conversations, users, and testing.
+
+2. **📞 Twilio Sandbox Endpoint**
+    - Handles incoming POST requests from the Twilio Sandbox, facilitating real-time interactions with the user and response processing via DialogFlow.
+
+3. **🔮 DialogFlow Webhook Endpoint**
+    - Serves as a callback for DialogFlow, processing user intents, and generating appropriate responses. Notably, it includes specific handlers for different ordering scenarios like pizza and drinks.
+
+4. **📬 Twilio Webhook Endpoints**
+    - The module listens to both pre-event and post-event webhooks from Twilio, enabling the system to intercept and react to messages respectively.
+
+5. **📸 Instagram Endpoint**
+    - Designed to communicate with the Instagram API. It can accept subscription challenges and process incoming messages from Instagram, converting them to a standardized format and handling them accordingly.
+
+6. **🚀 Execution & Deployment**
+    - The component's runtime logic, specifying the host and port details for the Flask app, and initializing the Socket.io events.
 
 ### Imports and Initializations:
 - **os, dotenv**: These modules are used to interact with the environment variables which store sensitive information like Twilio credentials.

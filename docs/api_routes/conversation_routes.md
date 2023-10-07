@@ -2,6 +2,51 @@
 
 This module defines the routes and respective views for handling conversation-related operations in the API. It utilizes the Flask Blueprint to group conversation-related routes. Here is a detailed breakdown of its functionalities:
 
+### 🛠 Key Components:
+
+1. **📃 Conversation Blueprint**
+    - Initialization of the blueprint specific to conversation-related routes.
+
+2. **📁 Get All Conversations**
+    - Endpoint: `/get_all_conversations`
+    - Method: `GET`
+    - Description: Retrieves all the conversations from the firebase database and returns them in a JSON format.
+
+3. **📞 Get Conversation by Whatsapp Number**
+    - Endpoint: `/get_conversation_by_whatsapp_number/<whatsappNumber>`
+    - Method: `GET`
+    - Description: Fetches a specific conversation tied to a given Whatsapp number.
+
+4. **📝 Create a New Conversation**
+    - Endpoint: `/create_conversation`
+    - Method: `POST`
+    - Description: Processes incoming data to create a new conversation.
+
+5. **🔄 Update Conversation**
+    - Endpoint: `/update_conversation`
+    - Method: `PUT`
+    - Description: Updates a specific conversation based on the provided data.
+
+6. **➕ Update Conversation by Adding Unread Messages**
+    - Endpoint: `/update_conversation_adding_unread_messages`
+    - Method: `PUT`
+    - Description: Modifies a conversation by appending unread messages.
+
+7. **❌ Delete Conversation**
+    - Endpoint: `/delete_conversation`
+    - Method: `DELETE`
+    - Description: Erases a specific conversation based on the incoming data.
+
+8. **💬 Push New Message by Whatsapp Number**
+    - Endpoint: `/push_new_message_by_whatsapp_number/`
+    - Method: `POST`
+    - Description: Adds a new message to an existing conversation identified by the provided Whatsapp number.
+
+9. **📤 Send Message to User**
+    - Endpoint: `/send_message_to_user/<user_number>`
+    - Method: `POST`
+    - Description: Utilizes the Twilio API to send a message to a given user, and also appends this message to the conversation.
+
 ### Imports:
 - **json**: Used for parsing JSON data.
 - **flask**: Imports `Blueprint`, `jsonify`, and `request` modules from Flask to create route blueprints and handle HTTP responses and requests respectively.
@@ -10,16 +55,6 @@ This module defines the routes and respective views for handling conversation-re
 
 ### Blueprint Initialization:
 - **conversation_blueprint**: A blueprint instance is created to group all the conversation-related routes.
-
-### Routes:
-1. **/get_all_conversations (GET)**: Retrieves all conversations from the Firebase database.
-2. **/get_conversation_by_whatsapp_number/<whatsappNumber> (GET)**: Retrieves a specific conversation using the WhatsApp number.
-3. **/create_conversation (POST)**: Creates a new conversation in the Firebase database with the provided data.
-4. **/update_conversation (PUT)**: Updates an existing conversation in the Firebase database with the provided data.
-5. **/update_conversation_adding_unread_messages (PUT)**: Updates a conversation by adding unread messages to it in the Firebase database.
-6. **/delete_conversation (DELETE)**: Deletes a conversation from the Firebase database using the provided data.
-7. **/push_new_message_by_whatsapp_number/ (POST)**: Adds a new message to a conversation identified by the WhatsApp number.
-8. **/send_message_to_user/<user_number> (POST)**: Sends a message to a user using Twilio service and adds the message to the conversation in the Firebase database.
 
 ### Error Handling:
 - The routes have error handling in place to return appropriate error messages and status codes in case of any issues.
