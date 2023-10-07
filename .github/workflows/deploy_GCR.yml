@@ -25,6 +25,22 @@ jobs:
       env:
         GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
 
+    - name: Set env vars for Cloud Function deployment
+      run: |
+        # Create an array with all the environment variable assignments
+        ENV_VARS_ARRAY=(
+          "TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}"
+          "TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}"
+          "TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}"
+        )
+
+        # Join the array elements into a comma-separated string
+        UPDATE_ENV_VARS_ARG=$(IFS=,; echo "${ENV_VARS_ARRAY[*]}")
+
+        echo "UPDATE_ENV_VARS_ARG contents:"
+        echo "$UPDATE_ENV_VARS_ARG" # Print the contents for inspection
+        echo "UPDATE_ENV_VARS_ARG=$UPDATE_ENV_VARS_ARG" >> $GITHUB_ENV
+
     - name: Setup Google Cloud CLI
       uses: google-github-actions/setup-gcloud@v1
       with:
