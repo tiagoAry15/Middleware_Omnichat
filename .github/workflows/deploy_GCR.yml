@@ -40,7 +40,7 @@ jobs:
       with:
         project_id: ${{ env.PROJECT_ID }}
 
-    - name: Set env vars for Cloud Function deployment
+    - name: Set env vars for Cloud Run deployment
       run: |# Create an array with all the environment variable assignments
         ENV_VARS_ARRAY=(
           "TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}"
