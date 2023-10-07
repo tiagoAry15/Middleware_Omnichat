@@ -43,7 +43,7 @@ jobs:
     - name: Set env vars for Cloud Run deployment
       run: |# Create an array with all the environment variable assignments
         
-        PRIVATE_KEY_SANITIZED=$(echo "${DIALOGFLOW_PRIVATE_KEY}" | sed ':a;N;$!ba;s/\n/\\n/g')
+        PRIVATE_KEY_SANITIZED=$(echo -n "${DIALOGFLOW_PRIVATE_KEY}" | sed 's/\\n/\\\\n/g')
         
         ENV_VARS_ARRAY=(
           "TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}"
@@ -51,7 +51,8 @@ jobs:
           "TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}"
           "DIALOGFLOW_TYPE=${DIALOGFLOW_TYPE}"
           "DIALOGFLOW_PROJECT_ID=${DIALOGFLOW_PROJECT_ID}"
-          "DIALOGFLOW_PRIVATE_KEY_ID=$PRIVATE_KEY_SANITIZED"
+          "DIALOGFLOW_PRIVATE_KEY=$PRIVATE_KEY_SANITIZED"
+          "DIALOGFLOW_PRIVATE_KEY_ID=${DIALOGFLOW_PRIVATE_KEY_ID}"
           "DIALOGFLOW_CLIENT_EMAIL=${DIALOGFLOW_CLIENT_EMAIL}"
           "DIALOGFLOW_CLIENT_ID=${DIALOGFLOW_CLIENT_ID}"
           "DIALOGFLOW_CLIENT_X509_CERT_URL=${DIALOGFLOW_CLIENT_X509_CERT_URL}"
