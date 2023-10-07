@@ -1,12 +1,10 @@
-import os
-
 import firebase_admin
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 from dotenv import load_dotenv
 
 from firebaseFolder.firebase_connection import FirebaseConnection
-from firebaseFolder.firebase_credentials import getFirebaseCredentials
+from authentication.credentials_loader import getFirebaseCredentials
 from firebaseFolder.firebase_tests.firebase_mock import MockedDbRef
 
 

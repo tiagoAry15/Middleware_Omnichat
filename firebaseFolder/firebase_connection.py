@@ -3,7 +3,7 @@ import firebase_admin
 from dotenv import load_dotenv
 from firebase_admin import db
 from utils.decorators.singleton_decorator import singleton
-from firebaseFolder.firebase_credentials import getFirebaseCredentials
+from authentication.credentials_loader import getFirebaseCredentials
 
 
 @singleton
