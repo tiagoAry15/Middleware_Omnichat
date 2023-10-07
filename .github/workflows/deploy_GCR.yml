@@ -43,7 +43,7 @@ jobs:
     - name: Set env vars for Cloud Run deployment
       run: |# Create an array with all the environment variable assignments
         
-        PRIVATE_KEY_SANITIZED=$(echo -n "${DIALOGFLOW_PRIVATE_KEY}" | sed 's/\\n/\\\\n/g')
+        PRIVATE_KEY_SANITIZED=$(echo -n "${DIALOGFLOW_PRIVATE_KEY}" | sed 's/\n/\\n/g')
         
         ENV_VARS_ARRAY=(
           "TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}"
@@ -89,4 +89,4 @@ jobs:
           --image gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }} \
           --platform managed \
           --region us-central1 \
-          --set-env-vars $UPDATE_ENV_VARS_ARG
+          --set-env-vars "$UPDATE_ENV_VARS_ARG"
