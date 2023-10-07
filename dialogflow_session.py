@@ -3,6 +3,7 @@ import google.cloud.dialogflow_v2 as dialogflow
 from dotenv import load_dotenv
 from twilio.twiml.messaging_response import MessagingResponse
 
+from authentication.dialogflow_auth import load_dialogflow_credentials
 from data.speisekarte_extraction import loadSpeisekarte, createMenuString, analyzeTotalPrice
 from references.path_reference import getDialogflowJsonPath
 from utils.decorators.singleton_decorator import singleton
@@ -13,9 +14,8 @@ class DialogFlowSession:
     def __init__(self):
         self.speisekarte = loadSpeisekarte()
         self.params = {"pizzas": [], "drinks": []}
-        dialogflowJsonFilePath = getDialogflowJsonPath()
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = dialogflowJsonFilePath
-        self.sessionClient = dialogflow.SessionsClient()
+        creds = load_dialogflow_credentials()
+        self.sessionClient = dialogflow.SessionsClient(credentials=creds)
         self.session = self.sessionClient.session_path(os.environ["DIALOGFLOW_PROJECT_ID"], "abc")
         self.agentName = self.session.split('/')[1]
         self.twiml = MessagingResponse()
