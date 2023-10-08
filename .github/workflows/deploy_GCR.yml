@@ -84,9 +84,32 @@ jobs:
         docker push gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}
 
     - name: Deploy to Cloud Run
+      env:
+        PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+        TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+        TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+        TWILIO_PHONE_NUMBER: ${{ secrets.TWILIO_PHONE_NUMBER }}
+        SDK_TYPE: ${{ secrets.SDK_TYPE }}
+        SDK_PROJECT_ID: ${{ secrets.SDK_PROJECT_ID }}
+        SDK_PRIVATE_KEY_ID: ${{ secrets.SDK_PRIVATE_KEY_ID }}
+        SDK_PRIVATE_KEY: ${{ secrets.SDK_PRIVATE_KEY }}
+        SDK_CLIENT_EMAIL: ${{ secrets.SDK_CLIENT_EMAIL }}
+        SDK_CLIENT_ID: ${{ secrets.SDK_CLIENT_ID }}
+        SDK_CLIENT_X509_CERT_URL: ${{ secrets.SDK_CLIENT_X509_CERT_URL }}
       run: |
         gcloud run deploy ${{ env.IMAGE_NAME }} \
           --image gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }} \
           --platform managed \
           --region us-central1 \
-          --set-env-vars "$UPDATE_ENV_VARS_ARG"
+          --set-env-vars=\
+            TWILIO_ACCOUNT_SID=${{ env.TWILIO_ACCOUNT_SID }},\
+            TWILIO_AUTH_TOKEN=${{ env.TWILIO_AUTH_TOKEN }},\
+            TWILIO_PHONE_NUMBER=${{ env.TWILIO_PHONE_NUMBER }},\
+            SDK_TYPE=${{ env.SDK_TYPE }},\
+            SDK_PROJECT_ID=${{ env.SDK_PROJECT_ID }},\
+            SDK_PRIVATE_KEY_ID=${{ env.SDK_PRIVATE_KEY_ID }},\
+            SDK_PRIVATE_KEY=${{ env.SDK_PRIVATE_KEY }},\
+            SDK_CLIENT_EMAIL=${{ env.SDK_CLIENT_EMAIL }},\
+            SDK_CLIENT_ID=${{ env.SDK_CLIENT_ID }},\
+            SDK_CLIENT_X509_CERT_URL=${{ env.SDK_CLIENT_X509_CERT_URL }}

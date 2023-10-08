@@ -1,9 +1,8 @@
+from gevent import monkey
+monkey.patch_all()
+
 import logging
 import os
-
-from gevent import monkey
-
-monkey.patch_all()
 
 from flask import request, jsonify, Response, abort
 from api_routes.conversation_routes import conversation_blueprint
