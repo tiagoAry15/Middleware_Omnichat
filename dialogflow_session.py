@@ -16,7 +16,7 @@ class DialogFlowSession:
         self.params = {"pizzas": [], "drinks": []}
         creds = getDialogflowCredentials()
         self.sessionClient = dialogflow.SessionsClient(credentials=creds)
-        self.session = self.sessionClient.session_path(os.environ["DIALOGFLOW_PROJECT_ID"], "abc")
+        self.session = self.sessionClient.session_path(os.environ["SDK_PROJECT_ID"], "abc")
         self.agentName = self.session.split('/')[1]
         self.twiml = MessagingResponse()
 
