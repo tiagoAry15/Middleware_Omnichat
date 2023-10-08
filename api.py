@@ -1,6 +1,8 @@
 import logging
 import os
 
+from gevent import monkey
+
 from flask import request, jsonify, Response, abort
 from api_routes.conversation_routes import conversation_blueprint
 from api_routes.test_routes import test_blueprint
@@ -8,13 +10,13 @@ from api_routes.user_routes import user_blueprint
 from orderProcessing.order_builder import buildFullOrder
 from orderProcessing.pizza_processor import parsePizzaOrder, convertMultiplePizzaOrderToText
 from orderProcessing.drink_processor import structureDrink
-from socketEmissions.socket_emissor import pulseEmit
-from api_config.api_config import app, socketio, dialogFlowInstance, fu, mc, twilioClient, twilio_phone_number
+from api_config.api_config import app, socketio, dialogFlowInstance
 from utils import instagram_utils
 from utils.core_utils import processUserMessage, processDialogFlowMessage
 from utils.helper_utils import extractDictFromBytesRequest, sendTwilioResponse, sendWebhookCallback
 import time
-from twilio.rest import Client
+
+monkey.patch_all()
 
 app.register_blueprint(conversation_blueprint, url_prefix='/conversations')
 app.register_blueprint(user_blueprint, url_prefix='/users')
@@ -152,8 +154,9 @@ def instagram():
 
 def __main():
     port = int(os.environ.get("PORT", 3000))
-    app.debug = False
+    app.debug = True
     socketio.run(app, host='0.0.0.0', port=port, allow_unsafe_werkzeug=True)
+    print("API loaded!")
     return
 
 
