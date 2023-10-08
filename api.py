@@ -3,6 +3,8 @@ import os
 
 from gevent import monkey
 
+monkey.patch_all()
+
 from flask import request, jsonify, Response, abort
 from api_routes.conversation_routes import conversation_blueprint
 from api_routes.test_routes import test_blueprint
@@ -15,8 +17,6 @@ from utils import instagram_utils
 from utils.core_utils import processUserMessage, processDialogFlowMessage
 from utils.helper_utils import extractDictFromBytesRequest, sendTwilioResponse, sendWebhookCallback
 import time
-
-monkey.patch_all()
 
 app.register_blueprint(conversation_blueprint, url_prefix='/conversations')
 app.register_blueprint(user_blueprint, url_prefix='/users')
