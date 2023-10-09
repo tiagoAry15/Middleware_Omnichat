@@ -1,12 +1,23 @@
+import json
 import os
+import logging
+
+logging.basicConfig(format='%(message)s', level=logging.INFO)
 
 
 def getSdkDict():
+    private_key = os.environ["SDK_PRIVATE_KEY"].replace("\\n", "\n").strip()
+    log_data = {
+        "message": "Deserialized SDK_PRIVATE_KEY",
+        "key": private_key
+    }
+    logging.info(json.dumps(log_data))
+
     return {
         "type": os.environ["SDK_TYPE"],
         "project_id": os.environ["SDK_PROJECT_ID"],
         "private_key_id": os.environ["SDK_PRIVATE_KEY_ID"],
-        "private_key": os.environ["SDK_PRIVATE_KEY"].replace("\\n", "\n").strip(),
+        "private_key": private_key,
         "client_email": os.environ["SDK_CLIENT_EMAIL"],
         "client_id": os.environ["SDK_CLIENT_ID"],
         "auth_uri": "https://accounts.google.com/o/oauth2/auth",
