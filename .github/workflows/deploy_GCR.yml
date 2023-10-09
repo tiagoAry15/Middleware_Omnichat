@@ -18,6 +18,7 @@ env:
   SDK_CLIENT_EMAIL: ${{ secrets.SDK_CLIENT_EMAIL }}
   SDK_CLIENT_ID: ${{ secrets.SDK_CLIENT_ID }}
   SDK_CLIENT_X509_CERT_URL: ${{ secrets.SDK_CLIENT_X509_CERT_URL }}
+  FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
   IMAGE_NAME: flaskomnichat
 
 jobs:
@@ -74,6 +75,7 @@ jobs:
           "SDK_CLIENT_EMAIL=${SDK_CLIENT_EMAIL}"
           "SDK_CLIENT_ID=${SDK_CLIENT_ID}"
           "SDK_CLIENT_X509_CERT_URL=${SDK_CLIENT_X509_CERT_URL}"
+          "FIREBASE_DATABASE_URL=${FIREBASE_DATABASE_URL}"
         )
 
          # Join the array elements into a comma-separated string
