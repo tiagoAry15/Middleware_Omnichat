@@ -62,7 +62,8 @@ def __handleNewUser(phoneNumber: str, receivedMessage: str):
     dialogflowResponseJSON = convert_dialogflow_message(botAnswer, phoneNumber)
     output = {
         "body": botAnswer,
-        "formattedBody": sendTwilioResponse(body=botAnswer)
+        "formattedBody": sendTwilioResponse(body=botAnswer),
+        "sender": "Bot"
     }
     return output, dialogflowResponseJSON
 

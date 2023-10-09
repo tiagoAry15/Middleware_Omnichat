@@ -15,7 +15,8 @@ def convertIncomingInstagramMessageToProperFormat(data):
     toTag = f"{incomingPlatform}:{recipientId}"
     fromTag = f"{incomingPlatform}:{senderId}"
     return {"ProfileName": ["User"], "WaId": [senderId], "Body": [messageContent],
-            "To": [toTag], "From": [fromTag], "senderId": senderId, "recipientId": recipientId}
+            "To": [toTag], "From": [fromTag], "senderId": senderId, "recipientId": recipientId,
+            "Sender": senderId}
 
 
 def processInstagramIncomingMessage(data: dict):

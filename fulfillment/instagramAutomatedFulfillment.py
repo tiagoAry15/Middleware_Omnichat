@@ -6,18 +6,26 @@ from webscrapping.instagramWebhookChanger import InstagramScrapper
 @timingDecorator
 def setNewInstagramWebhookCallbackURL(newUrl: str):
     ts = InstagramScrapper()
-    ts.setNewWebhookURL(newURL=newUrl)
+    ts.setNewWebhookURL(newURL=f"{newUrl}/instagram")
     ts.run()
 
 
-def setInstagramFulfillment():
+def setInstagramFulfillmentNgrok():
     url = get_ngrok_url()
     setNewInstagramWebhookCallbackURL(url)
     print("Fulfillment set successfully.")
 
 
+def setInstagramFulfillmentContainer():
+    url = "https://flaskomnichat-xpkcivyfqq-uc.a.run.app/"
+    setNewInstagramWebhookCallbackURL(url)
+    print("Fulfillment set successfully.")
+
+
 def __main():
-    setInstagramFulfillment()
+    # setInstagramFulfillmentNgrok()
+    setInstagramFulfillmentContainer()
+    return
 
 
 if __name__ == "__main__":
