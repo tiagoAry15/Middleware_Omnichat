@@ -3,7 +3,7 @@ import datetime
 
 from api_config.api_config import socketio
 from socketEmissions.socket_emissor import pulseEmit
-from utils.core_utils import processTwilioSandboxIncomingMessage, processUserMessage, processDialogFlowMessage
+from utils.core_utils import updateFirebaseWithUserMessage, processDialogFlowMessage
 import requests
 
 
@@ -18,20 +18,12 @@ def convertIncomingInstagramMessageToProperFormat(data):
             "To": [toTag], "From": [fromTag], "senderId": senderId, "recipientId": recipientId}
 
 
-def processInstagramIncomingMessage(data):
+def processInstagramIncomingMessage(data: dict):
     sender_id = data["senderId"]
-    userMessageJSON, chatData = processUserMessage(data)
-    # mainResponse = processTwilioSandboxIncomingMessage(structuredMessage)
+    userMessageJSON, chatData = updateFirebaseWithUserMessage(data)
     dialogflowMessageJSON = processDialogFlowMessage(userMessageJSON)
     response_body = dialogflowMessageJSON["body"]
     sendInstagramMessage(sender_id, response_body)
-    # txtResponse = mainResponse["body"]
-    # sendInstagramMessage(sender_id, txtResponse)
-    # currentFormattedTime = datetime.datetime.now().strftime("%H:%M")
-    # emitDict = {'body': message_text, 'from': 'instagram', 'phoneNumber': sender_id, 'sender': 'Mateus',
-    #             'time': currentFormattedTime}
-    # socketInstance.emit('message', emitDict)
-    # pulseEmit(socketio, emitDict)
 
 
 def sendInstagramMessage(recipient_id, message_text):

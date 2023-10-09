@@ -13,7 +13,7 @@ from orderProcessing.pizza_processor import parsePizzaOrder, convertMultiplePizz
 from orderProcessing.drink_processor import structureDrink
 from api_config.api_config import app, socketio, dialogFlowInstance
 from utils import instagram_utils
-from utils.core_utils import processUserMessage, processDialogFlowMessage
+from utils.core_utils import updateFirebaseWithUserMessage, processDialogFlowMessage
 from utils.helper_utils import extractDictFromBytesRequest, sendTwilioResponse, sendWebhookCallback
 import time
 
@@ -27,7 +27,7 @@ def sandbox():
     start = time.time()
     data: dict = extractDictFromBytesRequest()
     print(data)
-    userMessageJSON, chatData = processUserMessage(data)
+    userMessageJSON, chatData = updateFirebaseWithUserMessage(data)
     socketio.start_background_task(target=emitMessage, message=userMessageJSON)
     if 'isHumanActive' in chatData:
         return jsonify({"status": "success", "response": "Message sent"}), 200
@@ -146,7 +146,7 @@ def instagram():
         data = request.get_json()
         is_echo = data['entry'][0]['messaging'][0]['message'].get('is_echo')
         if not is_echo:
-            properMessage = instagram_utils.convertIncomingInstagramMessageToProperFormat(data)
+            properMessage: dict = instagram_utils.convertIncomingInstagramMessageToProperFormat(data)
             instagram_utils.processInstagramIncomingMessage(properMessage)
         return jsonify({'status': 'success', 'response': 'Message sent'}), 200
 

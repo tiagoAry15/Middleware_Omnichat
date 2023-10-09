@@ -3,7 +3,7 @@ import pytest
 
 from unittest.mock import patch, Mock
 
-from utils.message_converter import MessageConverter
+from utils.insomnia_examples import MessageConverter
 
 
 @pytest.fixture

@@ -10,7 +10,7 @@ from dialogflow_session import DialogFlowSession
 from firebaseFolder.firebase_connection import FirebaseConnection
 from firebaseFolder.firebase_conversation import FirebaseConversation
 from firebaseFolder.firebase_user import FirebaseUser
-from utils.message_converter import MessageConverter
+from utils.insomnia_examples import MessageConverter
 
 load_dotenv()
 twilio_account_ssid = os.environ["TWILIO_ACCOUNT_SID"]

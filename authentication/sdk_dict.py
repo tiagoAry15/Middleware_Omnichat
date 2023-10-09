@@ -1,17 +1,8 @@
-import json
 import os
-import logging
-
-logging.basicConfig(format='%(message)s', level=logging.INFO)
 
 
 def getSdkDict():
     private_key = os.environ["SDK_PRIVATE_KEY"].replace("\\n", "\n").strip()
-    log_data = {
-        "message": "Deserialized SDK_PRIVATE_KEY",
-        "key": private_key
-    }
-    logging.info(json.dumps(log_data))
 
     return {
         "type": os.environ["SDK_TYPE"],
