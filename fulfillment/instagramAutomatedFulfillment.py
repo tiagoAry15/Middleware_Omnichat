@@ -23,8 +23,8 @@ def setInstagramFulfillmentContainer():
 
 
 def __main():
-    # setInstagramFulfillmentNgrok()
-    setInstagramFulfillmentContainer()
+    setInstagramFulfillmentNgrok()
+    # setInstagramFulfillmentContainer()
     return
 
 

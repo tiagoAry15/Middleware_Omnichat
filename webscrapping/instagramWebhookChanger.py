@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.firefox.service import Service as FirefoxService, Service
 
 from references.path_reference import getWebdriverPath
 
@@ -13,13 +13,9 @@ from references.path_reference import getWebdriverPath
 class InstagramScrapper:
     def __init__(self):
         load_dotenv()
-        geckodriver_path = str(getWebdriverPath())
-        # s = Service(str(getWebdriverPath()))
-        s = FirefoxService(executable_path=geckodriver_path)
-        s.log_file = os.devnull
+        s = Service(str(getWebdriverPath()), log_path=os.devnull)
         self.driver = webdriver.Firefox(service=s)
-        self.page_url: str = ("https://developers.facebook.com/apps/743055877386142/messenger/ig-settings/"
-                              "?business_id=1378385822991303")
+        self.page_url: str = "https://developers.facebook.com/apps/743055877386142/messenger/ig-settings/"
         self.book_links = {}
         self.characters = []
         self.webhookURL = "https://www.google.com"
@@ -74,7 +70,7 @@ class InstagramScrapper:
         time.sleep(1)
 
     def __closeBrowser(self):
-        self.driver.close()
+        self.driver.quit()
 
 
 def __main():

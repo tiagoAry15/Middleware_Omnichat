@@ -144,6 +144,7 @@ def instagram():
     if request.method == 'POST':
         # Handle POST requests here (i.e. updates from Instagram)
         data = request.get_json()
+        headers = list(request.headers)
         is_echo = data['entry'][0]['messaging'][0]['message'].get('is_echo')
         if not is_echo:
             properMessage: dict = instagram_utils.convertIncomingInstagramMessageToProperFormat(data)
