@@ -17,6 +17,8 @@ from utils.core_utils import updateFirebaseWithUserMessage, processDialogFlowMes
 from utils.helper_utils import extractDictFromBytesRequest, sendTwilioResponse, sendWebhookCallback
 import time
 
+from utils.message_utils import convert_dialogflow_message
+
 app.register_blueprint(conversation_blueprint, url_prefix='/conversations')
 app.register_blueprint(user_blueprint, url_prefix='/users')
 app.register_blueprint(test_blueprint, url_prefix='/test')
@@ -36,6 +38,19 @@ def sandbox():
     response_body = dialogflowMessageJSON["body"]
     print(f"Tempo de execução do envio do socket: {time.time() - start}")
     return sendTwilioResponse(body=response_body, media=None)
+
+
+@app.route("/testConversation", methods=['POST'])
+def conversation_testing():
+    body: dict = request.get_json()
+    if body is None:
+        return "Message cannot be empty", 400
+    dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(body)
+    dummy_phone_number = "+84932498423"
+    dialogflowResponseJSON = convert_dialogflow_message(dialogflowResponse.query_result.fulfillment_text,
+                                                        dummy_phone_number)
+    botResponse = dialogflowResponseJSON["body"]
+    return jsonify(botResponse)
 
 
 def emitMessage(message):

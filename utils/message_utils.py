@@ -5,7 +5,7 @@ def convert_dialogflow_message(dialogflowMessage, userNumber):
     return {
         'sender': "ChatBot",
         'phoneNumber': userNumber,
-        'body': dialogflowMessage,
+        'body': dialogflowMessage if dialogflowMessage is not None else "Could not understand your message",
         "time": datetime.now().strftime("%H:%M"),
     }
 

@@ -71,12 +71,13 @@ def __handleNewUser(phoneNumber: str, receivedMessage: str):
 def __handleExistingUser(phoneNumber: str, receivedMessage: str):
     logging.info("Already signup!")
     dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
-    dialogflowResponseJSON = convert_dialogflow_message(dialogflowResponse.query_result.fulfillment_text, phoneNumber)
+    botDialogflowResponseJSON = convert_dialogflow_message(dialogflowResponse.query_result.fulfillment_text, phoneNumber)
     output = {
         "body": dialogflowResponse.query_result.fulfillment_text,
-        "formattedBody": dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse)
+        "formattedBody": dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse),
+        "sender": "Bot"
     }
-    return output, dialogflowResponseJSON
+    return output, botDialogflowResponseJSON
 
 
 def __main():
