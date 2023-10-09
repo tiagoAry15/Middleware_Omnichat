@@ -62,8 +62,6 @@ jobs:
       run: |# Create an array with all the environment variable assignments
 
         PRIVATE_KEY_SANITIZED=$(echo -n "${SDK_PRIVATE_KEY}" | sed 's/\n/\\n/g')
-        
-        echo "Sanitized SDK_PRIVATE_KEY: $PRIVATE_KEY_SANITIZED"
 
         ENV_VARS_ARRAY=(
           "TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}"
@@ -71,7 +69,7 @@ jobs:
           "TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}"
           "SDK_TYPE=${SDK_TYPE}"
           "SDK_PROJECT_ID=${SDK_PROJECT_ID}"
-          "SDK_PRIVATE_KEY=${PRIVATE_KEY_SANITIZED}"
+          "SDK_PRIVATE_KEY=${SDK_PRIVATE_KEY}"
           "SDK_PRIVATE_KEY_ID=${SDK_PRIVATE_KEY_ID}"
           "SDK_CLIENT_EMAIL=${SDK_CLIENT_EMAIL}"
           "SDK_CLIENT_ID=${SDK_CLIENT_ID}"
