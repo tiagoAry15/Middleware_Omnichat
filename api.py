@@ -42,6 +42,7 @@ def sandbox():
 
 @app.route("/testConversation", methods=['POST'])
 def conversation_testing():
+    """This endpoint is a firebaseLess version of the twilioSandbox endpoint. It is used for testing purposes."""
     body: dict = request.get_json()
     if body is None:
         return "Message cannot be empty", 400
