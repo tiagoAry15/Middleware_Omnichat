@@ -22,7 +22,7 @@ def getFirebaseCredentials():
 
 
 def __main():
-    creds = getDialogflowCredentials()
+    creds = getFirebaseCredentials()
     return
 
 

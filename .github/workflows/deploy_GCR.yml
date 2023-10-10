@@ -61,9 +61,6 @@ jobs:
 
     - name: Set env vars for Cloud Run deployment
       run: |# Create an array with all the environment variable assignments
-
-        PRIVATE_KEY_SANITIZED=$(echo -n "${SDK_PRIVATE_KEY}" | sed 's/\n/\\n/g')
-
         ENV_VARS_ARRAY=(
           "TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}"
           "TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}"
