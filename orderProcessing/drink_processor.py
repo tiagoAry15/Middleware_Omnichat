@@ -68,19 +68,15 @@ def structureDrink(parameters: dict, inputUserMessage: str) -> dict:
         "dois": 2.0, "duas": 2.0, "três": 3.0, "quatro": 4.0
     }
 
-    # Create a reverse map for later use
     reverseDrinkMap = __getDrinkPluralForm(drinks)
-    drinkOrder = {}
 
     order = {}
     words = userMessage.split()
     for i, word in enumerate(words):
         if word in numberEntity:
-            # Check if the next word(s) form a valid drink name
-            for j in range(1, 5):  # Assume max length of drink name is 4 words
+            for j in range(1, 5):
                 potential_drink = '@'.join(words[i + 1:i + 1 + j])
                 if potential_drink in reverseDrinkMap:
-                    # Update the order with the identified drink and its number
                     order[reverseDrinkMap[potential_drink]] = numberEntity[word]
                     break
     return order

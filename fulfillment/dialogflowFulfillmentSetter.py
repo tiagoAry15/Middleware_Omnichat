@@ -11,7 +11,7 @@ from utils.decorators.time_decorator import timingDecorator
 def setDialogflowFulfillment(newUrl: str = "https://www.facebook.com"):
     dotenv.load_dotenv()
     dialogFlowCredentials = getDialogflowCredentials()
-    project_id = os.environ["DIALOGFLOW_PROJECT_ID"]
+    project_id = os.environ["SDK_PROJECT_ID"]
     client = dialogflow_v2.FulfillmentsClient(credentials=dialogFlowCredentials)
     fulfillment = dialogflow_v2.Fulfillment()
     fulfillment.generic_web_service.uri = newUrl

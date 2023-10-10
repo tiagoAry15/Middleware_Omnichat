@@ -81,20 +81,8 @@ def __handleExistingUser(phoneNumber: str, receivedMessage: str):
 
 
 def __main():
-    d1 = {
-        "SmsMessageSid": "SMc7f2b5f0c0a4b0b0a1a0a1a0a1a0a1a0",
-        "NumMedia": "0",
-        "SmsSid": "SMc7f2b5f0c0a4b0b0a1a0a1a0a1a0a1a0",
-        "SmsStatus": "received",
-        "Body": "oi",
-        "To": "whatsapp:+14155238886",
-        "NumSegments": "1",
-        "MessageSid": "SMc7f2b5f0c0a4b0b0a1a0a1a0a1a0a1a0",
-        "AccountSid": "AC034f7d97b8d5bc62dfa91b519ac43b0f",
-        "From": "whatsapp:+558599663533",
-        "ApiVersion": "2010-04-01"
-    }
-
+    d1 = {'body': 'Oii', 'from': 'whatsapp', 'phoneNumber': '558599171902', 'sender': 'Mateus', 'time': '17:38'}
+    res = dialogFlowInstance.getDialogFlowResponse("Oi")
     list_with_extra_spaces = [1, 2, 3]
 
 

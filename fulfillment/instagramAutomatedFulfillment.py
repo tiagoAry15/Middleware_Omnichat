@@ -6,7 +6,7 @@ from webscrapping.instagramWebhookChanger import InstagramScrapper
 @timingDecorator
 def setNewInstagramWebhookCallbackURL(newUrl: str):
     ts = InstagramScrapper()
-    ts.setNewWebhookURL(newURL=f"{newUrl}/instagram")
+    ts.setNewWebhookURL(newURL=newUrl)
     ts.run()
 
 

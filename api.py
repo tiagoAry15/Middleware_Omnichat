@@ -4,6 +4,7 @@
 import logging
 import os
 
+from dotenv import load_dotenv
 from flask import request, jsonify, Response, abort
 from api_routes.conversation_routes import conversation_blueprint
 from api_routes.test_routes import test_blueprint
@@ -28,7 +29,7 @@ app.register_blueprint(test_blueprint, url_prefix='/test')
 def sandbox():
     start = time.time()
     data: dict = extractDictFromBytesRequest()
-    print(data)
+    print("TWILIO SANDBOX ENDPOINT!")
     userMessageJSON, chatData = updateFirebaseWithUserMessage(data)
     socketio.start_background_task(target=emitMessage, message=userMessageJSON)
     if 'isHumanActive' in chatData:
@@ -36,26 +37,7 @@ def sandbox():
     dialogflowMessageJSON = processDialogFlowMessage(userMessageJSON)
     emitMessage(dialogflowMessageJSON)
     response_body = dialogflowMessageJSON["body"]
-    print(f"Tempo de execução do envio do socket: {time.time() - start}")
     return sendTwilioResponse(body=response_body, media=None)
-
-
-@app.route("/testConversation", methods=['POST'])
-def conversation_testing():
-    """This endpoint is a firebaseLess version of the twilioSandbox endpoint. It is used for testing purposes."""
-    body: dict = request.get_json()
-    if body is None:
-        return "Message cannot be empty", 400
-    dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(body)
-    dummy_phone_number = "+84932498423"
-    dialogflowResponseJSON = convert_dialogflow_message(dialogflowResponse.query_result.fulfillment_text,
-                                                        dummy_phone_number)
-    botResponse = dialogflowResponseJSON["body"]
-    return jsonify(botResponse)
-
-
-def emitMessage(message):
-    socketio.emit('message', message)
 
 
 @app.route("/webhookForIntent", methods=['POST'])
@@ -63,15 +45,12 @@ def send():
     """This is a dialogflow callback endpoint. Everytime a message is sent to the bot, a POST request is sent to this
     endpoint.
     This is under DialogflowEssentials -> Fulfillment"""
-    logging.info("FULFILLMENT ENDPOINT")
+    print("FULFILLMENT ENDPOINT!")
     requestContent = request.get_json()
     outputContexts = requestContent['queryResult']['outputContexts']
     dialogFlowInstance.params["baseContextName"] = outputContexts[0]['name'].rsplit('/contexts/', 1)[0]
     queryText = requestContent['queryResult']['queryText']
     userMessage = [item["name"] for item in queryText] if isinstance(queryText, list) else queryText
-    # socketMessage = mc.dynamicConversion(userMessage)
-    # socketInstance.emit('message', socketMessage)
-    # pulseEmit(socketio, socketMessage)
     currentIntent = requestContent['queryResult']['intent']['displayName']
     logging.info(f"current Intent: {currentIntent}")
     params = requestContent['queryResult']['parameters']
@@ -95,6 +74,32 @@ def send():
         startContext = __structureNewDialogflowContext(contextName="Start", lifespan=1)
         return sendWebhookCallback(botMessage=welcomeString, nextContext=startContext)
     return sendWebhookCallback(botMessage="a")
+
+
+def emitMessage(message):
+    socketio.emit('message', message)
+
+
+@app.route("/testDialogflow", methods=["POST"])
+def dialogflow_testing():
+    load_dotenv()
+    response = dialogFlowInstance.getDialogFlowResponse(message="Oi")
+    bot_answer = response.query_result.fulfillment_text
+    return bot_answer, 200
+
+
+@app.route("/testConversation", methods=['POST'])
+def conversation_testing():
+    """This endpoint is a firebaseLess version of the twilioSandbox endpoint. It is used for testing purposes."""
+    body: dict = request.get_json()
+    if body is None:
+        return "Message cannot be empty", 400
+    dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(body)
+    dummy_phone_number = "+84932498423"
+    dialogflowResponseJSON = convert_dialogflow_message(dialogflowResponse.query_result.fulfillment_text,
+                                                        dummy_phone_number)
+    botResponse = dialogflowResponseJSON["body"]
+    return jsonify(botResponse)
 
 
 def __structureNewDialogflowContext(contextName: str, lifespan: int = 5):

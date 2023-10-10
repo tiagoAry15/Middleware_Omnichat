@@ -1,4 +1,6 @@
 import os
+import uuid
+
 import google.cloud.dialogflow_v2 as dialogflow
 from dotenv import load_dotenv
 from twilio.twiml.messaging_response import MessagingResponse
@@ -16,7 +18,7 @@ class DialogFlowSession:
         self.params = {"pizzas": [], "drinks": []}
         creds = getDialogflowCredentials()
         self.sessionClient = dialogflow.SessionsClient(credentials=creds)
-        self.session = self.sessionClient.session_path(os.environ["SDK_PROJECT_ID"], "abc")
+        self.session = self.sessionClient.session_path(os.environ["SDK_PROJECT_ID"], str(uuid.uuid4()))
         self.agentName = self.session.split('/')[1]
         self.twiml = MessagingResponse()
 
@@ -58,6 +60,9 @@ class DialogFlowSession:
 def __main():
     load_dotenv()
     ds = DialogFlowSession()
+    response = ds.getDialogFlowResponse(message="Oi")
+    bot_answer = response.query_result.fulfillment_text
+    print(bot_answer)
     return
 
 
