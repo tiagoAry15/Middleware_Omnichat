@@ -6,7 +6,8 @@ from flask import Flask
 from flask_cors import CORS
 from flask_socketio import SocketIO as FlaskSocketIO
 
-from dialogflow_session import DialogFlowSession
+from data.speisekarte_loader import SpeisekarteObject
+from dialogflow_handler import DialogFlowHandler
 from firebaseFolder.firebase_connection import FirebaseConnection
 from firebaseFolder.firebase_conversation import FirebaseConversation
 from firebaseFolder.firebase_user import FirebaseUser
@@ -18,7 +19,8 @@ twilio_auth_token = os.environ["TWILIO_AUTH_TOKEN"]
 twilio_phone_number = f'whatsapp:{os.environ["TWILIO_PHONE_NUMBER"]}'
 twilioClient = Client(twilio_account_ssid, twilio_auth_token)
 
-dialogFlowInstance = DialogFlowSession()
+dialogFlowInstance = DialogFlowHandler()
+speisekarteInstance = SpeisekarteObject()
 fc = FirebaseConnection()
 fu = FirebaseUser(fc)
 fcm = FirebaseConversation(fc)

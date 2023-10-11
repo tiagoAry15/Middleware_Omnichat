@@ -2,7 +2,6 @@ import os
 import uuid
 
 import google.cloud.dialogflow_v2 as dialogflow
-from dotenv import load_dotenv
 from twilio.twiml.messaging_response import MessagingResponse
 
 from authentication.credentials_loader import getDialogflowCredentials
@@ -11,7 +10,7 @@ from utils.decorators.singleton_decorator import singleton
 
 
 @singleton
-class DialogFlowSession:
+class DialogFlowHandler:
     def __init__(self):
         self.speisekarte = loadSpeisekarte()
         self.params = {"pizzas": [], "drinks": []}
@@ -40,12 +39,6 @@ class DialogFlowSession:
             if response.text.text:
                 return response.text.text[0]
 
-    def sendTwilioRawMessage(self, desiredMessage: str, image_url: str = None):
-        message = self.twiml.message(desiredMessage)
-        if image_url:
-            message.media(image_url)
-        return self.twiml
-
     def getDrinksString(self):
         return createMenuString(menu=self.speisekarte["Bebidas"], category="bebidas")
 
@@ -57,14 +50,12 @@ class DialogFlowSession:
 
 
 def __main():
-    load_dotenv()
-    ds = DialogFlowSession()
-    response = ds.getDialogFlowResponse(message="Oi")
-    bot_answer = response.query_result.fulfillment_text
-    print(bot_answer)
-    response_2 = ds.getDialogFlowResponse(message="Vou querer uma pizza de frango")
-    bot_answer_2 = response_2.query_result.fulfillment_text
-    print(bot_answer_2)
+    ds = DialogFlowHandler()
+    message_pool = ["Oi", "Vou querer duas pizzas de frango", "Sim", "Vou querer um guaraná", "Pix"]
+    for message in message_pool:
+        response = ds.getDialogFlowResponse(message=message)
+        bot_answer = response.query_result.fulfillment_text
+        print(bot_answer)
     return
 
 
