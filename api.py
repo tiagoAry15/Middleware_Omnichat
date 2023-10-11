@@ -31,13 +31,13 @@ def sandbox():
     data: dict = extractDictFromBytesRequest()
     print("TWILIO SANDBOX ENDPOINT!")
     userMessageJSON, chatData = updateFirebaseWithUserMessage(data)
+    print('sending user message to omnichat')
     socketio.start_background_task(target=emitMessage, message=userMessageJSON)
     if 'isHumanActive' in chatData:
         return jsonify({"status": "success", "response": "Message sent"}), 200
     dialogflowMessageJSON = processDialogFlowMessage(userMessageJSON)
-    emitMessage(dialogflowMessageJSON)
-    response_body = dialogflowMessageJSON["body"]
-    return sendTwilioResponse(body=response_body, media=None)
+    socketio.start_background_task(target=emitMessage, message=dialogflowMessageJSON)
+    return sendTwilioResponse(body=dialogflowMessageJSON["body"], media=None)
 
 
 @app.route("/webhookForIntent", methods=['POST'])

@@ -46,6 +46,7 @@ class FirebaseConversation(FirebaseWrapper):
         timestamp = datetime.now().strftime("%d/%m/%Y %H:%M")
         new_message = dict(messageData)
         new_message['id'] = str(uuid.uuid4())
+        new_message['time'] = timestamp
         # Copia todas as chaves de messageData
         if 'from' in new_message:
             del new_message['from']
@@ -68,8 +69,7 @@ class FirebaseConversation(FirebaseWrapper):
             conversationData = self.firebaseConnection.readData(path=uniqueId)
             conversationData["messagePot"].append(new_message)
             conversationData['lastMessage_timestamp'] = timestamp
-            if messageData['sender'] == "ChatBot" or messageData['sender'] == conversationData['name']:
-                conversationData['unreadMessages'] += 1
+            conversationData['unreadMessages'] += 1
 
             self.firebaseConnection.overWriteData(path=uniqueId, data=conversationData)
             return messageData
