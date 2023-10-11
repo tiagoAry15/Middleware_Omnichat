@@ -1,17 +1,12 @@
-from data.speisekarte_extraction import loadSpeisekarte, createMenuString, analyzeTotalPrice
-from dialogflowFolder.dialogflow_session import DialogflowSession
+from data.speisekarte_extraction import createMenuString, loadSpeisekarte, analyzeTotalPrice
 from utils.decorators.singleton_decorator import singleton
 
 
 @singleton
-class DialogFlowHandler:
+class MenuItemHandler:
     def __init__(self):
         self.speisekarte = loadSpeisekarte()
         self.params = {"pizzas": [], "drinks": []}
-        self.session_instance = DialogflowSession()
-
-    def requestDialogflowResponse(self, message: str):
-        return self.session_instance.getDialogFlowResponse(message=message)
 
     def getDrinksString(self):
         return createMenuString(menu=self.speisekarte["Bebidas"], category="bebidas")
@@ -24,7 +19,7 @@ class DialogFlowHandler:
 
 
 def __main():
-    ds = DialogFlowHandler()
+    ds = MenuItemHandler()
     return
 
 

@@ -14,13 +14,11 @@ from api_routes.user_routes import user_blueprint
 from orderProcessing.order_builder import buildFullOrder
 from orderProcessing.pizza_processor import parsePizzaOrder, convertMultiplePizzaOrderToText
 from orderProcessing.drink_processor import structureDrink
-from api_config.api_config import app, socketio, dialogHandler, dialogflowConnection
+from api_config.api_config import app, socketio, menuHandler, dialogflowConnection
 from utils import instagram_utils
 from utils.core_utils import updateFirebaseWithUserMessage, processDialogFlowMessage
 from utils.helper_utils import extractDictFromBytesRequest, sendTwilioResponse, sendWebhookCallback
 import time
-
-from utils.message_utils import convert_dialogflow_message
 
 app.register_blueprint(conversation_blueprint, url_prefix='/conversations')
 app.register_blueprint(user_blueprint, url_prefix='/users')
@@ -50,7 +48,7 @@ def send():
     print("FULFILLMENT ENDPOINT!")
     requestContent = request.get_json()
     outputContexts = requestContent['queryResult']['outputContexts']
-    dialogHandler.params["baseContextName"] = outputContexts[0]['name'].rsplit('/contexts/', 1)[0]
+    menuHandler.params["baseContextName"] = outputContexts[0]['name'].rsplit('/contexts/', 1)[0]
     queryText = requestContent['queryResult']['queryText']
     userMessage = [item["name"] for item in queryText] if isinstance(queryText, list) else queryText
     currentIntent = requestContent['queryResult']['intent']['displayName']
@@ -59,18 +57,18 @@ def send():
     if currentIntent == "Order.drink":
         return __handleOrderDrinkIntent(params, userMessage)
     elif currentIntent == "Order.pizza - drink no":
-        params = dialogHandler.params
+        params = menuHandler.params
         fullOrder = buildFullOrder(params)
-        totalPriceDict = dialogHandler.analyzeTotalPrice(fullOrder)
+        totalPriceDict = menuHandler.analyzeTotalPrice(fullOrder)
         finalMessage = totalPriceDict["finalMessage"]
         return sendWebhookCallback(finalMessage)
     elif currentIntent == "Order.pizza - drink yes":
-        drinkString = dialogHandler.getDrinksString()
+        drinkString = menuHandler.getDrinksString()
         return sendWebhookCallback(drinkString)
     elif currentIntent == "Order.pizza":
         return __handleOrderPizzaIntent(queryText, requestContent)
     elif currentIntent == "Welcome":
-        pizzaMenu = dialogHandler.getPizzasString()
+        pizzaMenu = menuHandler.getPizzasString()
         welcomeString = f"Olá! Bem-vindo à Pizza do Bill! Funcionamos das 17h às 22h.\n {pizzaMenu}." \
                         f" \nQual pizza você vai querer?"
         startContext = __structureNewDialogflowContext(contextName="Start", lifespan=1)
@@ -95,7 +93,7 @@ def dialogflow_testing():
 
 
 def __structureNewDialogflowContext(contextName: str, lifespan: int = 5):
-    baseContextName = dialogHandler.params["baseContextName"]
+    baseContextName = menuHandler.params["baseContextName"]
     newContext = {
         "name": f"{baseContextName}/contexts/{contextName}",
         "lifespanCount": lifespan,
@@ -108,7 +106,7 @@ def __handleOrderPizzaIntent(queryText: str, requestContent: dict) -> Response:
     parameters = requestContent['queryResult']['parameters']
     fullPizza = parsePizzaOrder(userMessage=queryText, parameters=parameters)
     fullPizzaText = convertMultiplePizzaOrderToText(fullPizza)
-    dialogHandler.params["pizzas"].append(fullPizza)
+    menuHandler.params["pizzas"].append(fullPizza)
     followUpContext = __structureNewDialogflowContext("OrderPizza-followup")
     return sendWebhookCallback(botMessage=f"Maravilha! {fullPizzaText.capitalize()} então. "
                                           f"Você vai querer alguma bebida?", nextContext=followUpContext)
@@ -116,10 +114,10 @@ def __handleOrderPizzaIntent(queryText: str, requestContent: dict) -> Response:
 
 def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
     drink = structureDrink(params, userMessage)
-    dialogHandler.params["drinks"].append(drink)
-    parameters = dialogHandler.params
+    menuHandler.params["drinks"].append(drink)
+    parameters = menuHandler.params
     fullOrder = buildFullOrder(parameters)
-    totalPriceDict = dialogHandler.analyzeTotalPrice(fullOrder)
+    totalPriceDict = menuHandler.analyzeTotalPrice(fullOrder)
     finalMessage = totalPriceDict["finalMessage"]
     return sendWebhookCallback(finalMessage)
 

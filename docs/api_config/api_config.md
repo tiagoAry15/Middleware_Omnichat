@@ -49,7 +49,7 @@ This module is generally imported in other modules to access the initialized ins
 ### Example:
 
 ```python
-from api_config.api_config import app, socketio, dialogHandler
+from api_config.api_config import app, socketio, menuHandler
 ```
 
 This line of code imports the Flask app instance, the Socket.IO instance, and the DialogFlow session instance from the api_config.py module, ready to be used in other parts of the application.
