@@ -14,7 +14,7 @@ from api_routes.user_routes import user_blueprint
 from orderProcessing.order_builder import buildFullOrder
 from orderProcessing.pizza_processor import parsePizzaOrder, convertMultiplePizzaOrderToText
 from orderProcessing.drink_processor import structureDrink
-from api_config.api_config import app, socketio, dialogFlowInstance
+from api_config.api_config import app, socketio, dialogHandler, dialogflowConnection
 from utils import instagram_utils
 from utils.core_utils import updateFirebaseWithUserMessage, processDialogFlowMessage
 from utils.helper_utils import extractDictFromBytesRequest, sendTwilioResponse, sendWebhookCallback
@@ -50,7 +50,7 @@ def send():
     print("FULFILLMENT ENDPOINT!")
     requestContent = request.get_json()
     outputContexts = requestContent['queryResult']['outputContexts']
-    dialogFlowInstance.params["baseContextName"] = outputContexts[0]['name'].rsplit('/contexts/', 1)[0]
+    dialogHandler.params["baseContextName"] = outputContexts[0]['name'].rsplit('/contexts/', 1)[0]
     queryText = requestContent['queryResult']['queryText']
     userMessage = [item["name"] for item in queryText] if isinstance(queryText, list) else queryText
     currentIntent = requestContent['queryResult']['intent']['displayName']
@@ -59,18 +59,18 @@ def send():
     if currentIntent == "Order.drink":
         return __handleOrderDrinkIntent(params, userMessage)
     elif currentIntent == "Order.pizza - drink no":
-        params = dialogFlowInstance.params
+        params = dialogHandler.params
         fullOrder = buildFullOrder(params)
-        totalPriceDict = dialogFlowInstance.analyzeTotalPrice(fullOrder)
+        totalPriceDict = dialogHandler.analyzeTotalPrice(fullOrder)
         finalMessage = totalPriceDict["finalMessage"]
         return sendWebhookCallback(finalMessage)
     elif currentIntent == "Order.pizza - drink yes":
-        drinkString = dialogFlowInstance.getDrinksString()
+        drinkString = dialogHandler.getDrinksString()
         return sendWebhookCallback(drinkString)
     elif currentIntent == "Order.pizza":
         return __handleOrderPizzaIntent(queryText, requestContent)
     elif currentIntent == "Welcome":
-        pizzaMenu = dialogFlowInstance.getPizzasString()
+        pizzaMenu = dialogHandler.getPizzasString()
         welcomeString = f"Olá! Bem-vindo à Pizza do Bill! Funcionamos das 17h às 22h.\n {pizzaMenu}." \
                         f" \nQual pizza você vai querer?"
         startContext = __structureNewDialogflowContext(contextName="Start", lifespan=1)
@@ -89,27 +89,13 @@ def dialogflow_testing():
         body: str = request.get_json()
     except BadRequest:
         return "Message cannot be empty. Try sending a JSON object with any string message.", 400
-    response = dialogFlowInstance.getDialogFlowResponse(message=body)
+    response = dialogflowConnection.getDialogFlowResponse(message=body)
     bot_answer = response.query_result.fulfillment_text
     return bot_answer, 200
 
 
-@app.route("/testConversation", methods=['POST'])
-def conversation_testing():
-    """This endpoint is a firebaseLess version of the twilioSandbox endpoint. It is used for testing purposes."""
-    body: dict = request.get_json()
-    if body is None:
-        return "Message cannot be empty", 400
-    dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(body)
-    dummy_phone_number = "+84932498423"
-    dialogflowResponseJSON = convert_dialogflow_message(dialogflowResponse.query_result.fulfillment_text,
-                                                        dummy_phone_number)
-    botResponse = dialogflowResponseJSON["body"]
-    return jsonify(botResponse)
-
-
 def __structureNewDialogflowContext(contextName: str, lifespan: int = 5):
-    baseContextName = dialogFlowInstance.params["baseContextName"]
+    baseContextName = dialogHandler.params["baseContextName"]
     newContext = {
         "name": f"{baseContextName}/contexts/{contextName}",
         "lifespanCount": lifespan,
@@ -122,7 +108,7 @@ def __handleOrderPizzaIntent(queryText: str, requestContent: dict) -> Response:
     parameters = requestContent['queryResult']['parameters']
     fullPizza = parsePizzaOrder(userMessage=queryText, parameters=parameters)
     fullPizzaText = convertMultiplePizzaOrderToText(fullPizza)
-    dialogFlowInstance.params["pizzas"].append(fullPizza)
+    dialogHandler.params["pizzas"].append(fullPizza)
     followUpContext = __structureNewDialogflowContext("OrderPizza-followup")
     return sendWebhookCallback(botMessage=f"Maravilha! {fullPizzaText.capitalize()} então. "
                                           f"Você vai querer alguma bebida?", nextContext=followUpContext)
@@ -130,10 +116,10 @@ def __handleOrderPizzaIntent(queryText: str, requestContent: dict) -> Response:
 
 def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
     drink = structureDrink(params, userMessage)
-    dialogFlowInstance.params["drinks"].append(drink)
-    parameters = dialogFlowInstance.params
+    dialogHandler.params["drinks"].append(drink)
+    parameters = dialogHandler.params
     fullOrder = buildFullOrder(parameters)
-    totalPriceDict = dialogFlowInstance.analyzeTotalPrice(fullOrder)
+    totalPriceDict = dialogHandler.analyzeTotalPrice(fullOrder)
     finalMessage = totalPriceDict["finalMessage"]
     return sendWebhookCallback(finalMessage)
 

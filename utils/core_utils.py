@@ -4,8 +4,8 @@ import logging
 
 from firebaseFolder.firebase_conversation import FirebaseConversation
 from intentManipulation.intent_manager import IntentManager
-from api_config.api_config import dialogFlowInstance, fcm
-from utils.helper_utils import sendTwilioResponse
+from api_config.api_config import fcm, dialogflowConnection
+from utils.helper_utils import sendTwilioResponse, extractTextFromDialogflowResponse
 from utils.message_utils import convert_dialogflow_message
 
 
@@ -70,11 +70,11 @@ def __handleNewUser(phoneNumber: str, receivedMessage: str):
 
 def __handleExistingUser(phoneNumber: str, receivedMessage: str):
     logging.info("Already signup!")
-    dialogflowResponse = dialogFlowInstance.getDialogFlowResponse(receivedMessage)
+    dialogflowResponse = dialogflowConnection.getDialogFlowResponse(receivedMessage)
     botDialogflowResponseJSON = convert_dialogflow_message(dialogflowResponse.query_result.fulfillment_text, phoneNumber)
     output = {
         "body": dialogflowResponse.query_result.fulfillment_text,
-        "formattedBody": dialogFlowInstance.extractTextFromDialogflowResponse(dialogflowResponse),
+        "formattedBody": extractTextFromDialogflowResponse(dialogflowResponse),
         "sender": "Bot"
     }
     return output, botDialogflowResponseJSON
@@ -82,7 +82,6 @@ def __handleExistingUser(phoneNumber: str, receivedMessage: str):
 
 def __main():
     d1 = {'body': 'Oii', 'from': 'whatsapp', 'phoneNumber': '558599171902', 'sender': 'Mateus', 'time': '17:38'}
-    res = dialogFlowInstance.getDialogFlowResponse("Oi")
     list_with_extra_spaces = [1, 2, 3]
 
 

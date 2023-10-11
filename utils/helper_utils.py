@@ -3,6 +3,7 @@ import copy
 import json
 import os
 from typing import List
+import google.cloud.dialogflow_v2 as dialogflow
 
 from dotenv import load_dotenv
 from flask import request, make_response, Response
@@ -102,6 +103,13 @@ def sendTwilioResponse(body: str, media: str = None) -> str:
     if media is not None:
         message.media(media)
     return str(response)
+
+
+def extractTextFromDialogflowResponse(dialogflowResponse: dialogflow.types.DetectIntentResponse):
+    dialogflowResponses = dialogflowResponse.query_result.fulfillment_messages
+    for response in dialogflowResponses:
+        if response.text.text:
+            return response.text.text[0]
 
 
 def __main():

@@ -47,8 +47,9 @@ interactions and data flows
 This module is generally imported in other modules to access the initialized instances and the Flask application settings. It acts as a central configuration file where all the necessary components for the API are set up and made ready for use.
 
 ### Example:
+
 ```python
-from api_config.api_config import app, socketio, dialogFlowInstance
+from api_config.api_config import app, socketio, dialogHandler
 ```
 
 This line of code imports the Flask app instance, the Socket.IO instance, and the DialogFlow session instance from the api_config.py module, ready to be used in other parts of the application.
