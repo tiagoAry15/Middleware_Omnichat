@@ -7,7 +7,6 @@ from twilio.twiml.messaging_response import MessagingResponse
 
 from authentication.credentials_loader import getDialogflowCredentials
 from data.speisekarte_extraction import loadSpeisekarte, createMenuString, analyzeTotalPrice
-from references.path_reference import getDialogflowJsonPath
 from utils.decorators.singleton_decorator import singleton
 
 
@@ -63,6 +62,9 @@ def __main():
     response = ds.getDialogFlowResponse(message="Oi")
     bot_answer = response.query_result.fulfillment_text
     print(bot_answer)
+    response_2 = ds.getDialogFlowResponse(message="Vou querer uma pizza de frango")
+    bot_answer_2 = response_2.query_result.fulfillment_text
+    print(bot_answer_2)
     return
 
 

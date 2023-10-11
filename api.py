@@ -6,6 +6,8 @@ import os
 
 from dotenv import load_dotenv
 from flask import request, jsonify, Response, abort
+from werkzeug.exceptions import BadRequest
+
 from api_routes.conversation_routes import conversation_blueprint
 from api_routes.test_routes import test_blueprint
 from api_routes.user_routes import user_blueprint
@@ -83,7 +85,11 @@ def emitMessage(message):
 @app.route("/testDialogflow", methods=["POST"])
 def dialogflow_testing():
     load_dotenv()
-    response = dialogFlowInstance.getDialogFlowResponse(message="Oi")
+    try:
+        body: str = request.get_json()
+    except BadRequest:
+        return "Message cannot be empty. Try sending a JSON object with any string message.", 400
+    response = dialogFlowInstance.getDialogFlowResponse(message=body)
     bot_answer = response.query_result.fulfillment_text
     return bot_answer, 200
 
