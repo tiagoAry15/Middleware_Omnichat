@@ -4,8 +4,6 @@
 import logging
 import os
 import uuid
-
-from dotenv import load_dotenv
 from flask import request, jsonify, Response, abort
 from werkzeug.exceptions import BadRequest
 
@@ -100,6 +98,15 @@ def dialogflow_testing():
     return bot_answer, 200
 
 
+@app.route("/eraseSession", methods=["PUT"])
+def erase_session():
+    if request.method != "PUT":
+        return "This endpoint only accepts PUT requests", 405
+    ip_address = request.remote_addr
+    dialogflowConnectionManager.erase_session(ip_address)
+    return "Session erased", 200
+
+
 def __structureNewDialogflowContext(contextName: str, lifespan: int = 5):
     baseContextName = menuHandler.params["baseContextName"]
     newContext = {
@@ -128,29 +135,6 @@ def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
     totalPriceDict = menuHandler.analyzeTotalPrice(fullOrder)
     finalMessage = totalPriceDict["finalMessage"]
     return sendWebhookCallback(finalMessage)
-
-
-@app.route("/twilioPreEvent", methods=['POST'])
-def preEvent():
-    """This is a twilio pre-webhook target. It intercepts events, and fires before twilio does anything."""
-    data = extractDictFromBytesRequest()
-    received_msg = data.get("Body")[0]
-    author = data.get("Author")[0].split(":")
-    messageService = author[0]
-    sender = author[1]
-    print('Pre event webhook!')
-    return 'OK', 200
-
-
-# Route to handle incoming Twilio webhook requests for WhatsApp
-@app.route('/twilioPostEvent', methods=['POST'])
-def handle_whatsapp():
-    """This is a twilio post-webhook target. It reacts to changes, and fires after twilio has processed an event.
-    It prints on the console the message content and sender."""
-    data = extractDictFromBytesRequest()
-    sender = data['Author'][0].split(':')[1]
-    content = data['Body'][0]
-    return 'OK', 200
 
 
 @app.route("/instagram", methods=['GET', 'POST'])

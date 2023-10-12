@@ -15,6 +15,11 @@ class SessionManager:
                 self.sessions[user_id] = DialogflowSession()
             return self.sessions[user_id]
 
+    def erase_session(self, user_id: str):
+        with self.lock:
+            if user_id in self.sessions:
+                del self.sessions[user_id]
+
 
 def __main():
     manager = SessionManager()
