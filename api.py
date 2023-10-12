@@ -45,7 +45,7 @@ def send():
     """This is a dialogflow callback endpoint. Everytime a message is sent to the bot, a POST request is sent to this
     endpoint.
     This is under DialogflowEssentials -> Fulfillment"""
-    print("FULFILLMENT ENDPOINT!")
+    # print("FULFILLMENT ENDPOINT!")
     requestContent = request.get_json()
     outputContexts = requestContent['queryResult']['outputContexts']
     menuHandler.params["baseContextName"] = outputContexts[0]['name'].rsplit('/contexts/', 1)[0]
@@ -54,6 +54,7 @@ def send():
     currentIntent = requestContent['queryResult']['intent']['displayName']
     logging.info(f"current Intent: {currentIntent}")
     params = requestContent['queryResult']['parameters']
+    print(currentIntent)
     if currentIntent == "Order.drink":
         return __handleOrderDrinkIntent(params, userMessage)
     elif currentIntent == "Order.pizza - drink no":
