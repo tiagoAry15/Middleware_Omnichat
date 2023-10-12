@@ -84,18 +84,19 @@ def emitMessage(message):
 
 @app.route("/testDialogflow", methods=["POST"])
 def dialogflow_testing():
-    load_dotenv()
     try:
         body: str = request.get_json()
     except BadRequest:
         return "Message cannot be empty. Try sending a JSON object with any string message.", 400
-    user_id = request.cookies.get('user_id')
-    if not user_id:
-        user_id = str(uuid.uuid4())
-    user_instance: DialogflowSession = dialogflowConnectionManager.get_instance_session(user_id)
-    user_instance.initialize_session(user_id)
+    ip_address = request.remote_addr
+    user_instance: DialogflowSession = dialogflowConnectionManager.get_instance_session(ip_address)
+    user_instance.initialize_session(ip_address)
     response = user_instance.getDialogFlowResponse(message=body)
     bot_answer = response.query_result.fulfillment_text
+    print(bot_answer)
+    if bot_answer == "":
+        return (f"Could not find any response from Dialogflow for the message '{body}'."
+                f" Check if your message is valid."), 400
     return bot_answer, 200
 
 
