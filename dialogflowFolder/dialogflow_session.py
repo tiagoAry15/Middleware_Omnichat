@@ -12,8 +12,9 @@ class DialogflowSession:
         self.agentName = None
 
     def initialize_session(self, user_id: str):
-        self.session = self.sessionClient.session_path(os.environ["SDK_PROJECT_ID"], user_id)
-        self.agentName = self.session.split('/')[1]
+        if self.session is None and self.agentName is None:
+            self.session = self.sessionClient.session_path(os.environ["SDK_PROJECT_ID"], user_id)
+            self.agentName = self.session.split('/')[1]
 
     def getDialogFlowResponse(self, message: str, intent_name: str = None, user_number: str = None):
         session = self.session

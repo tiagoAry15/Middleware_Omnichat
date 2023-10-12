@@ -8,7 +8,7 @@ class SessionManager:
         self.sessions = {}
         self.lock = threading.Lock()
 
-    def get_session(self, user_id: str):
+    def get_instance_session(self, user_id: str) -> DialogflowSession:
         with self.lock:
             if user_id not in self.sessions:
                 self.sessions[user_id] = DialogflowSession()

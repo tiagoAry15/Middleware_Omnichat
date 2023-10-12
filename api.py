@@ -3,6 +3,7 @@
 
 import logging
 import os
+import uuid
 
 from dotenv import load_dotenv
 from flask import request, jsonify, Response, abort
@@ -11,10 +12,11 @@ from werkzeug.exceptions import BadRequest
 from api_routes.conversation_routes import conversation_blueprint
 from api_routes.test_routes import test_blueprint
 from api_routes.user_routes import user_blueprint
+from dialogflowFolder.dialogflow_session import DialogflowSession
 from orderProcessing.order_builder import buildFullOrder
 from orderProcessing.pizza_processor import parsePizzaOrder, convertMultiplePizzaOrderToText
 from orderProcessing.drink_processor import structureDrink
-from api_config.api_config import app, socketio, menuHandler, dialogflowConnection
+from api_config.api_config import app, socketio, menuHandler, dialogflowConnectionManager
 from utils import instagram_utils
 from utils.core_utils import updateFirebaseWithUserMessage, processDialogFlowMessage
 from utils.helper_utils import extractDictFromBytesRequest, sendTwilioResponse, sendWebhookCallback
@@ -87,7 +89,12 @@ def dialogflow_testing():
         body: str = request.get_json()
     except BadRequest:
         return "Message cannot be empty. Try sending a JSON object with any string message.", 400
-    response = dialogflowConnection.getDialogFlowResponse(message=body)
+    user_id = request.cookies.get('user_id')
+    if not user_id:
+        user_id = str(uuid.uuid4())
+    user_instance: DialogflowSession = dialogflowConnectionManager.get_instance_session(user_id)
+    user_instance.initialize_session(user_id)
+    response = user_instance.getDialogFlowResponse(message=body)
     bot_answer = response.query_result.fulfillment_text
     return bot_answer, 200
 

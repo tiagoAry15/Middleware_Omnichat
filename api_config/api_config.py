@@ -9,6 +9,7 @@ from flask_socketio import SocketIO as FlaskSocketIO
 from data.speisekarte_loader import SpeisekarteObject
 from dialogflowFolder.dialogflow_session import DialogflowSession
 from data.menu_item_handler import MenuItemHandler
+from dialogflowFolder.session_manager import SessionManager
 from firebaseFolder.firebase_connection import FirebaseConnection
 from firebaseFolder.firebase_conversation import FirebaseConversation
 from firebaseFolder.firebase_user import FirebaseUser
@@ -21,7 +22,7 @@ twilio_phone_number = f'whatsapp:{os.environ["TWILIO_PHONE_NUMBER"]}'
 twilioClient = Client(twilio_account_ssid, twilio_auth_token)
 
 menuHandler = MenuItemHandler()
-dialogflowConnection = DialogflowSession()
+dialogflowConnectionManager = SessionManager()
 speisekarteInstance = SpeisekarteObject()
 fc = FirebaseConnection()
 fu = FirebaseUser(fc)
