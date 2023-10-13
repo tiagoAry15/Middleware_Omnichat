@@ -15,10 +15,9 @@ from orderProcessing.pizza_processor import parsePizzaOrder, convertMultiplePizz
 from orderProcessing.drink_processor import structureDrink
 from api_config.api_config import app, socketio, menuHandler, dialogflowConnectionManager
 from utils import instagram_utils
-from utils.core_utils import updateFirebaseWithUserMessage, processDialogFlowMessage, extractMetaDataFromTwilioCall, \
-    appendMultipleMessagesToFirebase
-from utils.helper_utils import extractDictFromBytesRequest, sendTwilioResponse, sendWebhookCallback
-import time
+from utils.core_utils import extractMetaDataFromTwilioCall, appendMultipleMessagesToFirebase
+from utils.helper_utils import extractDictFromBytesRequest, sendWebhookCallback
+from utils.instagram_utils import extractMetadataFromInstagramDict
 
 app.register_blueprint(conversation_blueprint, url_prefix='/conversations')
 app.register_blueprint(user_blueprint, url_prefix='/users')
@@ -34,13 +33,8 @@ def sandbox():
     userMessage = str(data["Body"][0])
     botResponse = _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
     appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
-    return botResponse, 200
-    # userMessageJSON = updateFirebaseWithUserMessage(data)
     # socketio.start_background_task(target=emitMessage, message=userMessageJSON)
-    # if 'isHumanActive' in userMessageJSON:
-    #     return jsonify({"status": "success", "response": "Message sent"}), 200
-    # # socketio.start_background_task(target=emitMessage, message=dialogflowMessageJSON)
-    # return sendTwilioResponse(body=botResponse, media=None)
+    return botResponse, 200
 
 
 @app.route("/webhookForIntent", methods=['POST'])
@@ -157,10 +151,14 @@ def instagram():
         # Handle POST requests here (i.e. updates from Instagram)
         data = request.get_json()
         headers = list(request.headers)
+        ip_address = request.remote_addr
         is_echo = data['entry'][0]['messaging'][0]['message'].get('is_echo')
         if not is_echo:
             properMessage: dict = instagram_utils.convertIncomingInstagramMessageToProperFormat(data)
-            instagram_utils.processInstagramIncomingMessage(properMessage)
+            metaData = extractMetadataFromInstagramDict(properMessage)
+            userMessage = str(properMessage["Body"][0])
+            botResponse = _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
+            appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
         return jsonify({'status': 'success', 'response': 'Message sent'}), 200
 
 

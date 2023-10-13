@@ -35,3 +35,11 @@ def sendInstagramMessage(recipient_id, message_text):
     response = requests.post('https://graph.facebook.com/v13.0/me/messages', headers=headers, params=params, json=data)
     if response.status_code != 200:
         print(f"Unable to send message: {response.text}")
+
+
+def extractMetadataFromInstagramDict(inputDict: dict) -> dict:
+    _from = inputDict["From"][0].split(':')[0]
+    phoneNUmber = inputDict["From"][0].split(':')[1]
+    sender = inputDict["Sender"]
+
+    return {"from": _from, "phoneNumber": phoneNUmber, "sender": sender}
