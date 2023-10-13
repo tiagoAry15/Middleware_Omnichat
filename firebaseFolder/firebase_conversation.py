@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 import random
 import uuid
 from typing import List
@@ -43,7 +43,7 @@ class FirebaseConversation(FirebaseWrapper):
 
     def appendMessageToWhatsappNumber(self, messageData: dict, whatsappNumber: str):
         uniqueId = self.getUniqueIdByWhatsappNumber(whatsappNumber)
-        timestamp = datetime.now().strftime("%d/%m/%Y %H:%M")
+        timestamp = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         new_message = dict(messageData)
         new_message['id'] = str(uuid.uuid4())
         new_message['time'] = timestamp
@@ -154,21 +154,6 @@ def getDummyConversationDicts(username: str = "John", phoneNumber: str = "+55859
     return {"dummyMessagePot": dummyMessagePot, "dummyPot": dummyPot}
 
 
-# def __createDummyConversations():
-#     fc = FirebaseConnection()
-#     fcm = FirebaseConversation(fc)
-#     dictPot = []
-#     dictParameters = ("John", "+558599171902", "whatsapp",
-#                       "Maria", "+558599171903", "instagram",
-#                       "Anthony", "+558599171904", "facebook")
-#     for username, phoneNumber, _from in zip(dictParameters[::3], dictParameters[1::3], dictParameters[2::3]):
-#         dicts = getDummyConversationDicts(username=username, phoneNumber=phoneNumber, _from=_from)
-#         dictPot.append(dicts)
-#     for _dict in dictPot:
-#         for conversation in _dict["dummyPot"]:
-#             fcm.createConversation(conversation)
-
-
 def checkNewUser(whatsappNumber: str, numberPot: List[str],
                  conversationInstance: FirebaseConversation, msgDict: dict) -> bool:
     if whatsappNumber in numberPot:
@@ -179,14 +164,13 @@ def checkNewUser(whatsappNumber: str, numberPot: List[str],
 
 
 def __main():
-    # __createDummyConversations()
     fc = FirebaseConnection()
     fcm = FirebaseConversation(fc)
     randomUniqueId = str(uuid.uuid4())
-    currentTime = datetime.now().strftime("%H:%M")
-    msgDict = {"body": "Olá, tudo bem?", "id": str(uuid.uuid4()), "phoneNumber": "+5585999171902",
-               "sender": "Mateus", "time": datetime.now().strftime("%d/%m/%Y %H:%M"),'from': "whatsapp"}
-    fcm.appendMessageToWhatsappNumber(msgDict, "+5585999171902")
+    phoneNumber = '558599171902'
+    msgDict = {'body': 'Oii', 'from': 'whatsapp', 'phoneNumber': phoneNumber, 'sender': 'Mateus',
+               'time': datetime.datetime.now().strftime('%H:%M')}
+    fcm.appendMessageToWhatsappNumber(msgDict, phoneNumber)
     # msgDict = {"phoneNumber": "+5585994875485", "body": "Olá, tudo bem?", "name": "Maria", "from": "facebook"}
     # fcm.createFirstDummyConversationByWhatsappNumber(msgDict)
     # createDummyConversations()

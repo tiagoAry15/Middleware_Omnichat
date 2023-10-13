@@ -29,6 +29,10 @@ def get_ngrok_url():
     return None
 
 
+def get_cloud_run_url():
+    return "https://flaskomnichat-xpkcivyfqq-uc.a.run.app"
+
+
 def __main():
     url = get_ngrok_url()
     # open_ngrok()

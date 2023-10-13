@@ -27,17 +27,18 @@ app.register_blueprint(test_blueprint, url_prefix='/test')
 
 @app.route("/twilioSandbox", methods=['POST'])
 def sandbox():
-    start = time.time()
     data: dict = extractDictFromBytesRequest()
     print("TWILIO SANDBOX ENDPOINT!")
-    userMessageJSON, chatData = updateFirebaseWithUserMessage(data)
-    print('sending user message to omnichat')
-    socketio.start_background_task(target=emitMessage, message=userMessageJSON)
-    if 'isHumanActive' in chatData:
-        return jsonify({"status": "success", "response": "Message sent"}), 200
-    dialogflowMessageJSON = processDialogFlowMessage(userMessageJSON)
-    socketio.start_background_task(target=emitMessage, message=dialogflowMessageJSON)
-    return sendTwilioResponse(body=dialogflowMessageJSON["body"], media=None)
+    ip_address = request.remote_addr
+    userMessage = str(data["Body"])
+    botResponse = _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
+    return botResponse, 200
+    # userMessageJSON = updateFirebaseWithUserMessage(data)
+    # socketio.start_background_task(target=emitMessage, message=userMessageJSON)
+    # if 'isHumanActive' in userMessageJSON:
+    #     return jsonify({"status": "success", "response": "Message sent"}), 200
+    # # socketio.start_background_task(target=emitMessage, message=dialogflowMessageJSON)
+    # return sendTwilioResponse(body=botResponse, media=None)
 
 
 @app.route("/webhookForIntent", methods=['POST'])
@@ -88,15 +89,20 @@ def dialogflow_testing():
     except BadRequest:
         return "Message cannot be empty. Try sending a JSON object with any string message.", 400
     ip_address = request.remote_addr
-    user_instance: DialogflowSession = dialogflowConnectionManager.get_instance_session(ip_address)
-    user_instance.initialize_session(ip_address)
-    response = user_instance.getDialogFlowResponse(message=body)
-    bot_answer = response.query_result.fulfillment_text
+    bot_answer = _get_bot_response_from_user_session(user_message=body, ip_address=ip_address)
     print(bot_answer)
     if bot_answer == "":
         return (f"Could not find any response from Dialogflow for the message '{body}'."
                 f" Check if your message is valid."), 400
     return bot_answer, 200
+
+
+def _get_bot_response_from_user_session(user_message: str, ip_address: str):
+    user_instance: DialogflowSession = dialogflowConnectionManager.get_instance_session(ip_address)
+    user_instance.initialize_session(ip_address)
+    response = user_instance.getDialogFlowResponse(message=user_message)
+    bot_answer = response.query_result.fulfillment_text
+    return bot_answer
 
 
 @app.route("/eraseSession", methods=["PUT"])

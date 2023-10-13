@@ -14,7 +14,7 @@ def updateFirebaseWithUserMessage(data: dict):
     userMessageJSON, phoneNumber, receivedMessage = (processedData["userMessageJSON"], processedData["phoneNumber"],
                                                      processedData["receivedMessage"])
     conversation = fcm.appendMessageToWhatsappNumber(messageData=userMessageJSON, whatsappNumber=phoneNumber)
-    return userMessageJSON, conversation
+    return userMessageJSON
 
 
 def __transformTwilioDataIntoStructuredFirebaseData(data: dict) -> dict:
