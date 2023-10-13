@@ -1,4 +1,3 @@
-import copy
 import datetime
 import logging
 
@@ -71,7 +70,8 @@ def __handleNewUser(phoneNumber: str, receivedMessage: str):
 def __handleExistingUser(phoneNumber: str, receivedMessage: str):
     logging.info("Already signup!")
     dialogflowResponse = dialogflowConnection.getDialogFlowResponse(receivedMessage)
-    botDialogflowResponseJSON = convert_dialogflow_message(dialogflowResponse.query_result.fulfillment_text, phoneNumber)
+    botDialogflowResponseJSON = convert_dialogflow_message(dialogflowResponse.query_result.fulfillment_text,
+                                                           phoneNumber)
     output = {
         "body": dialogflowResponse.query_result.fulfillment_text,
         "formattedBody": extractTextFromDialogflowResponse(dialogflowResponse),
@@ -80,9 +80,25 @@ def __handleExistingUser(phoneNumber: str, receivedMessage: str):
     return output, botDialogflowResponseJSON
 
 
+def appendMultipleMessagesToFirebase(userMessage: str, botAnswer: str, metaData: dict):
+    phoneNumber = metaData["phoneNumber"]
+    userMessageDict = {"body": userMessage, "time": datetime.datetime.now().strftime('%H:%M'), **metaData}
+    botMessageDict = {"body": botAnswer, "time": datetime.datetime.now().strftime('%H:%M'), **metaData, "sender": "Bot"}
+    messagePot = [userMessageDict, botMessageDict]
+    fcm.appendMultipleMessagesToWhatsappNumber(messagesData=messagePot, whatsappNumber=phoneNumber)
+    return
+
+
+def extractMetaDataFromTwilioCall(twilioDict: dict) -> dict:
+    sender = twilioDict["ProfileName"][0]
+    rawFrom = twilioDict["From"]
+    _from = rawFrom[0].split(':')[0] if rawFrom and ':' in rawFrom[0] else None
+    phoneNumber = twilioDict["WaId"][0]
+    return {"sender": sender, "from": _from, "phoneNumber": phoneNumber}
+
+
 def __main():
-    d1 = {'body': 'Oii', 'from': 'whatsapp', 'phoneNumber': '558599171902', 'sender': 'Mateus', 'time': '17:38'}
-    list_with_extra_spaces = [1, 2, 3]
+    pass
 
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@ from typing import List
 from utils.decorators.singleton_decorator import singleton
 from firebaseFolder.firebase_connection import FirebaseConnection
 from firebaseFolder.firebase_core_wrapper import FirebaseWrapper
+from utils.firebase_utils import searchUniqueIdAmongConversations, organizeSingleMessageData
 
 
 @singleton
@@ -41,38 +42,22 @@ class FirebaseConversation(FirebaseWrapper):
                 return uniqueId
         return None
 
-    def appendMessageToWhatsappNumber(self, messageData: dict, whatsappNumber: str):
-        uniqueId = self.getUniqueIdByWhatsappNumber(whatsappNumber)
-        timestamp = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
-        new_message = dict(messageData)
-        new_message['id'] = str(uuid.uuid4())
-        new_message['time'] = timestamp
-        # Copia todas as chaves de messageData
-        if 'from' in new_message:
-            del new_message['from']
-        if 'phoneNumber' in new_message:
-            del new_message['phoneNumber']
-        if not uniqueId:
-            conversationData = {
-                "name": messageData['sender'],
-                "status": "active",
-                "phoneNumber": whatsappNumber,
-                "from": messageData['from'],
-                "messagePot": [new_message],
-                "unreadMessages": 1,
-                "lastMessage_timestamp": timestamp,
-                "isBotActive": True,
-            }
-            self.createConversation(conversationData)
-            return conversationData
-        else:
-            conversationData = self.firebaseConnection.readData(path=uniqueId)
-            conversationData["messagePot"].append(new_message)
-            conversationData['lastMessage_timestamp'] = timestamp
-            conversationData['unreadMessages'] += 1
-
+    def writeToFirebase(self, uniqueId, conversationData):
+        if uniqueId:
             self.firebaseConnection.overWriteData(path=uniqueId, data=conversationData)
-            return messageData
+        else:
+            self.createConversation(conversationData)
+
+    def appendMessageToWhatsappNumber(self, messageData: dict, whatsappNumber: str):
+        all_conversations = self.getAllConversations()
+        uniqueId, conversationData = self._organizeSingleMessageData(messageData, whatsappNumber, all_conversations)
+        self.writeToFirebase(uniqueId, conversationData)
+
+    def appendMultipleMessagesToWhatsappNumber(self, messagesData: List[dict], whatsappNumber: str):
+        all_conversations = self.getAllConversations()
+        uniqueId, conversationData = organizeSingleMessageData(messagesData[0], whatsappNumber, all_conversations)
+        conversationData["messagePot"] = conversationData["messagePot"] + messagesData[1:]
+        self.writeToFirebase(uniqueId, conversationData)
 
     def retrieveAllMessagesByWhatsappNumber(self, whatsappNumber: str) -> List[dict] or None:
         uniqueId = self.getUniqueIdByWhatsappNumber(whatsappNumber)

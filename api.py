@@ -3,7 +3,6 @@
 
 import logging
 import os
-import uuid
 from flask import request, jsonify, Response, abort
 from werkzeug.exceptions import BadRequest
 
@@ -16,7 +15,8 @@ from orderProcessing.pizza_processor import parsePizzaOrder, convertMultiplePizz
 from orderProcessing.drink_processor import structureDrink
 from api_config.api_config import app, socketio, menuHandler, dialogflowConnectionManager
 from utils import instagram_utils
-from utils.core_utils import updateFirebaseWithUserMessage, processDialogFlowMessage
+from utils.core_utils import updateFirebaseWithUserMessage, processDialogFlowMessage, extractMetaDataFromTwilioCall, \
+    appendMultipleMessagesToFirebase
 from utils.helper_utils import extractDictFromBytesRequest, sendTwilioResponse, sendWebhookCallback
 import time
 
@@ -29,9 +29,11 @@ app.register_blueprint(test_blueprint, url_prefix='/test')
 def sandbox():
     data: dict = extractDictFromBytesRequest()
     print("TWILIO SANDBOX ENDPOINT!")
+    metaData = extractMetaDataFromTwilioCall(data)
     ip_address = request.remote_addr
-    userMessage = str(data["Body"])
+    userMessage = str(data["Body"][0])
     botResponse = _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
+    appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
     return botResponse, 200
     # userMessageJSON = updateFirebaseWithUserMessage(data)
     # socketio.start_background_task(target=emitMessage, message=userMessageJSON)
