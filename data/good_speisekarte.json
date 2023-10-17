@@ -3,32 +3,32 @@
     {
       "nome": "Calabresa",
       "tamanho": "Grande",
-      "preço": 17.50
+      "preço": 51.50
     },
     {
       "nome": "Frango",
       "tamanho": "Grande",
-      "preço": 18.90
+      "preço": 52.80
     },
     {
       "nome": "Portuguesa",
       "tamanho": "Grande",
-      "preço": 13.99
+      "preço": 49.00
     },
     {
       "nome": "Margherita",
       "tamanho": "Média",
-      "preço": 15.50
+      "preço": 45.80
     },
     {
       "nome": "Quatro Queijos",
       "tamanho": "Grande",
-      "preço": 16.90
+      "preço": 52.30
     },
     {
       "nome": "Pepperoni",
       "tamanho": "Grande",
-      "preço": 19.99
+      "preço": 51.99
     }
   ],
   "Bebidas": [
