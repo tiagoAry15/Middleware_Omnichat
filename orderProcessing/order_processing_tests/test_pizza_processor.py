@@ -1,8 +1,7 @@
 import pytest
 
-from orderProcessing.order_builder import buildFullOrder
 from orderProcessing.pizza_processor import _splitOrder, _translateOrder, parsePizzaOrder, __convertPizzaOrderToText
-from orderProcessing.drink_processor import structureDrink
+
 
 
 @pytest.mark.parametrize("userMessage, parameters, expected_output", [
@@ -32,16 +31,6 @@ def test_parsePizzaOrder(userMessage, parameters, expected_output):
     output = parsePizzaOrder(userMessage, parameters)
     assert output == expected_output
 
-
-@pytest.mark.parametrize("parameters, expected_output", [
-    ({"number": 1, "Drinks": "Coca"}, "Um Coca"),
-    ({"number": 2, "Drinks": "Pepsi"}, "2 Pepsi"),
-    ({"number": 3, "Drinks": "Fanta"}, "3 Fanta"),
-    ({"number": 4, "Drinks": "Sprite"}, "4 Sprite"),
-    # more test cases...
-])
-def test_structureDrink(parameters, expected_output):
-    assert structureDrink(parameters) == expected_output
 
 
 if __name__ == '__main__':
