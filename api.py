@@ -3,6 +3,7 @@
 
 import logging
 import os
+import uuid
 from flask import request, jsonify, Response, abort
 from werkzeug.exceptions import BadRequest
 
@@ -26,56 +27,68 @@ app.register_blueprint(test_blueprint, url_prefix='/test')
 
 @app.route("/twilioSandbox", methods=['POST'])
 def sandbox():
-    data: dict = extractDictFromBytesRequest()
-    print("TWILIO SANDBOX ENDPOINT!")
-    metaData = extractMetaDataFromTwilioCall(data)
-    ip_address = request.remote_addr
-    userMessage = str(data["Body"][0])
-    botResponse = _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
-    appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
-    # socketio.start_background_task(target=emitMessage, message=userMessageJSON)
-    return botResponse, 200
+    try:
+        data: dict = extractDictFromBytesRequest()
+        print("TWILIO SANDBOX ENDPOINT!")
+        metaData = extractMetaDataFromTwilioCall(data)
+        ip_address = request.remote_addr
+        userMessage = str(data["Body"][0])
+        botResponse = _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
+        appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
+        socketio.start_background_task(target=emitMessage, message=botResponse)
+        return botResponse, 200
+    except Exception as e:
+        print(e)
+        logging.error(e)
+        return 'Erro ao receber a mensagem, por favor tente novamente em instantes!'
 
 
 @app.route("/webhookForIntent", methods=['POST'])
 def send():
-    """This is a dialogflow callback endpoint. Everytime a message is sent to the bot, a POST request is sent to this
-    endpoint.
-    This is under DialogflowEssentials -> Fulfillment"""
-    # print("FULFILLMENT ENDPOINT!")
-    requestContent = request.get_json()
-    outputContexts = requestContent['queryResult']['outputContexts']
-    menuHandler.params["baseContextName"] = outputContexts[0]['name'].rsplit('/contexts/', 1)[0]
-    queryText = requestContent['queryResult']['queryText']
-    userMessage = [item["name"] for item in queryText] if isinstance(queryText, list) else queryText
-    currentIntent = requestContent['queryResult']['intent']['displayName']
-    logging.info(f"current Intent: {currentIntent}")
-    params = requestContent['queryResult']['parameters']
-    print(currentIntent)
-    if currentIntent == "Order.drink":
-        return __handleOrderDrinkIntent(params, userMessage)
-    elif currentIntent == "Order.pizza - drink no":
-        params = menuHandler.params
-        fullOrder = buildFullOrder(params)
-        totalPriceDict = menuHandler.analyzeTotalPrice(fullOrder)
-        finalMessage = totalPriceDict["finalMessage"]
-        return sendWebhookCallback(finalMessage)
-    elif currentIntent == "Order.pizza - drink yes":
-        drinkString = menuHandler.getDrinksString()
-        return sendWebhookCallback(drinkString)
-    elif currentIntent == "Order.pizza":
-        return __handleOrderPizzaIntent(queryText, requestContent)
-    elif currentIntent == "Welcome":
-        pizzaMenu = menuHandler.getPizzasString()
-        welcomeString = f"Olá! Bem-vindo à Pizza do Bill! Funcionamos das 17h às 22h.\n {pizzaMenu}." \
-                        f" \nQual pizza você vai querer?"
-        startContext = __structureNewDialogflowContext(contextName="Start", lifespan=1)
-        return sendWebhookCallback(botMessage=welcomeString, nextContext=startContext)
-    return sendWebhookCallback(botMessage="a")
+    try:
+        print("FULFILLMENT ENDPOINT!")
+        requestContent = request.get_json()
+        print(requestContent)
+        outputContexts = requestContent['queryResult']['outputContexts']
+        menuHandler.params["baseContextName"] = outputContexts[0]['name'].rsplit('/contexts/', 1)[0]
+        queryText = requestContent['queryResult']['queryText']
+        userMessage = [item["name"] for item in queryText] if isinstance(queryText, list) else queryText
+        currentIntent = requestContent['queryResult']['intent']['displayName']
+        logging.info(f"current Intent: {currentIntent}")
+        params = requestContent['queryResult']['parameters']
+        if currentIntent == "Order.drink":
+            return __handleOrderDrinkIntent(params, userMessage)
+        elif currentIntent == "Order.pizza - drink no":
+            params = menuHandler.params
+            fullOrder = buildFullOrder(params)
+            totalPriceDict = menuHandler.analyzeTotalPrice(fullOrder)
+            finalMessage = totalPriceDict["finalMessage"]
+
+            return sendWebhookCallback(finalMessage)
+        elif currentIntent == "Order.pizza - drink yes":
+            drinkString = menuHandler.getDrinksString()
+            return sendWebhookCallback(drinkString)
+        elif currentIntent == "Order.pizza":
+            return __handleOrderPizzaIntent(queryText, requestContent)
+        elif currentIntent == "Welcome":
+            pizzaMenu = menuHandler.getPizzasString()
+            welcomeString = f"Olá! Bem-vindo à Pizza do Bill! Funcionamos das 17h às 22h.\n {pizzaMenu}." \
+                            f" \nQual pizza você vai querer?"
+            startContext = __structureNewDialogflowContext(contextName="Start", lifespan=1)
+            return sendWebhookCallback(botMessage=welcomeString, nextContext=startContext)
+        return sendWebhookCallback(botMessage="a")
+    except Exception as e:
+        print(e)
+        logging.error(e)
+        return 'Erro no processamento de resposta do Bot, tente novamente em instantes!'
 
 
 def emitMessage(message):
     socketio.emit('message', message)
+
+
+def emitOrder(order):
+    socketio.emit('order', order)
 
 
 @app.route("/testDialogflow", methods=["POST"])
@@ -142,25 +155,29 @@ def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
 
 @app.route("/instagram", methods=['GET', 'POST'])
 def instagram():
-    if request.method == 'GET':
-        if request.args.get('hub.mode') == 'subscribe':
-            return request.args.get('hub.challenge')
-        else:
-            abort(403)
-    if request.method == 'POST':
-        # Handle POST requests here (i.e. updates from Instagram)
-        data = request.get_json()
-        headers = list(request.headers)
-        ip_address = request.remote_addr
-        is_echo = data['entry'][0]['messaging'][0]['message'].get('is_echo')
-        if not is_echo:
-            properMessage: dict = instagram_utils.convertIncomingInstagramMessageToProperFormat(data)
-            metaData = extractMetadataFromInstagramDict(properMessage)
-            userMessage = str(properMessage["Body"][0])
-            botResponse = _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
-            appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
-        return jsonify({'status': 'success', 'response': 'Message sent'}), 200
-
+    try:
+        if request.method == 'GET':
+            if request.args.get('hub.mode') == 'subscribe':
+                return request.args.get('hub.challenge')
+            else:
+                abort(403)
+        if request.method == 'POST':
+            # Handle POST requests here (i.e. updates from Instagram)
+            data = request.get_json()
+            headers = list(request.headers)
+            ip_address = request.remote_addr
+            is_echo = data['entry'][0]['messaging'][0]['message'].get('is_echo')
+            if not is_echo:
+                properMessage: dict = instagram_utils.convertIncomingInstagramMessageToProperFormat(data)
+                metaData = extractMetadataFromInstagramDict(properMessage)
+                userMessage = str(properMessage["Body"][0])
+                botResponse = _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
+                appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
+            return jsonify({'status': 'success', 'response': 'Message sent'}), 200
+    except Exception as e:
+        print(e)
+        logging.error(e)
+        return jsonify({'status': 'failed', 'response': 'Message not sent'}), 400
 
 def __main():
     port = int(os.environ.get("PORT", 3000))
