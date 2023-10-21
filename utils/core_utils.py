@@ -82,22 +82,21 @@ def __handleExistingUser(phoneNumber: str, receivedMessage: str):
 
 
 def appendMultipleMessagesToFirebase(userMessage: str, botAnswer: str, metaData: dict):
-    # phoneNumber = metaData["phoneNumber"]
-    # userMessageDict = {"body": userMessage, "time": datetime.datetime.now().strftime('%H:%M'), **metaData}
-    # botMessage = {"body": botAnswer, "time": datetime.datetime.now().strftime('%H:%M'), **metaData, "sender": "Bot"}
-    # messagePot = [userMessageDict, botMessageDict]
-    # fcm.appendMultipleMessagesToWhatsappNumber(messagesData=messagePot, whatsappNumber=phoneNumber)
     return makeHttpCallToAppendMultipleMessagesToFirebaseServerlessFunction(userMessage, botAnswer, metaData)
 
 
 def makeHttpCallToAppendMultipleMessagesToFirebaseServerlessFunction(userMessage: str, botAnswer: str, metaData: dict):
-    headers = {
+    payload = {
         "userMessage": userMessage,
         "botAnswer": botAnswer,
-        "metaData": json.dumps(metaData)
+        "metaData": metaData
+    }
+    headers = {
+        "Content-Type": "application/json"
     }
     url = "https://us-central1-pizzadobill-rpin.cloudfunctions.net/update_multiple_conversations"
-    return requests.post(url=url, headers=headers)
+    return requests.post(url=url, headers=headers, json=payload)
+
 
 
 def extractMetaDataFromTwilioCall(twilioDict: dict) -> dict:
