@@ -36,7 +36,7 @@ def sandbox():
         botResponse = _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
         appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
         socketio.start_background_task(target=emitMessage, message=botResponse)
-        return botResponse, 200
+        return jsonify({"response": botResponse}), 200
     except Exception as e:
         print(e)
         logging.error(e)
