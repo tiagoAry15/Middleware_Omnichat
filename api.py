@@ -40,7 +40,7 @@ def sandbox():
     except Exception as e:
         print(e)
         logging.error(e)
-        return 'Erro ao receber a mensagem, por favor tente novamente em instantes!'
+        return f'Erro ao receber a mensagem, por favor tente novamente em instantes! {e}'
 
 
 @app.route("/webhookForIntent", methods=['POST'])
