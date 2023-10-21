@@ -1,6 +1,7 @@
 import datetime
+import json
 import logging
-
+import requests
 from firebaseFolder.firebase_conversation import FirebaseConversation
 from intentManipulation.intent_manager import IntentManager
 from api_config.api_config import fcm
@@ -81,12 +82,22 @@ def __handleExistingUser(phoneNumber: str, receivedMessage: str):
 
 
 def appendMultipleMessagesToFirebase(userMessage: str, botAnswer: str, metaData: dict):
-    phoneNumber = metaData["phoneNumber"]
-    userMessageDict = {"body": userMessage, "time": datetime.datetime.now().strftime('%H:%M'), **metaData}
-    botMessageDict = {"body": botAnswer, "time": datetime.datetime.now().strftime('%H:%M'), **metaData, "sender": "Bot"}
-    messagePot = [userMessageDict, botMessageDict]
-    fcm.appendMultipleMessagesToWhatsappNumber(messagesData=messagePot, whatsappNumber=phoneNumber)
-    return
+    # phoneNumber = metaData["phoneNumber"]
+    # userMessageDict = {"body": userMessage, "time": datetime.datetime.now().strftime('%H:%M'), **metaData}
+    # botMessage = {"body": botAnswer, "time": datetime.datetime.now().strftime('%H:%M'), **metaData, "sender": "Bot"}
+    # messagePot = [userMessageDict, botMessageDict]
+    # fcm.appendMultipleMessagesToWhatsappNumber(messagesData=messagePot, whatsappNumber=phoneNumber)
+    return makeHttpCallToAppendMultipleMessagesToFirebaseServerlessFunction(userMessage, botAnswer, metaData)
+
+
+def makeHttpCallToAppendMultipleMessagesToFirebaseServerlessFunction(userMessage: str, botAnswer: str, metaData: dict):
+    headers = {
+        "userMessage": userMessage,
+        "botAnswer": botAnswer,
+        "metaData": json.dumps(metaData)
+    }
+    url = "https://us-central1-pizzadobill-rpin.cloudfunctions.net/update_multiple_conversations"
+    return requests.post(url=url, headers=headers)
 
 
 def extractMetaDataFromTwilioCall(twilioDict: dict) -> dict:
