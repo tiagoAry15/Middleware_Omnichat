@@ -30,6 +30,10 @@ def getWebdriverPath() -> Path:
     return getMainFolderPath() / 'webscrapping/geckodriver.exe'
 
 
+def getFirebaseCacheFilesPath() -> Path:
+    return getMainFolderPath() / 'firebaseCache/cache_files'
+
+
 def __main():
     sdkFile = getDialogflowJsonPath()
     existingSdkFile = sdkFile.exists()

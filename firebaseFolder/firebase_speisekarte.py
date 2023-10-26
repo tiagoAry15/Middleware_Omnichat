@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+from firebaseCache.cache_utils import save_cache_json, load_cache_json
 from firebaseFolder.firebase_connection import FirebaseConnection
 from firebaseFolder.firebase_core_wrapper import FirebaseWrapper
 from references.path_reference import getSpeisekartePath
@@ -26,15 +27,23 @@ class FirebaseSpeisekarte(FirebaseWrapper):
     def __init__(self, inputFirebaseConnection: FirebaseConnection):
         super().__init__()
         self.firebaseConnection = inputFirebaseConnection
+        self.cache = {}
+        self.load_cache()
 
     def updateConnection(self):
         self.firebaseConnection.changeDatabaseConnection("speisekarte")
 
-    def createSpeisekarteCache(self):
-        pass
+    def refreshSpeisekarteCache(self) -> bool:
+        all_data = self.firebaseConnection.readData()
+        save_cache_json(filename="speisekarte_cache.json", data=all_data)
+        return True
 
-    def getAllSpeisekarte(self):
-        return self.firebaseConnection.readData()
+    def load_cache(self):
+        data, timedelta = load_cache_json(filename="speisekarte_cache.json")
+        if timedelta.days >= 1:
+            print("Cache is outdated! Refreshing...")
+            self.refreshSpeisekarteCache()
+        return
 
     def createSpeisekarte(self, speisekarte_data: dict):
         return self.firebaseConnection.writeData(data=speisekarte_data)
@@ -47,7 +56,6 @@ class FirebaseSpeisekarte(FirebaseWrapper):
 def __main():
     fc = FirebaseConnection()
     fs = FirebaseSpeisekarte(fc)
-    all_speisekarte = fs.getAllSpeisekarte()
     return
 
 

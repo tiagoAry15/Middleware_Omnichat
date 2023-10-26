@@ -1,11 +1,16 @@
 import datetime
 import json
 import os
+from pathlib import Path
+
+from references.path_reference import getFirebaseCacheFilesPath
 from utils.date_utils import timedelta_to_str
+
+CACHE_FOLDER = getFirebaseCacheFilesPath()
 
 
 def load_cache_json(filename: str):
-    filepath = f"cache_files/{filename}"
+    filepath = Path(CACHE_FOLDER, filename)
     try:
         with open(filepath, 'r', encoding='utf-8') as file:
             speisekarte_data = json.load(file)
@@ -15,7 +20,7 @@ def load_cache_json(filename: str):
         delta = current_date - timestamp
         formatted_delta = timedelta_to_str(delta)
         print(f"Cache loaded! Time since last update: {formatted_delta}")
-        return speisekarte_data
+        return speisekarte_data, delta
     except FileNotFoundError:
         print(f"Error: The file '{filename}' was not found.")
         return {}
@@ -25,7 +30,7 @@ def load_cache_json(filename: str):
 
 
 def save_cache_json(filename: str, data: dict):
-    filepath = f"cache_files/{filename}"
+    filepath = Path(CACHE_FOLDER, filename)
     try:
         with open(filepath, 'w', encoding='utf-8') as file:
             json.dump(data, file, ensure_ascii=False, indent=4)
