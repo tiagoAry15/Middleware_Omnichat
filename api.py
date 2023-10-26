@@ -34,7 +34,7 @@ def sandbox():
         ip_address = request.remote_addr
         userMessage = str(data["Body"][0])
         botResponse = _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
-        appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
+        # appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
         socketio.start_background_task(target=emitMessage, message=botResponse)
         return botResponse
     except Exception as e:
@@ -178,6 +178,7 @@ def instagram():
         print(e)
         logging.error(e)
         return jsonify({'status': 'failed', 'response': 'Message not sent'}), 400
+
 
 def __main():
     port = int(os.environ.get("PORT", 3000))
