@@ -1,7 +1,8 @@
+import datetime
 import json
 from pathlib import Path
 
-from firebaseCache.cache_utils import save_cache_json, load_cache_json
+from firebaseCache.cache_utils import save_cache_json, load_cache_json, load_cache_table
 from firebaseFolder.firebase_connection import FirebaseConnection
 from firebaseFolder.firebase_core_wrapper import FirebaseWrapper
 from references.path_reference import getSpeisekartePath
@@ -27,6 +28,7 @@ class FirebaseSpeisekarte(FirebaseWrapper):
     def __init__(self, inputFirebaseConnection: FirebaseConnection):
         super().__init__()
         self.firebaseConnection = inputFirebaseConnection
+        self.cache_file = "speisekarte_cache.json"
         self.data = {}
         self.load_cache()
 
@@ -40,11 +42,16 @@ class FirebaseSpeisekarte(FirebaseWrapper):
         return True
 
     def load_cache(self):
-        data, timedelta = load_cache_json(filename="speisekarte_cache.json")
+        filename = self.cache_file
+        cache_table = load_cache_table()
+        cache_last_update = cache_table[filename]
+        today = datetime.date.today().strftime("%d-%b-%Y")
+        timedelta = datetime.datetime.strptime(today, "%d-%b-%Y") - datetime.datetime.strptime(cache_last_update,
+                                                                                               "%d-%b-%Y")
         if timedelta.days >= 1:
             print("Cache is outdated! Refreshing...")
             self.refreshSpeisekarteCache()
-        self.data = data
+        self.data = load_cache_json(filename=filename)
 
     def save_cache(self):
         save_cache_json(filename="speisekarte_cache.json", data=self.data)

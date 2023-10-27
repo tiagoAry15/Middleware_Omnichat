@@ -7,6 +7,20 @@ from references.path_reference import getFirebaseCacheFilesPath
 from utils.date_utils import timedelta_to_str
 
 CACHE_FOLDER = getFirebaseCacheFilesPath()
+SUB_CACHE_FOLDER = CACHE_FOLDER.parent
+
+
+def load_cache_table():
+    filepath = Path(SUB_CACHE_FOLDER, "cache_table.json")
+    try:
+        with open(filepath, 'r', encoding='utf-8') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        print(f"Error: The file cache_table.json was not found.")
+        return {}
+    except json.JSONDecodeError:
+        print(f"Error: Failed to decode JSON data from cache_table.json.")
+        return {}
 
 
 def load_cache_json(filename: str):
@@ -14,13 +28,13 @@ def load_cache_json(filename: str):
     try:
         with open(filepath, 'r', encoding='utf-8') as file:
             speisekarte_data = json.load(file)
-        raw_timestamp = os.path.getmtime(filepath)
-        timestamp = datetime.datetime.fromtimestamp(raw_timestamp)
-        current_date = datetime.datetime.now()
-        delta = current_date - timestamp
-        formatted_delta = timedelta_to_str(delta)
-        print(f"Cache loaded! Time since last update: {formatted_delta}")
-        return speisekarte_data, delta
+        # raw_timestamp = os.path.getmtime(filepath)
+        # timestamp = datetime.datetime.fromtimestamp(raw_timestamp)
+        # current_date = datetime.datetime.now()
+        # delta = current_date - timestamp
+        # formatted_delta = timedelta_to_str(delta)
+        # print(f"Cache loaded! Time since last update: {formatted_delta}")
+        return speisekarte_data
     except FileNotFoundError:
         print(f"Error: The file '{filename}' was not found.")
         return {}
@@ -55,7 +69,7 @@ def __main():
                                                {'nome': 'Pepperoni', 'preço': 19.99, 'tamanho': 'Grande'}],
                                     'Versão': '26-oct-2023'}}
     # save_cache_json("speisekarte_cache.json", aux)
-    aux = load_cache_json("speisekarte_cache.json")
+    aux = load_cache_table()
     return
 
 
