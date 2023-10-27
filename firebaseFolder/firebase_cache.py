@@ -43,7 +43,7 @@ def cache_delete(func):
     def wrapper(instance, *args, **kwargs):
         result = func(instance, *args, **kwargs)
         if result:  # If delete was successful
-            speisekarte_unique_id = instance.get_unique_id_by_author(args[0])  # Assumes author is the first arg
+            speisekarte_unique_id = instance._get_unique_id_by_author(args[0])  # Assumes author is the first arg
             instance.data.pop(speisekarte_unique_id)
             instance.save_cache()
         return result
