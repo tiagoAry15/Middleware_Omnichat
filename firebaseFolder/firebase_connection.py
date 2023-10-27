@@ -37,13 +37,13 @@ class FirebaseConnection:
         self.connection.child(path).set(value)
         return True
 
-    def writeData(self, path: str = None, data: dict = None) -> bool:
+    def writeData(self, path: str = None, data: dict = None):
         """Writes data to Firebase at the specified path."""
         if data is None:
             data = {"dummyData": 5}
         ref = self.connection.child(path) if path is not None else self.connection
-        ref.push(data)
-        return True
+        new_ref = ref.push(data)
+        return new_ref.key
 
     def writeDataWithoutUniqueId(self, path: str = None, data: dict = None) -> bool:
         """Writes data to Firebase at the specified path."""
@@ -66,21 +66,23 @@ class FirebaseConnection:
         ref.set(data)
         return True
 
-    def deleteData(self, path: str, data=None) -> bool:
+    def deleteData(self, path: str = None, data=None) -> bool:
         """Deletes data at the specified path in Firebase."""
 
-        # If only path is provided, we assume it's the direct reference to the data to delete
-        if data is None:
+        # Scenario 1: If only path is provided, we assume it's the direct reference to the data to delete
+        if path is not None and data is None:
             ref = self.connection.child(path)
             ref.delete()
             return True
 
-        # If data is also provided, we need to find its unique ID first
-        data_id = self.getUniqueIdByData(path, data)
+        # Scenario 3: If both path and data are provided, we find the data's unique ID at the specified path
+        # Scenario 2: If only data is provided, we find the data's unique ID in the root
+        search_path = path if path is not None else '/'
+        data_id = self.getUniqueIdByData(search_path, data)
         if data_id is None:
             raise ValueError("Cannot find unique ID for provided data")
 
-        ref = self.connection.child(path)
+        ref = self.connection.child(search_path)
         data_ref = ref.child(data_id)
         data_ref.delete()
         return True
