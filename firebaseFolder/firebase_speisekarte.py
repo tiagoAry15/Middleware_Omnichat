@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 
 from firebaseCache.cache_utils import save_cache_json, load_cache_json, load_cache_table
+from firebaseFolder.firebase_cache import cache_create, cache_update, cache_delete
 from firebaseFolder.firebase_connection import FirebaseConnection
 from firebaseFolder.firebase_core_wrapper import FirebaseWrapper
 from references.path_reference import getSpeisekartePath
@@ -30,7 +31,7 @@ class FirebaseSpeisekarte(FirebaseWrapper):
         self.firebaseConnection = inputFirebaseConnection
         self.cache_file = "speisekarte_cache.json"
         self.data = {}
-        self.load_cache()
+        self._load_cache()
 
     def updateConnection(self):
         self.firebaseConnection.changeDatabaseConnection("speisekarte")
@@ -41,7 +42,7 @@ class FirebaseSpeisekarte(FirebaseWrapper):
         self.data = all_data
         return True
 
-    def load_cache(self):
+    def _load_cache(self):
         filename = self.cache_file
         cache_table = load_cache_table()
         cache_last_update = cache_table[filename]
@@ -51,6 +52,8 @@ class FirebaseSpeisekarte(FirebaseWrapper):
         if timedelta.days >= 1:
             print("Cache is outdated! Refreshing...")
             self.refreshSpeisekarteCache()
+            cache_table[filename] = today
+            save_cache_json(filename="..\\cache_table.json", data=cache_table)
         self.data = load_cache_json(filename=filename)
 
     def save_cache(self):
@@ -74,12 +77,13 @@ class FirebaseSpeisekarte(FirebaseWrapper):
                 return unique_id
         return None
 
+    @cache_create
     def createSpeisekarte(self, speisekarte_data: dict) -> bool:
         existing = self.existing_speisekarte(speisekarte_data)
         if not existing:
-            unique_id = self.firebaseConnection.writeData(data=speisekarte_data)
-            self.data[unique_id] = speisekarte_data
-            self.save_cache()
+            # unique_id = self.firebaseConnection.writeData(data=speisekarte_data)
+            # self.data[unique_id] = speisekarte_data
+            # self.save_cache()
             return True
         print("Speisekarte already exists!")
         return False
@@ -92,29 +96,31 @@ class FirebaseSpeisekarte(FirebaseWrapper):
                 return item
         return None
 
+    @cache_update
     def update_speisekarte(self, author: str, newData: dict) -> bool or None:
-        speisekarte = self.read_speisekarte(author=author)
-        if not speisekarte:
-            print(f"Could not find a speisekarte for {author}.")
-            return None
-        if not newData:
-            print("No update arguments were provided.")
-            return None
+        speisekarte = self.read_speisekarte(author)
+        # if not speisekarte:
+        #     print(f"Could not find a speisekarte for {author}.")
+        #     return None
+        # if not newData:
+        #     print("No update arguments were provided.")
+        #     return None
         for key, value in newData.items():
             speisekarte[key] = value
         self.firebaseConnection.overWriteData(data=speisekarte)
-        unique_id = self.get_unique_id_by_author(author=author)
-        self.data[unique_id] = speisekarte
-        self.save_cache()
+        # unique_id = self.get_unique_id_by_author(author=author)
+        # self.data[unique_id] = speisekarte
+        # self.save_cache()
         return True
 
+    @cache_delete
     def delete_speisekarte(self, author: str):
         speisekarte_unique_id = self.get_unique_id_by_author(author=author)
         if not speisekarte_unique_id:
             return None
         self.firebaseConnection.deleteData(path=speisekarte_unique_id)
-        self.data.pop(speisekarte_unique_id)
-        self.save_cache()
+        # self.data.pop(speisekarte_unique_id)
+        # self.save_cache()
         return True
 
 
@@ -123,8 +129,8 @@ def __main():
     fs = FirebaseSpeisekarte(fc)
     # speisekarte = get_current_speisekarte()
     # fs.createDummySpeisekarte()
-    # fs.update_speisekarte(author="Bill", newData={"HorárioDeFuncionamento": "17 às 23h"})
-    fs.delete_speisekarte(author="Bill")
+    fs.update_speisekarte("Bill", {"HorárioDeFuncionamento": "17 às 23h"})
+    # fs.delete_speisekarte(author="Bill")
     # fs.refreshSpeisekarteCache()
     return
 
