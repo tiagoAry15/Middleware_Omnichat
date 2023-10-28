@@ -1,7 +1,6 @@
 import datetime
 
 from firebaseCache.cache_utils import save_cache_json, load_cache_json, load_cache_table
-from firebaseFolder.firebase_cache import cache_create, cache_update, cache_delete
 from firebaseFolder.firebase_connection import FirebaseConnection
 from firebaseFolder.firebase_core_wrapper import FirebaseWrapper
 from references.import_references import get_current_speisekarte
@@ -20,8 +19,12 @@ class FirebaseSpeisekarte(FirebaseWrapper):
     def updateConnection(self):
         self.firebaseConnection.changeDatabaseConnection("speisekarte")
 
-    def refreshSpeisekarteCache(self) -> bool:
+    def _refreshSpeisekarteCache(self) -> bool:
         all_data = self.firebaseConnection.readData()
+        if all_data is None:
+            template = get_current_speisekarte()
+            unique_id = self.firebaseConnection.writeData(data=template)
+            all_data = {unique_id: template}
         save_cache_json(filename="speisekarte_cache.json", data=all_data)
         self.data = all_data
         return True
@@ -30,29 +33,23 @@ class FirebaseSpeisekarte(FirebaseWrapper):
         filename = self.cache_file
         cache_table = load_cache_table()
         cache_last_update = cache_table[filename]
-        today = datetime.date.today().strftime("%d-%b-%Y")
-        timedelta = datetime.datetime.strptime(today, "%d-%b-%Y") - datetime.datetime.strptime(cache_last_update,
-                                                                                               "%d-%b-%Y")
-        if timedelta.days >= 1:
+        timestamp_format = "%d-%b-%Y at %H:%M"
+        today = datetime.datetime.now().strftime(timestamp_format)
+        timedelta = datetime.datetime.strptime(today, timestamp_format) - datetime.datetime.strptime(cache_last_update,
+                                                                                                     timestamp_format)
+        days_difference = timedelta.days
+        if days_difference >= 1:
             print("Cache is outdated! Refreshing...")
-            self.refreshSpeisekarteCache()
+            self._refreshSpeisekarteCache()
             cache_table[filename] = today
             save_cache_json(filename="..\\cache_table.json", data=cache_table)
         self.data = load_cache_json(filename=filename)
 
-    def save_cache(self):
+    def _save_cache(self):
         save_cache_json(filename="speisekarte_cache.json", data=self.data)
         return True
 
-    def existing_speisekarte(self, input_speisekarte: dict) -> bool:
-        speisekarte_pool = list(self.data.values())
-        return input_speisekarte in speisekarte_pool
-
-    def createDummySpeisekarte(self):
-        dummy_speisekarte = get_current_speisekarte()
-        return self.createSpeisekarte(dummy_speisekarte)
-
-    def _get_unique_id_by_author(self, author: str) -> str or None:
+    def _get_firebase_unique_id_by_author(self, author: str) -> str or None:
         speisekarte_pool = list(self.data.keys())
         for unique_id in speisekarte_pool:
             item = self.data[unique_id]
@@ -61,36 +58,44 @@ class FirebaseSpeisekarte(FirebaseWrapper):
                 return unique_id
         return None
 
-    @cache_create
+    def createDummySpeisekarte(self):
+        dummy_speisekarte = get_current_speisekarte()
+        return self.createSpeisekarte(dummy_speisekarte)
+
     def createSpeisekarte(self, speisekarte_data: dict) -> bool:
-        existing = self.existing_speisekarte(speisekarte_data)
-        if not existing:
+        author = speisekarte_data["Autor"]
+        cache_unique_id = self._get_firebase_unique_id_by_author(author)
+        if cache_unique_id:
             return True
-        print("Speisekarte already exists!")
+        firebase_unique_id = self.firebaseConnection.writeData(data=speisekarte_data)
+        self.data[firebase_unique_id] = speisekarte_data
+        self._save_cache()
         return False
 
     def read_speisekarte(self, author: str) -> dict or None:
-        speisekarte_pool = list(self.data.values())
-        for item in speisekarte_pool:
-            item_author = item["Autor"].lower()
-            if item_author == author.lower():
-                return item
-        return None
+        firebase_unique_id = self._get_firebase_unique_id_by_author(author)
+        if firebase_unique_id not in self.data.keys():
+            return None
+        return self.data[firebase_unique_id]
 
-    @cache_update
     def update_speisekarte(self, author: str, newData: dict) -> bool or None:
-        speisekarte = self.read_speisekarte(author)
+        firebase_unique_id = self._get_firebase_unique_id_by_author(author)
+        if not firebase_unique_id:
+            return False
+        speisekarte = self.data[firebase_unique_id]
         for key, value in newData.items():
             speisekarte[key] = value
         self.firebaseConnection.overWriteData(data=speisekarte)
+        self._save_cache()
         return True
 
-    @cache_delete
     def delete_speisekarte(self, author: str):
-        speisekarte_unique_id = self._get_unique_id_by_author(author=author)
+        speisekarte_unique_id = self._get_firebase_unique_id_by_author(author=author)
         if not speisekarte_unique_id:
             return None
         self.firebaseConnection.deleteData(path=speisekarte_unique_id)
+        del self.data[speisekarte_unique_id]
+        self._save_cache()
         return True
 
 
@@ -98,10 +103,9 @@ def __main():
     fc = FirebaseConnection()
     fs = FirebaseSpeisekarte(fc)
     # speisekarte = get_current_speisekarte()
-    # fs.createDummySpeisekarte()
+    fs.createDummySpeisekarte()
     # fs.update_speisekarte("Bill", {"HorárioDeFuncionamento": "17 às 23h"})
-    fs.delete_speisekarte("Bill")
-    # fs.refreshSpeisekarteCache()
+    # fs.delete_speisekarte("Bill")
     return
 
 
