@@ -8,6 +8,7 @@ from flask import request, jsonify, Response, abort
 from werkzeug.exceptions import BadRequest
 
 from api_routes.conversation_routes import conversation_blueprint
+from api_routes.speisekarte_routes import speisekarte_blueprint
 from api_routes.test_routes import test_blueprint
 from api_routes.user_routes import user_blueprint
 from dialogflowFolder.dialogflow_session import DialogflowSession
@@ -23,6 +24,7 @@ from utils.instagram_utils import extractMetadataFromInstagramDict
 app.register_blueprint(conversation_blueprint, url_prefix='/conversations')
 app.register_blueprint(user_blueprint, url_prefix='/users')
 app.register_blueprint(test_blueprint, url_prefix='/test')
+app.register_blueprint(speisekarte_blueprint, url_prefix='/speisekarte')
 
 
 @app.route("/twilioSandbox", methods=['POST'])
@@ -178,6 +180,13 @@ def instagram():
         print(e)
         logging.error(e)
         return jsonify({'status': 'failed', 'response': 'Message not sent'}), 400
+
+
+@app.route("/pizzaMenuUpdate", methods=['POST'])
+def pizza_menu_update():
+    if request.method != "POST":
+        return "This endpoint only accepts POST requests", 405
+    body_dict = request.get_json()
 
 
 def __main():
