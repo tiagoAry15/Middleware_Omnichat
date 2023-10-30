@@ -42,7 +42,10 @@ class FirebaseConnection:
         if data is None:
             data = {"dummyData": 5}
         ref = self.connection.child(path) if path is not None else self.connection
-        new_ref = ref.push(data)
+        if path is None:
+            new_ref = ref.push(data)
+        else:
+            new_ref = ref.set(data)
         return new_ref.key
 
     def writeDataWithoutUniqueId(self, path: str = None, data: dict = None) -> bool:

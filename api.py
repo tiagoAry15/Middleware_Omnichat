@@ -8,6 +8,7 @@ from flask import request, jsonify, Response, abort
 from werkzeug.exceptions import BadRequest
 
 from api_routes.conversation_routes import conversation_blueprint
+from api_routes.order_routes import order_blueprint
 from api_routes.speisekarte_routes import speisekarte_blueprint
 from api_routes.test_routes import test_blueprint
 from api_routes.user_routes import user_blueprint
@@ -25,6 +26,7 @@ app.register_blueprint(conversation_blueprint, url_prefix='/conversations')
 app.register_blueprint(user_blueprint, url_prefix='/users')
 app.register_blueprint(test_blueprint, url_prefix='/test')
 app.register_blueprint(speisekarte_blueprint, url_prefix='/speisekarte')
+app.register_blueprint(order_blueprint, url_prefix='/orders')
 
 
 @app.route("/twilioSandbox", methods=['POST'])
