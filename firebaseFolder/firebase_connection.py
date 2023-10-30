@@ -46,7 +46,7 @@ class FirebaseConnection:
             new_ref = ref.push(data)
         else:
             new_ref = ref.set(data)
-        return new_ref.key
+        return new_ref.key if new_ref else False
 
     def writeDataWithoutUniqueId(self, path: str = None, data: dict = None) -> bool:
         """Writes data to Firebase at the specified path."""
