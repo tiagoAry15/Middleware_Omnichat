@@ -1,4 +1,6 @@
 import datetime
+import random
+import time
 import uuid
 
 
@@ -40,3 +42,16 @@ def searchUniqueIdAmongConversations(conversationData: dict, userWhatsappNumber:
     return None
 
 
+def generate_firebase_push_id() -> str:
+    PUSH_CHARS = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz"
+    now = int(time.time() * 1000)
+    id_pool = []
+
+    for i in range(8):
+        id_pool.append(PUSH_CHARS[now % 64])
+        now //= 64
+
+    for i in range(12):
+        id_pool.append(PUSH_CHARS[random.randint(0, 63)])
+
+    return ''.join(id_pool)

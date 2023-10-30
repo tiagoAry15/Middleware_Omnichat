@@ -28,12 +28,6 @@ def load_cache_json(filename: str):
     try:
         with open(filepath, 'r', encoding='utf-8') as file:
             speisekarte_data = json.load(file)
-        # raw_timestamp = os.path.getmtime(filepath)
-        # timestamp = datetime.datetime.fromtimestamp(raw_timestamp)
-        # current_date = datetime.datetime.now()
-        # delta = current_date - timestamp
-        # formatted_delta = timedelta_to_str(delta)
-        # print(f"Cache loaded! Time since last update: {formatted_delta}")
         return speisekarte_data
     except FileNotFoundError:
         print(f"Error: The file '{filename}' was not found.")
