@@ -8,9 +8,8 @@ order_blueprint = Blueprint('orders', __name__)
 @order_blueprint.route("/create_order", methods=['POST'])
 def create_order():
     data = request.get_json()
-    response = fo.createOrder(data)
-    finalResponse = data if response else False
-    return jsonify(finalResponse), 200
+    unique_id = fo.createOrder(data)
+    return f"You just created a new order with the unique id [{unique_id}]", 200
 
 
 @order_blueprint.route("/get_order/<string:order_unique_id>", methods=['GET'])
