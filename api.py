@@ -3,7 +3,6 @@
 
 import logging
 import os
-import uuid
 from flask import request, jsonify, Response, abort
 from werkzeug.exceptions import BadRequest
 
@@ -19,6 +18,7 @@ from orderProcessing.drink_processor import structureDrink
 from api_config.api_config import app, socketio, menuHandler, dialogflowConnectionManager
 from utils import instagram_utils
 from utils.core_utils import extractMetaDataFromTwilioCall, appendMultipleMessagesToFirebase
+from utils.cors_blocker import get_anti_cors_headers
 from utils.helper_utils import extractDictFromBytesRequest, sendWebhookCallback
 from utils.instagram_utils import extractMetadataFromInstagramDict
 
@@ -97,6 +97,7 @@ def emitOrder(order):
 
 @app.route("/testDialogflow", methods=["POST"])
 def dialogflow_testing():
+    headers = get_anti_cors_headers()
     try:
         body: str = request.get_json()
     except BadRequest:
@@ -107,7 +108,7 @@ def dialogflow_testing():
     if bot_answer == "":
         return (f"Could not find any response from Dialogflow for the message '{body}'."
                 f" Check if your message is valid."), 400
-    return bot_answer, 200
+    return bot_answer, 200, headers
 
 
 def _get_bot_response_from_user_session(user_message: str, ip_address: str):
