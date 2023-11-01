@@ -3,7 +3,7 @@
 
 import logging
 import os
-from flask import request, jsonify, Response, abort
+from flask import request, jsonify, abort
 from werkzeug.exceptions import BadRequest
 
 from api_routes.conversation_routes import conversation_blueprint
@@ -12,14 +12,13 @@ from api_routes.speisekarte_routes import speisekarte_blueprint
 from api_routes.test_routes import test_blueprint
 from api_routes.user_routes import user_blueprint
 from dialogflowFolder.dialogflow_session import DialogflowSession
-from orderProcessing.order_builder import buildFullOrder
-from orderProcessing.pizza_processor import parsePizzaOrder, convertMultiplePizzaOrderToText
-from orderProcessing.drink_processor import structureDrink
-from api_config.api_config import app, socketio, menuHandler, dialogflowConnectionManager
+from intentProcessing.core_intent_processing import fulfillment_processing
+from api_config.api_config import app, socketio
+from api_config.object_factory import dialogflowConnectionManager
 from utils import instagram_utils
 from utils.core_utils import extractMetaDataFromTwilioCall, appendMultipleMessagesToFirebase
 from utils.cors_blocker import get_anti_cors_headers
-from utils.helper_utils import extractDictFromBytesRequest, sendWebhookCallback
+from utils.helper_utils import extractDictFromBytesRequest
 from utils.instagram_utils import extractMetadataFromInstagramDict
 
 app.register_blueprint(conversation_blueprint, url_prefix='/conversations')
@@ -50,37 +49,8 @@ def sandbox():
 @app.route("/webhookForIntent", methods=['POST'])
 def send():
     try:
-        print("FULFILLMENT ENDPOINT!")
         requestContent = request.get_json()
-        print(requestContent)
-        outputContexts = requestContent['queryResult']['outputContexts']
-        menuHandler.params["baseContextName"] = outputContexts[0]['name'].rsplit('/contexts/', 1)[0]
-        queryText = requestContent['queryResult']['queryText']
-        userMessage = [item["name"] for item in queryText] if isinstance(queryText, list) else queryText
-        currentIntent = requestContent['queryResult']['intent']['displayName']
-        logging.info(f"current Intent: {currentIntent}")
-        params = requestContent['queryResult']['parameters']
-        if currentIntent == "Order.drink":
-            return __handleOrderDrinkIntent(params, userMessage)
-        elif currentIntent == "Order.pizza - drink no":
-            params = menuHandler.params
-            fullOrder = buildFullOrder(params)
-            totalPriceDict = menuHandler.analyzeTotalPrice(fullOrder)
-            finalMessage = totalPriceDict["finalMessage"]
-
-            return sendWebhookCallback(finalMessage)
-        elif currentIntent == "Order.pizza - drink yes":
-            drinkString = menuHandler.getDrinksString()
-            return sendWebhookCallback(drinkString)
-        elif currentIntent == "Order.pizza":
-            return __handleOrderPizzaIntent(queryText, requestContent)
-        elif currentIntent == "Welcome":
-            pizzaMenu = menuHandler.getPizzasString()
-            welcomeString = f"Olá! Bem-vindo à Pizza do Bill! Funcionamos das 17h às 22h.\n {pizzaMenu}." \
-                            f" \nQual pizza você vai querer?"
-            startContext = __structureNewDialogflowContext(contextName="Start", lifespan=1)
-            return sendWebhookCallback(botMessage=welcomeString, nextContext=startContext)
-        return sendWebhookCallback(botMessage="a")
+        return fulfillment_processing(requestContent)
     except Exception as e:
         print(e)
         logging.error(e)
@@ -126,36 +96,6 @@ def erase_session():
     ip_address = request.remote_addr
     dialogflowConnectionManager.erase_session(ip_address)
     return "Session erased", 200
-
-
-def __structureNewDialogflowContext(contextName: str, lifespan: int = 5):
-    baseContextName = menuHandler.params["baseContextName"]
-    newContext = {
-        "name": f"{baseContextName}/contexts/{contextName}",
-        "lifespanCount": lifespan,
-        "parameters": {}
-    }
-    return [newContext]
-
-
-def __handleOrderPizzaIntent(queryText: str, requestContent: dict) -> Response:
-    parameters = requestContent['queryResult']['parameters']
-    fullPizza = parsePizzaOrder(userMessage=queryText, parameters=parameters)
-    fullPizzaText = convertMultiplePizzaOrderToText(fullPizza)
-    menuHandler.params["pizzas"].append(fullPizza)
-    followUpContext = __structureNewDialogflowContext("OrderPizza-followup")
-    return sendWebhookCallback(botMessage=f"Maravilha! {fullPizzaText.capitalize()} então. "
-                                          f"Você vai querer alguma bebida?", nextContext=followUpContext)
-
-
-def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
-    drink = structureDrink(params, userMessage)
-    menuHandler.params["drinks"].append(drink)
-    parameters = menuHandler.params
-    fullOrder = buildFullOrder(parameters)
-    totalPriceDict = menuHandler.analyzeTotalPrice(fullOrder)
-    finalMessage = totalPriceDict["finalMessage"]
-    return sendWebhookCallback(finalMessage)
 
 
 @app.route("/instagram", methods=['GET', 'POST'])

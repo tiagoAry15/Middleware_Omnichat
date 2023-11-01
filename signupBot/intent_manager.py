@@ -3,9 +3,9 @@ from colorama import Fore, Style
 from utils.decorators.singleton_decorator import singleton
 from firebaseFolder.firebase_user import FirebaseUser
 from firebaseFolder.firebase_connection import FirebaseConnection
-from intentManipulation.intentTypes.intent_entry_text import EntryTextIntent
-from intentManipulation.intentTypes.intent_fallback import InstantFallbackIntent
-from intentManipulation.intentTypes.replies import Replies
+from signupBot.intentTypes.intent_entry_text import EntryTextIntent
+from signupBot.intentTypes.intent_fallback import InstantFallbackIntent
+from signupBot.intentTypes.replies import Replies
 
 
 class IntentNotFoundException(Exception):

@@ -4,8 +4,8 @@ from fulfillment.ngrokGetter import get_ngrok_url, get_cloud_run_url
 
 
 def fulfillmentPipeline():
-    url = get_cloud_run_url()
-    # url = get_ngrok_url()
+    # url = get_cloud_run_url()
+    url = get_ngrok_url()
     response = setDialogflowFulfillment(newUrl=f"{url}/webhookForIntent")
     # setNewInstagramWebhookCallbackURL(newUrl=f"{url}/instagram")
     return

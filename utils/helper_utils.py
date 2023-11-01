@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from flask import request, make_response, Response
 from urllib.parse import parse_qs
 from twilio.twiml.messaging_response import MessagingResponse
-from api_config.api_config import fcm, fu
+from api_config.object_factory import fu, fcm
 
 
 def __prepareOutputResponse(myResult) -> Response:

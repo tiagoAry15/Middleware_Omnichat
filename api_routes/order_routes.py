@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 
-from api_config.api_config import fo
+from api_config.object_factory import fo
 
 order_blueprint = Blueprint('orders', __name__)
 

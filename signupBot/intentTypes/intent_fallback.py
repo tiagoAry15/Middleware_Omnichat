@@ -1,5 +1,5 @@
-from intentManipulation.intentTypes.base_intent import BaseIntent
-from intentManipulation.intentTypes.replies import Replies, Types
+from signupBot.intentTypes.base_intent import BaseIntent
+from signupBot.intentTypes.replies import Replies, Types
 
 
 class InstantFallbackIntent(BaseIntent):

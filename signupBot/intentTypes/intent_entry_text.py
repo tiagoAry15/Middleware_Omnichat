@@ -1,8 +1,8 @@
 import re
 from datetime import datetime
 
-from intentManipulation.intentTypes.base_intent import BaseIntent
-from intentManipulation.intentTypes.replies import Replies, Types
+from signupBot.intentTypes.base_intent import BaseIntent
+from signupBot.intentTypes.replies import Replies, Types
 
 # Constants for regular expressions
 EMAIL_REGEX = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'

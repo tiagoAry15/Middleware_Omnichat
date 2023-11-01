@@ -3,7 +3,8 @@ import json
 
 from flask import Blueprint, jsonify, request
 
-from api_config.api_config import fcm, socketio
+from api_config.api_config import socketio
+from api_config.object_factory import fcm
 from data.message_converter import get_dialogflow_message_example, get_user_message_example
 from socketEmissions.socket_emissor import pulseEmit
 from utils.helper_utils import __getUserByWhatsappNumber, sendWebhookCallback

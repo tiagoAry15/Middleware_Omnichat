@@ -2,7 +2,8 @@
 import json
 
 from flask import Blueprint, jsonify, request
-from api_config.api_config import fcm, twilioClient, twilio_phone_number
+from api_config.api_config import twilioClient, twilio_phone_number
+from api_config.object_factory import fcm
 from utils.helper_utils import __getUserByWhatsappNumber
 
 conversation_blueprint = Blueprint('conversation', __name__)

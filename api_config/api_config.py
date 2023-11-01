@@ -6,32 +6,12 @@ from flask import Flask
 from flask_cors import CORS
 from flask_socketio import SocketIO as FlaskSocketIO
 
-from data.speisekarte_loader import SpeisekarteObject
-from dialogflowFolder.dialogflow_session import DialogflowSession
-from data.menu_item_handler import MenuItemHandler
-from dialogflowFolder.session_manager import SessionManager
-from firebaseFolder.firebase_connection import FirebaseConnection
-from firebaseFolder.firebase_conversation import FirebaseConversation
-from firebaseFolder.firebase_order import FirebaseOrder
-from firebaseFolder.firebase_speisekarte import FirebaseSpeisekarte
-from firebaseFolder.firebase_user import FirebaseUser
-from utils.insomnia_examples import MessageConverter
-
 load_dotenv()
 twilio_account_ssid = os.environ["TWILIO_ACCOUNT_SID"]
 twilio_auth_token = os.environ["TWILIO_AUTH_TOKEN"]
 twilio_phone_number = f'whatsapp:{os.environ["TWILIO_PHONE_NUMBER"]}'
 twilioClient = Client(twilio_account_ssid, twilio_auth_token)
 
-menuHandler = MenuItemHandler()
-dialogflowConnectionManager = SessionManager()
-speisekarteInstance = SpeisekarteObject()
-fc = FirebaseConnection()
-fu = FirebaseUser(fc)
-fcm = FirebaseConversation(fc)
-fs = FirebaseSpeisekarte(fc)
-fo = FirebaseOrder(fc)
-mc = MessageConverter()
 app = Flask(__name__)
 
 originList = ["http://localhost:5173", "https://dbc1-187-18-142-212.ngrok-free.app"]

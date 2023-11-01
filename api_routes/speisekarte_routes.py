@@ -1,6 +1,6 @@
 from flask import Blueprint, request
 
-from api_config.api_config import fs
+from api_config.object_factory import fs
 
 speisekarte_blueprint = Blueprint('speisekarte', __name__)
 

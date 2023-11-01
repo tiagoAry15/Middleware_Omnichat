@@ -1,4 +1,4 @@
-from intentManipulation.intentTypes.replies import Replies
+from signupBot.intentTypes.replies import Replies
 
 
 class BaseIntent:

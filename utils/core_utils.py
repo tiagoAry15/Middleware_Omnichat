@@ -3,8 +3,8 @@ import json
 import logging
 import requests
 from firebaseFolder.firebase_conversation import FirebaseConversation
-from intentManipulation.intent_manager import IntentManager
-from api_config.api_config import fcm
+from signupBot.intent_manager import IntentManager
+from api_config.object_factory import fcm
 from utils.helper_utils import sendTwilioResponse, extractTextFromDialogflowResponse
 from utils.message_utils import convert_dialogflow_message
 
