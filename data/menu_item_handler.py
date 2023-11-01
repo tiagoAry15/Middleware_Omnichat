@@ -14,7 +14,7 @@ class MenuItemHandler:
     def getPizzasString(self):
         return createMenuString(menu=self.speisekarte["Pizzas"], category="pizzas")
 
-    def analyzeTotalPrice(self, structuredOrder: dict):
+    def analyzeTotalPriceWithUpdatedPrices(self, structuredOrder: dict):
         return analyzeTotalPrice(structuredOrder=structuredOrder, menu=self.speisekarte)
 
 
