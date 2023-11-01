@@ -2,9 +2,10 @@ import requests
 
 
 def register_user_on_firebase(user_details: dict):
-    url = 'https://us-central1-pizzadobill-rpin.cloudfunctions.net/user_handler/read'
+    url = 'https://us-central1-pizzadobill-rpin.cloudfunctions.net/user_handler/create'
     body = user_details
-    return requests.post(url=url, json=body)
+    response = requests.post(url=url, json=body)
+    return response
 
 
 def fetch_all_users_from_cloud_function():

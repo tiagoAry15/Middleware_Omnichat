@@ -1,3 +1,5 @@
+import re
+
 from colorama import Fore, Style
 
 from cloudFunctionsCalls.cloud_functions_calls import register_user_on_firebase
@@ -7,6 +9,7 @@ from firebaseFolder.firebase_connection import FirebaseConnection
 from signupBot.intentTypes.intent_entry_text import EntryTextIntent
 from signupBot.intentTypes.intent_fallback import InstantFallbackIntent
 from signupBot.intentTypes.replies import Replies
+from global_object.global_object_utils import append_user_to_global_object
 
 
 class IntentNotFoundException(Exception):
@@ -127,7 +130,10 @@ class IntentManager:
 
     def registerWhatsapp(self, userDetails: dict):
         self.existingUser = True
-        return register_user_on_firebase(userDetails)
+        result = register_user_on_firebase(userDetails)
+        unique_id = re.search(r'UniqueID = (\S+)', result.text).group(1)
+        append_user_to_global_object(user_data=userDetails, unique_id=unique_id)
+        return result
 
     def __checkUserExistence(self):
         if not self.isUserChecked:

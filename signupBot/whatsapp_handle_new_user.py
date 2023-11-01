@@ -7,13 +7,17 @@ def handleNewWhatsappUser(phoneNumber: str, receivedMessage: str):
     return im.twilioSingleStep(receivedMessage)
 
 
-def __main():
+def user_creation_test():
     phoneNumber = "+558597648593"
     msgPool = ["Oi", "Ednaldo Pereira", "Rua da Paz 4987", "14568598577"]
     for msg in msgPool:
         botResponse = handleNewWhatsappUser(phoneNumber, msg)
         print(botResponse)
     return
+
+
+def __main():
+    user_creation_test()
 
 
 if __name__ == "__main__":

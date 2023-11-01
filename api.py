@@ -15,6 +15,7 @@ from dialogflowFolder.dialogflow_session import DialogflowSession
 from intentProcessing.core_intent_processing import fulfillment_processing
 from api_config.api_config import app, socketio
 from api_config.object_factory import dialogflowConnectionManager
+from signupBot.whatsapp_handle_new_user import user_creation_test
 from signupBot.whatsapp_user_manager import check_user_registration_from_metadata
 from utils import instagram_utils
 from utils.core_utils import extractMetaDataFromTwilioCall, appendMultipleMessagesToFirebase
@@ -28,6 +29,8 @@ app.register_blueprint(user_blueprint, url_prefix='/users')
 app.register_blueprint(test_blueprint, url_prefix='/test')
 app.register_blueprint(speisekarte_blueprint, url_prefix='/speisekarte')
 app.register_blueprint(order_blueprint, url_prefix='/orders')
+
+user_creation_test()
 
 
 @app.route("/twilioSandbox", methods=['POST'])
