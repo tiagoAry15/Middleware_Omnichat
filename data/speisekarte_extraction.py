@@ -78,7 +78,7 @@ def __getItemDetails(item_type: str, desired_items: List[dict], price_dict: dict
     return order_items
 
 
-def analyzeTotalPrice(structuredOrder: dict, menu: dict):
+def getTotalPrice(structuredOrder: dict, menu: dict):
     # Convert menu lists to dictionaries for easier access
     dictDrinkLabeledPrices = {item["nome"]: item["preço"] for item in menu["Bebidas"]}
     dictPizzaLabeledPrices = {item["nome"]: item["preço"] for item in menu["Pizzas"]}
@@ -93,15 +93,18 @@ def analyzeTotalPrice(structuredOrder: dict, menu: dict):
 
     # Calculate the total price
     totalPrice = sum(item["price"] for item in orderItems)
-    orderTags = [item["tag"] for item in orderItems]
 
+    return totalPrice, orderItems
+
+
+def generateOrderFinalMessage(totalPrice: float, orderItems: list) -> str:
+    orderTags = [item["tag"] for item in orderItems]
     mergedItems = '\n- '.join(orderTags)
 
-    # Construct the final message
     finalMessage = f"Vai ser: \n- {mergedItems} \n- Total → [R${totalPrice:.2f}]\n" \
                    f" Qual vai ser a forma de pagamento? (pix/cartão/dinheiro)"
 
-    return {"totalPrice": totalPrice, "finalMessage": finalMessage}
+    return finalMessage
 
 
 def __main():
@@ -119,7 +122,7 @@ def __main():
                                         {'item': 'Pepperoni', 'quantity': 0.5}]}
     structuredOrderExample = {'Bebida': [{'guaraná': 2.0}, {'suco de laranja': 1.0}],
                               'Pizza': [{'calabresa': 0.5, 'margherita': 0.5}, {'frango': 3.0}, {'calabresa': 2.0}]}
-    output = analyzeTotalPrice(structuredOrderExample, speisekarte)
+    # output = analyzeTotalPrice(structuredOrderExample, speisekarte)
     # finalMessage = output["finalMessage"]
     # price = output["totalPrice"]
     # item_type = "Pizza de"
@@ -127,7 +130,7 @@ def __main():
     # price_dict = {'Calabresa': 17.5, 'Frango': 18.9, 'Margherita': 15.5, 'Pepperoni': 19.99, 'Portuguesa': 13.99,
     #               'Quatro Queijos': 16.9}
     # return __getItemDetails(item_type, desired_items, price_dict)
-    print(output["finalMessage"])
+    # print(output["finalMessage"])
     return
 
 

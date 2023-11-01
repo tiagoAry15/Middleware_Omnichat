@@ -26,7 +26,7 @@ def fulfillment_processing(requestContent):
     elif currentIntent == "Order.pizza - drink no":
         params = menuHandler.params
         fullOrder = buildFullOrder(params)
-        totalPriceDict = menuHandler.analyzeTotalPriceWithUpdatedPrices(fullOrder)
+        totalPriceDict = menuHandler.analyzeTotalPriceWithMenuPrices(fullOrder)
         finalMessage = totalPriceDict["finalMessage"]
         return sendWebhookCallback(finalMessage)
     elif currentIntent == "Order.pizza - drink yes":
@@ -58,6 +58,6 @@ def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
     menuHandler.params["drinks"].append(drink)
     parameters = menuHandler.params
     fullOrder = buildFullOrder(parameters)
-    totalPriceDict = menuHandler.analyzeTotalPriceWithUpdatedPrices(fullOrder)
+    totalPriceDict = menuHandler.analyzeTotalPriceWithMenuPrices(fullOrder)
     finalMessage = totalPriceDict["finalMessage"]
     return sendWebhookCallback(finalMessage)
