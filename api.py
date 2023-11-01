@@ -15,8 +15,8 @@ from dialogflowFolder.dialogflow_session import DialogflowSession
 from intentProcessing.core_intent_processing import fulfillment_processing
 from api_config.api_config import app, socketio
 from api_config.object_factory import dialogflowConnectionManager
-from signupBot.whatsapp_handle_new_user import user_creation_test
-from signupBot.whatsapp_user_manager import check_user_registration_from_metadata
+from signupBot.whatsapp_handle_new_user import user_creation_test, handleNewWhatsappUser
+from signupBot.whatsapp_user_manager import check_existing_user_from_metadata
 from utils import instagram_utils
 from utils.core_utils import extractMetaDataFromTwilioCall, appendMultipleMessagesToFirebase
 from utils.cors_blocker import get_anti_cors_headers
@@ -30,26 +30,25 @@ app.register_blueprint(test_blueprint, url_prefix='/test')
 app.register_blueprint(speisekarte_blueprint, url_prefix='/speisekarte')
 app.register_blueprint(order_blueprint, url_prefix='/orders')
 
-user_creation_test()
-
 
 @app.route("/twilioSandbox", methods=['POST'])
 def sandbox():
-    try:
-        data: dict = extractDictFromBytesRequest()
-        print("TWILIO SANDBOX ENDPOINT!")
-        metaData = extractMetaDataFromTwilioCall(data)
-        existing_user = check_user_registration_from_metadata(metaData)
-        ip_address = request.remote_addr
-        userMessage = str(data["Body"][0])
-        botResponse = _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
-        # appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
-        socketio.start_background_task(target=emitMessage, message=botResponse)
-        return botResponse
-    except Exception as e:
-        print(e)
-        logging.error(e)
-        return f'Erro ao receber a mensagem, por favor tente novamente em instantes! {e}'
+    data: dict = extractDictFromBytesRequest()
+    print("TWILIO SANDBOX ENDPOINT!")
+    metaData = extractMetaDataFromTwilioCall(data)
+    existing_user = check_existing_user_from_metadata(metaData)
+    if not existing_user:
+        return handleNewWhatsappUser(metaData)
+    ip_address = request.remote_addr
+    userMessage = str(data["Body"][0])
+    botResponse = _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
+    # appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
+    socketio.start_background_task(target=emitMessage, message=botResponse)
+    return botResponse
+    # except Exception as e:
+    #     print(e)
+    #     logging.error(e)
+    #     return f'Erro ao receber a mensagem, por favor tente novamente em instantes! {e}'
 
 
 @app.route("/webhookForIntent", methods=['POST'])

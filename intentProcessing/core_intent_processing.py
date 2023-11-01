@@ -3,6 +3,7 @@ import logging
 from flask import request, Response
 
 from api_config.object_factory import menuHandler
+from intentProcessing.order_factory import format_order_data
 from orderProcessing.drink_processor import structureDrink
 from orderProcessing.order_builder import buildFullOrder
 from orderProcessing.pizza_processor import parsePizzaOrder, convertMultiplePizzaOrderToText
@@ -58,6 +59,9 @@ def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
     menuHandler.params["drinks"].append(drink)
     parameters = menuHandler.params
     fullOrder = buildFullOrder(parameters)
-    totalPriceDict = menuHandler.analyzeTotalPriceWithMenuPrices(fullOrder)
-    finalMessage = totalPriceDict["finalMessage"]
+    orderInfo = menuHandler.analyzeTotalPriceWithMenuPrices(fullOrder)
+    finalMessage = orderInfo["finalMessage"]
+    orderItems = orderInfo["orderItems"]
+    totalPrice = orderInfo["totalPrice"]
+    orderObject = format_order_data(orderItems, totalPrice)
     return sendWebhookCallback(finalMessage)

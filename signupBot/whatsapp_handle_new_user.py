@@ -1,10 +1,12 @@
 from signupBot.intent_manager import IntentManager
 
 
-def handleNewWhatsappUser(phoneNumber: str, receivedMessage: str):
+def handleNewWhatsappUser(metaData: dict):
+    phoneNumber = metaData["phoneNumber"]
+    userMessage = metaData["userMessage"]
     im = IntentManager()
     im.extractedParameters["phoneNumber"] = phoneNumber
-    return im.twilioSingleStep(receivedMessage)
+    return im.twilioSingleStep(userMessage)
 
 
 def user_creation_test():
