@@ -15,11 +15,13 @@ from dialogflowFolder.dialogflow_session import DialogflowSession
 from intentProcessing.core_intent_processing import fulfillment_processing
 from api_config.api_config import app, socketio
 from api_config.object_factory import dialogflowConnectionManager
+from signupBot.whatsapp_user_manager import check_user_registration_from_metadata
 from utils import instagram_utils
 from utils.core_utils import extractMetaDataFromTwilioCall, appendMultipleMessagesToFirebase
 from utils.cors_blocker import get_anti_cors_headers
 from utils.helper_utils import extractDictFromBytesRequest
 from utils.instagram_utils import extractMetadataFromInstagramDict
+from flask import g as global_object
 
 app.register_blueprint(conversation_blueprint, url_prefix='/conversations')
 app.register_blueprint(user_blueprint, url_prefix='/users')
@@ -34,6 +36,7 @@ def sandbox():
         data: dict = extractDictFromBytesRequest()
         print("TWILIO SANDBOX ENDPOINT!")
         metaData = extractMetaDataFromTwilioCall(data)
+        existing_user = check_user_registration_from_metadata(metaData)
         ip_address = request.remote_addr
         userMessage = str(data["Body"][0])
         botResponse = _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)

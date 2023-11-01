@@ -1,5 +1,6 @@
 from colorama import Fore, Style
 
+from cloudFunctionsCalls.cloud_functions_calls import register_user_on_firebase
 from utils.decorators.singleton_decorator import singleton
 from firebaseFolder.firebase_user import FirebaseUser
 from firebaseFolder.firebase_connection import FirebaseConnection
@@ -31,7 +32,7 @@ class IntentManager:
         self.intents = getIntentPot()
         self.currentIntent = self.intents[0]
         self.extractedParameters = {}
-        self.intentHistory = []  # Will store tuples (intent, messageContent)
+        self.intentHistory = []
         self.userHistory = []
         self.botHistory = []
         self.signupDetails = {}
@@ -126,7 +127,7 @@ class IntentManager:
 
     def registerWhatsapp(self, userDetails: dict):
         self.existingUser = True
-        return self.fu.createUser(userDetails)
+        return register_user_on_firebase(userDetails)
 
     def __checkUserExistence(self):
         if not self.isUserChecked:
