@@ -90,8 +90,9 @@ jobs:
           --network default \
           --region us-central1 \
           --range "10.8.0.0/28"
-    -name: create service account identity
-      - run: |
+
+    - name: create service account identity
+      run: |
              gcloud iam service-accounts create chat-identity
              gcloud projects add-iam-policy-binding ${{ env.PROJECT_ID }} \
              --member=serviceAccount:chat-identity@${{ env.PROJECT_ID }}.iam.gserviceaccount.com \
