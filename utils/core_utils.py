@@ -99,11 +99,11 @@ def makeHttpCallToAppendMultipleMessagesToFirebaseServerlessFunction(userMessage
 
 
 def extractMetaDataFromTwilioCall(twilioDict: dict) -> dict:
-    sender = twilioDict["ProfileName"][0]
+    sender = twilioDict["ProfileName"]
     rawFrom = twilioDict["From"]
-    _from = rawFrom[0].split(':')[0] if rawFrom and ':' in rawFrom[0] else None
-    phoneNumber = twilioDict["WaId"][0]
-    userMessage = twilioDict["Body"][0]
+    _from = rawFrom.split(':') if rawFrom and ':' in rawFrom else None
+    phoneNumber = twilioDict["WaId"]
+    userMessage = twilioDict["Body"]
     return {"sender": sender, "from": _from, "phoneNumber": phoneNumber, "userMessage": userMessage}
 
 

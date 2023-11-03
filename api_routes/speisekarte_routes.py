@@ -1,47 +1,52 @@
-from flask import Blueprint, request
-
+# speisekarte.py
+from starlette.responses import JSONResponse
+from starlette.routing import Route
+from starlette.endpoints import HTTPEndpoint
 from api_config.object_factory import fs
+from aiohttp import web
 
-speisekarte_blueprint = Blueprint('speisekarte', __name__)
+# Funções assíncronas para lidar com as requisições
+
+speisekarte_app = web.Application()
+speisekarte_routes = web.RouteTableDef()
 
 
-@speisekarte_blueprint.route("/create_menu", methods=['POST'])
-def create_menu():
-    if request.method != "POST":
-        return "This endpoint only accepts POST requests", 405
-    body_dict = request.get_json()
+@speisekarte_routes.post('/create_menu')
+async def create_menu(request):
+    body_dict = await request.json()
     result = fs.createSpeisekarte(speisekarte_data=body_dict)
     if result:
-        return "Speisekarte created successfully", 200
-    return "Speisekarte already exists", 200
+        return web.json_response({"message": "Speisekarte created successfully"}, status=200)
+    return web.json_response({"message": "Speisekarte already exists"}, status=200)
 
 
-@speisekarte_blueprint.route("/get_menu_by_author/<author>", methods=['GET'])
-def get_menu_by_author(author):
-    if request.method != "GET":
-        return "This endpoint only accepts GET requests", 405
+@speisekarte_routes.get('/get_menu_by_author/{author}')
+async def get_menu_by_author(request):
+    author = request.match_info['author']
     speisekarte_data = fs.read_speisekarte(author=author)
     if not speisekarte_data:
-        return "Speisekarte not found", 404
-    return speisekarte_data, 200
+        return web.json_response({"message": "Speisekarte not found"}, status=404)
+    return web.json_response(speisekarte_data, status=200)
 
 
-@speisekarte_blueprint.route("/update_menu_by_author/<author>", methods=['PUT'])
-def update_menu_by_author(author):
-    if request.method != "PUT":
-        return "This endpoint only accepts PUT requests", 405
-    body_dict = request.get_json()
+@speisekarte_routes.put('/update_menu_by_author/{author}')
+async def update_menu_by_author(request):
+    author = request.match_info['author']
+    body_dict = await request.json()
     result = fs.update_speisekarte(author=author, newData=body_dict)
     if not result:
-        return "Speisekarte not found", 404
-    return "Speisekarte updated successfully", 200
+        return web.json_response({"message": "Speisekarte not found"}, status=404)
+    return web.json_response({"message": "Speisekarte updated successfully"}, status=200)
 
 
-@speisekarte_blueprint.route("/delete_menu_by_author/<author>", methods=['DELETE'])
-def delete_menu_by_author(author):
-    if request.method != "DELETE":
-        return "This endpoint only accepts DELETE requests", 405
+@speisekarte_routes.delete('/delete_menu_by_author/{author}')
+async def delete_menu_by_author(request):
+    author = request.match_info['author']
     result = fs.delete_speisekarte(author=author)
     if not result:
-        return "Speisekarte not found", 404
-    return "Speisekarte deleted successfully", 200
+        return web.json_response({"message": "Speisekarte not found"}, status=404)
+    return web.json_response({"message": "Speisekarte deleted successfully"}, status=200)
+
+
+# Defina as rotas para a subaplicação
+speisekarte_app.router.add_routes(speisekarte_routes)

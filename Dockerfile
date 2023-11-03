@@ -1,5 +1,5 @@
 # Usa a imagem base oficial de Python 3.11
-FROM python:3.11-slim
+FROM python:3.9-slim
 
 # Define o diretório de trabalho no contêiner
 WORKDIR /app
@@ -18,4 +18,5 @@ ENV FLASK_ENV=production
 EXPOSE 3000 8089 8080
 
 # Define o comando padrão para ser executado ao iniciar o contâiner com gunicorn e Locust
-CMD ["sh", "-c", "gunicorn -k eventlet -w 1 -b 0.0.0.0:3000 api:app"]
+CMD ["python", "app.py"]
+

@@ -11,7 +11,7 @@ from utils.dialogflow_utils import structureNewDialogflowContext
 from utils.helper_utils import sendWebhookCallback
 
 
-def fulfillment_processing(requestContent):
+async def fulfillment_processing(requestContent):
     print("FULFILLMENT ENDPOINT!")
     print(requestContent)
     outputContexts = requestContent['queryResult']['outputContexts']

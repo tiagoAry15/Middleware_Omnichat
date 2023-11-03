@@ -27,7 +27,7 @@ def load_cache_json(filename: str):
     filepath = Path(CACHE_FOLDER, filename)
     try:
         with open(filepath, 'r', encoding='utf-8') as file:
-            speisekarte_data = json.load(file)
+            speisekarte_data = json.load(file)['speisekarte']
         return speisekarte_data
     except FileNotFoundError:
         print(f"Error: The file '{filename}' was not found.")

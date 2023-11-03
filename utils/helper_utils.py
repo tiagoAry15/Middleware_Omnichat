@@ -62,8 +62,8 @@ def getDialogFlowAuth():
     print(base64_auth_string)
 
 
-def extractDictFromBytesRequest() -> dict:
-    payload = request.get_data()
+def extractDictFromBytesRequest(currentRequest) -> dict:
+    payload = currentRequest.post()
     stringData = payload.decode('utf-8')
     return parse_qs(stringData)
 

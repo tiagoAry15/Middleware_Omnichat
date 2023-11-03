@@ -18,8 +18,9 @@ env:
   SDK_CLIENT_EMAIL: ${{ secrets.SDK_CLIENT_EMAIL }}
   SDK_CLIENT_ID: ${{ secrets.SDK_CLIENT_ID }}
   SDK_CLIENT_X509_CERT_URL: ${{ secrets.SDK_CLIENT_X509_CERT_URL }}
+  SDK_UNIVERSE_DOMAIN: ${{ secrets.SDK_UNIVERSE_DOMAIN }}
   FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
-  IMAGE_NAME: flaskomnichat
+  IMAGE_NAME: aiohttp_omnichat
 
 jobs:
   setup-build-deploy:
@@ -72,6 +73,7 @@ jobs:
           "SDK_CLIENT_EMAIL=${SDK_CLIENT_EMAIL}"
           "SDK_CLIENT_ID=${SDK_CLIENT_ID}"
           "SDK_CLIENT_X509_CERT_URL=${SDK_CLIENT_X509_CERT_URL}"
+          "SDK_UNIVERSE_DOMAIN=${SDK_UNIVERSE_DOMAIN}"
           "FIREBASE_DATABASE_URL=${FIREBASE_DATABASE_URL}"
         )
 
@@ -82,10 +84,27 @@ jobs:
         echo "$UPDATE_ENV_VARS_ARG" # Print the contents for inspection
         echo "UPDATE_ENV_VARS_ARG=$UPDATE_ENV_VARS_ARG" >> $GITHUB_ENV
 
+    - name: config VPC serverless Access connector
+      run: |
+        gcloud compute networks vpc-access connectors create serverless-connector \
+          --network default \
+          --region us-central1 \
+          --range "10.8.0.0/28"
+    -name: create service account identity
+      - run: |
+             gcloud iam service-accounts create chat-identity
+             gcloud projects add-iam-policy-binding ${{ env.PROJECT_ID }} \
+             --member=serviceAccount:chat-identity@${{ env.PROJECT_ID }}.iam.gserviceaccount.com \
+             --role=roles/serviceusage.serviceUsageConsumer
+
     - name: Deploy to Cloud Run
       run: |
         gcloud run deploy ${{ env.IMAGE_NAME }} \
           --image gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }} \
+          --vpc-connector serverless-connector \
           --platform managed \
+          --allow-unauthenticated \
+          --timeout 3600 \
+          --service-account chat-identity \
           --region us-central1 \
           --set-env-vars "$UPDATE_ENV_VARS_ARG"
