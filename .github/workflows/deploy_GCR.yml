@@ -49,6 +49,7 @@ jobs:
       with:
         project_id: ${{ env.PROJECT_ID }}
 
+
     # Adicionando a autenticação com Workload Identity Provider
     - id: 'auth'
       name: 'Authenticate to Google Cloud'
