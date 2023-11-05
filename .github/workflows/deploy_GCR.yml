@@ -23,7 +23,7 @@ env:
   INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
   INSTAGRAM_EMAIL: ${{ secrets.INSTAGRAM_EMAIL }}
   INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
-  IMAGE_NAME: aiohttp_omnichat
+  IMAGE_NAME: aiohttp-omnichat
 
 jobs:
   setup-build-deploy:
