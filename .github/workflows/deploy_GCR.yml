@@ -98,6 +98,9 @@ jobs:
         echo "$UPDATE_ENV_VARS_ARG" # Print the contents for inspection
         echo "UPDATE_ENV_VARS_ARG=$UPDATE_ENV_VARS_ARG" >> $GITHUB_ENV
 
+
+  
+
     - name: Deploy to Cloud Run
       run: |
         gcloud run deploy ${{ env.IMAGE_NAME }} \
