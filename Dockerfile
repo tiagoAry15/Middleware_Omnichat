@@ -18,5 +18,6 @@ ENV FLASK_ENV=production
 EXPOSE 8080
 
 # Define o comando padrão para ser executado ao iniciar o contâiner com gunicorn e Locust
-CMD ["python", "app.py"]
+ENTRYPOINT ["python"]
+CMD ["app.py"]
 
