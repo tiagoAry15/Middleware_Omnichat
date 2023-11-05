@@ -34,7 +34,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Print Credentials for Debugging
+    - name: Print Credentials for Debugging except sa key
       run: |
         echo "$GCP_SA_KEY" | jq '. | del(.private_key)'
 
