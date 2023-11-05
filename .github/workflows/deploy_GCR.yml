@@ -105,7 +105,7 @@ jobs:
           --region us-central1 \
           --range "10.8.0.0/28"
 
-    - name: create service account identity
+    - name: create service account identity with no cache yet
       run: |
              gcloud iam service-accounts create chat-identity
              gcloud projects add-iam-policy-binding ${{ env.PROJECT_ID }} \
