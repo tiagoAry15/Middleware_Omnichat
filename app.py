@@ -1,3 +1,5 @@
+import os
+
 import socketio
 import uvicorn
 from starlette.applications import Starlette
@@ -155,4 +157,5 @@ for resource in app.router._resources:
              {'*': aiohttp_cors.ResourceOptions(allow_credentials=True, expose_headers="*", allow_headers="*")})
 
 if __name__ == '__main__':
-    web.run_app(app, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)), shutdown_timeout=180)
+    port = int(os.environ.get('PORT', 8080))
+    web.run_app(app, host='0.0.0.0', port=port, shutdown_timeout=180)

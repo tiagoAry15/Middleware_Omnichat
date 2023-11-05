@@ -108,7 +108,7 @@ jobs:
           --vpc-connector serverless-connector \
           --platform managed \
           --allow-unauthenticated \
-          --timeout 3600 \
+          --timeout 10000 \
           --service-account chat-identity \
           --region us-central1 \
           --set-env-vars "$UPDATE_ENV_VARS_ARG"
