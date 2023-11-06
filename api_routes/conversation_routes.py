@@ -93,7 +93,7 @@ def send_message_to_user(user_number):
         msg = twilioClient.messages.create(
             body=message,
             from_=twilio_phone_number,
-            to=f'whatsapp:{user_number}'
+            to=f'whatsapp:+{user_number}'
         )
         return jsonify(response_message), 200
     except Exception as e:
