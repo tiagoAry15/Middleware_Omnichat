@@ -34,7 +34,7 @@ def update_menu_by_author(author):
     result = fs.update_speisekarte(author=author, newData=body_dict)
     if not result:
         return "Speisekarte not found", 404
-    return "Speisekarte updated successfully", 200
+    return result, 200
 
 
 @speisekarte_blueprint.route("/delete_menu_by_author/<author>", methods=['DELETE'])
