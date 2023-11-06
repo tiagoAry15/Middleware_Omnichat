@@ -20,6 +20,7 @@ class FirebaseSpeisekarte(FirebaseWrapper):
         self.firebaseConnection.changeDatabaseConnection("speisekarte")
 
     def _refreshSpeisekarteCache(self) -> bool:
+        self.firebaseConnection.changeDatabaseConnection("speisekarte")
         all_data = self.firebaseConnection.readData()
         if all_data is None:
             template = get_current_speisekarte()
