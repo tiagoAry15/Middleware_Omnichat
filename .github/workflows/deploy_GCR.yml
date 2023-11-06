@@ -89,3 +89,4 @@ jobs:
           --platform managed \
           --region us-central1 \
           --set-env-vars "$UPDATE_ENV_VARS_ARG"
+          --labels=env=production,version=1.0.0
