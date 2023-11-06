@@ -20,6 +20,7 @@ class FirebaseSpeisekarte(FirebaseWrapper):
         self.firebaseConnection.changeDatabaseConnection("speisekarte")
 
     def _refreshSpeisekarteCache(self) -> bool:
+        self.firebaseConnection.changeDatabaseConnection("speisekarte")
         all_data = self.firebaseConnection.readData()
         if all_data is None:
             template = get_current_speisekarte()
@@ -85,9 +86,10 @@ class FirebaseSpeisekarte(FirebaseWrapper):
         speisekarte = self.data[firebase_unique_id]
         for key, value in newData.items():
             speisekarte[key] = value
+        speisekarte['Versão'] = datetime.datetime.now().strftime("%d-%b-%Y")
         self.firebaseConnection.overWriteData(data=speisekarte)
         self._save_cache()
-        return True
+        return speisekarte
 
     def delete_speisekarte(self, author: str):
         speisekarte_unique_id = self._get_firebase_unique_id_by_author(author=author)
