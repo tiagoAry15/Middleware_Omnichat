@@ -1,10 +1,6 @@
 import os
 
 import socketio
-import uvicorn
-from starlette.applications import Starlette
-from starlette.responses import JSONResponse
-from starlette.routing import Route
 import logging
 from api_config.object_factory import dialogflowConnectionManager
 from api_routes.speisekarte_routes import speisekarte_app
@@ -61,7 +57,7 @@ async def post_endpoint(request):
     data = await request.json()
 
     await sio.emit('notification', {'message': 'Received POST data'})
-    return JSONResponse({'message': 'Data received', 'data': data})
+    return web.json_response({'message': 'Data received', 'data': data})
 
 
 async def erase_session(request):
@@ -92,11 +88,11 @@ async def instagram(request):
                 userMessage = str(properMessage["Body"][0])
                 botResponse = _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
                 appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
-            return JSONResponse({'status': 'success', 'response': 'Message sent'}), 200
+            return web.json_response({'status': 'success', 'response': 'Message sent'}, status=400)
     except Exception as e:
         print(e)
         logging.error(e)
-        return JSONResponse({'status': 'failed', 'response': 'Message not sent'}), 400
+        return web.json_response({'status': 'failed', 'response': 'Message not sent'}, status=400)
 
 
 async def _get_bot_response_from_user_session(user_message: str, ip_address: str):
