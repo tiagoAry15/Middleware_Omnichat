@@ -128,11 +128,11 @@ class IntentManager:
     def existingWhatsapp(self, whatsappNumber: str) -> bool:
         return self.fu.existingUser({"phoneNumber": whatsappNumber})
 
-    def registerWhatsapp(self, userDetails: dict):
+    async def registerWhatsapp(self, userDetails: dict):
         self.existingUser = True
         result = register_user_on_firebase(userDetails)
         unique_id = re.search(r'UniqueID = (\S+)', result.text).group(1)
-        append_user_to_global_object(user_data=userDetails, unique_id=unique_id)
+        await append_user_to_global_object(user_data=userDetails, unique_id=unique_id)
         return result
 
     def __checkUserExistence(self):

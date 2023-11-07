@@ -1,7 +1,11 @@
 import os
 
+import aiohttp_cors
 import socketio
 import logging
+
+from aiohttp import web
+
 from api_config.object_factory import dialogflowConnectionManager
 from api_routes.speisekarte_routes import speisekarte_routes
 from dialogflowFolder.dialogflow_session import DialogflowSession
@@ -10,11 +14,9 @@ from signupBot.whatsapp_handle_new_user import handleNewWhatsappUser
 from signupBot.whatsapp_user_manager import check_existing_user_from_metadata
 from utils import instagram_utils
 from utils.core_utils import extractMetaDataFromTwilioCall, appendMultipleMessagesToFirebase
-from aiohttp import web
-import aiohttp_cors
+
 from utils.instagram_utils import extractMetadataFromInstagramDict
 
-# Crie um servidor Socket.IO
 sio = socketio.AsyncServer(async_mode='aiohttp', cors_allowed_origins='*')
 app = web.Application()
 sio.attach(app)
@@ -97,9 +99,16 @@ async def instagram(request):
 
 async def _get_bot_response_from_user_session(user_message: str, ip_address: str):
     user_instance: DialogflowSession = dialogflowConnectionManager.get_instance_session(ip_address)
+
+    # Inicializa a sessão, assumindo que 'initialize_session' não é uma coroutine
     user_instance.initialize_session(ip_address)
-    response = user_instance.getDialogFlowResponse(message=user_message)
+
+    # Aguarda a resposta da função assíncrona 'getDialogFlowResponse'
+    response = await user_instance.getDialogFlowResponse(message=user_message)
+
+    # Extrai o texto da resposta
     bot_answer = response.query_result.fulfillment_text
+
     return bot_answer
 
 
@@ -110,27 +119,28 @@ async def sandbox(request):
         profile_name = data['ProfileName']
         print("TWILIO SANDBOX ENDPOINT!")
         metaData = extractMetaDataFromTwilioCall(data)
-        existing_user = await check_existing_user_from_metadata(metaData)
+        existing_user = check_existing_user_from_metadata(metaData)
         if not existing_user:
             return web.json_response({'message': handleNewWhatsappUser(metaData)})
         ip_address = request.transport.get_extra_info('peername')[0]
         userMessage = str(data["Body"][0])
         await sio.emit('message', {'message': userMessage})
         botResponse = await _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
-        appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
+        await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
         await sio.emit('message', {'message': botResponse})
         return web.json_response({'message': botResponse})
     except Exception as e:
         print(e)
         logging.error(e)
-        return web.json_response({'message': 'Message not sent', 'error': e}), 400
+        return web.json_response({'message': 'Message not sent', 'error': e}, status=400)
 
 
 @routes.post('/webhookForIntent')
 async def webhookForIntent(request):
     try:
         requestContent = request.get_json()
-        return web.json_response({'message': await fulfillment_processing(requestContent)}), 200
+        response = await fulfillment_processing(requestContent)
+        return web.json_response({'message': await fulfillment_processing(requestContent)}, status=200)
     except Exception as e:
         print(e)
         logging.error(e)
@@ -142,13 +152,6 @@ async def webhookForIntent(request):
 app.add_routes(routes)
 app.add_routes(speisekarte_routes)
 
-cors = aiohttp_cors.setup(app, defaults={
-    "*": aiohttp_cors.ResourceOptions(
-        allow_credentials=True,
-        expose_headers="*",
-        allow_headers="*",
-    )
-})
 
 # Aplicar o CORS em todas as rotas, exceto as gerenciadas pelo socket.io
 for route in list(app.router.routes()):

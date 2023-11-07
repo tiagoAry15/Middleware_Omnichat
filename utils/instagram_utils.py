@@ -1,8 +1,6 @@
 import os
-import datetime
 
-from api_config.api_config import socketio
-from socketEmissions.socket_emissor import pulseEmit
+
 from utils.core_utils import updateFirebaseWithUserMessage, processDialogFlowMessage
 import requests
 
