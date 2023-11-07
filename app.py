@@ -3,7 +3,7 @@ import os
 import socketio
 import logging
 from api_config.object_factory import dialogflowConnectionManager
-from api_routes.speisekarte_routes import speisekarte_app
+from api_routes.speisekarte_routes import speisekarte_routes
 from dialogflowFolder.dialogflow_session import DialogflowSession
 from intentProcessing.core_intent_processing import fulfillment_processing
 from signupBot.whatsapp_handle_new_user import handleNewWhatsappUser
@@ -140,17 +140,21 @@ async def webhookForIntent(request):
 # speisekarte_app = Starlette(routes=sp_routes)
 # app.mount('/speisekarte', speisekarte_app)
 app.add_routes(routes)
-app.add_subapp('/speisekarte', speisekarte_app)
+app.add_routes(speisekarte_routes)
 
-for route in list(speisekarte_app.router.routes()):
-    cors.add(route)
+cors = aiohttp_cors.setup(app, defaults={
+    "*": aiohttp_cors.ResourceOptions(
+        allow_credentials=True,
+        expose_headers="*",
+        allow_headers="*",
+    )
+})
 
-for resource in app.router._resources:
-    # Because socket.io already adds cors, if you don't skip socket.io, you get error saying, you've done this already.
-    if resource.raw_match("/socket.io/") or resource.canonical == '/speisekarte':
-        continue
-    cors.add(resource,
-             {'*': aiohttp_cors.ResourceOptions(allow_credentials=True, expose_headers="*", allow_headers="*")})
+# Aplicar o CORS em todas as rotas, exceto as gerenciadas pelo socket.io
+for route in list(app.router.routes()):
+    path = route.resource.canonical
+    if "/socket.io/" not in path:  # Exclui rotas do socket.io.
+        cors.add(route)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))

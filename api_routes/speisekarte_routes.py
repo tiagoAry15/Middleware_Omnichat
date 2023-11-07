@@ -1,15 +1,11 @@
-# speisekarte.py
-from starlette.responses import JSONResponse
-from starlette.routing import Route
-from starlette.endpoints import HTTPEndpoint
-from api_config.object_factory import fs
 from aiohttp import web
+from api_config.object_factory import fs
 
-# Funções assíncronas para lidar com as requisições
-
-speisekarte_app = web.Application()
+# Cria um objeto router para gerenciar as rotas
 speisekarte_routes = web.RouteTableDef()
 
+
+# Funções assíncronas para lidar com as requisições
 
 @speisekarte_routes.post('/create_menu')
 async def create_menu(request):
@@ -17,7 +13,8 @@ async def create_menu(request):
     result = fs.createSpeisekarte(speisekarte_data=body_dict)
     if result:
         return web.json_response({"message": "Speisekarte created successfully"}, status=200)
-    return web.json_response({"message": "Speisekarte already exists"}, status=200)
+    return web.json_response({"message": "Speisekarte already exists"},
+                             status=409)  # Use 409 Conflict for already existing resource
 
 
 @speisekarte_routes.get('/get_menu_by_author/{author}')
@@ -33,7 +30,7 @@ async def get_menu_by_author(request):
 async def update_menu_by_author(request):
     author = request.match_info['author']
     body_dict = await request.json()
-    result = fs.update_speisekarte(author=author, newData=body_dict)
+    result = fs.updateSpeisekarte(author=author, newData=body_dict)
     if not result:
         return web.json_response({"message": "Speisekarte not found"}, status=404)
     return web.json_response({"message": "Speisekarte updated successfully"}, status=200)
@@ -42,11 +39,7 @@ async def update_menu_by_author(request):
 @speisekarte_routes.delete('/delete_menu_by_author/{author}')
 async def delete_menu_by_author(request):
     author = request.match_info['author']
-    result = fs.delete_speisekarte(author=author)
+    result = fs.deleteSpeisekarte(author=author)
     if not result:
         return web.json_response({"message": "Speisekarte not found"}, status=404)
     return web.json_response({"message": "Speisekarte deleted successfully"}, status=200)
-
-
-# Defina as rotas para a subaplicação
-speisekarte_app.router.add_routes(speisekarte_routes)
