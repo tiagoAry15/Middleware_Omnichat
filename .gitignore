@@ -5,4 +5,4 @@
 /webscrapping/geckodriver.exe
 /webscrapping/geckodriver.log
 /geckodriver.log
-/firebaseCache/cache_files/*.json
+
