@@ -1,54 +1,56 @@
 {
-    "Autor": "Bill",
-    "Bebidas": [
-        {
-            "nome": "pepsi",
-            "preço": 5.99,
-            "tamanho": "300ml"
-        },
-        {
-            "nome": "Guaranáaa",
-            "preço": 4.99,
-            "tamanho": "1L"
-        },
-        {
-            "nome": "Suco de laranja",
-            "preço": 6.5,
-            "tamanho": "500ml"
-        }
-    ],
-    "HorárioDeFuncionamento": "17h às 22h",
-    "Pizzas": [
-        {
-            "nome": "Calabresa",
-            "preço": 17.5,
-            "tamanho": "Grande"
-        },
-        {
-            "nome": "Frango",
-            "preço": 18.9,
-            "tamanho": "Grande"
-        },
-        {
-            "nome": "Portuguesa",
-            "preço": 13.99,
-            "tamanho": "Grande"
-        },
-        {
-            "nome": "Margherita",
-            "preço": 15.5,
-            "tamanho": "Média"
-        },
-        {
-            "nome": "Quatro Queijos",
-            "preço": 16.9,
-            "tamanho": "Grande"
-        },
-        {
-            "nome": "Pepperoni",
-            "preço": 19.99,
-            "tamanho": "Grande"
-        }
-    ],
-    "Versão": "06-Nov-2023"
+    "-NidMns1QurwSXkw8uwC": {
+        "Versão": "26-oct-2023",
+        "Autor": "Bill",
+        "Pizzas": [
+            {
+                "nome": "Calabresa",
+                "tamanho": "Grande",
+                "preço": 17.5
+            },
+            {
+                "nome": "Frango",
+                "tamanho": "Grande",
+                "preço": 18.9
+            },
+            {
+                "nome": "Portuguesa",
+                "tamanho": "Grande",
+                "preço": 13.99
+            },
+            {
+                "nome": "Margherita",
+                "tamanho": "Média",
+                "preço": 15.5
+            },
+            {
+                "nome": "Quatro Queijos",
+                "tamanho": "Grande",
+                "preço": 16.9
+            },
+            {
+                "nome": "Pepperoni",
+                "tamanho": "Grande",
+                "preço": 19.99
+            }
+        ],
+        "Bebidas": [
+            {
+                "nome": "Coca-cola",
+                "tamanho": "300ml",
+                "preço": 5.99
+            },
+            {
+                "nome": "Guaraná",
+                "tamanho": "300ml",
+                "preço": 4.99
+            },
+            {
+                "nome": "Suco de laranja",
+                "tamanho": "500ml",
+                "preço": 6.5
+            }
+        ],
+        "HorárioDeFuncionamento": "17h às 22h"
+    }
 }
