@@ -1,54 +1,54 @@
 {
     "-NidMns1QurwSXkw8uwC": {
-        "Versão": "26-oct-2023",
+        "Versão": "07-Nov-2023",
         "Autor": "Bill",
         "Pizzas": [
             {
                 "nome": "Calabresa",
-                "tamanho": "Grande",
-                "preço": 17.5
+                "preço": 17.5,
+                "tamanho": "Grande"
             },
             {
                 "nome": "Frango",
-                "tamanho": "Grande",
-                "preço": 18.9
+                "preço": 18.9,
+                "tamanho": "Grande"
             },
             {
                 "nome": "Portuguesa",
-                "tamanho": "Grande",
-                "preço": 13.99
+                "preço": 13.99,
+                "tamanho": "Grande"
             },
             {
                 "nome": "Margherita",
-                "tamanho": "Média",
-                "preço": 15.5
+                "preço": 15.5,
+                "tamanho": "Média"
             },
             {
                 "nome": "Quatro Queijos",
-                "tamanho": "Grande",
-                "preço": 16.9
+                "preço": 16.9,
+                "tamanho": "Grande"
             },
             {
                 "nome": "Pepperoni",
-                "tamanho": "Grande",
-                "preço": 19.99
+                "preço": 19.99,
+                "tamanho": "Grande"
             }
         ],
         "Bebidas": [
             {
-                "nome": "Coca-cola",
-                "tamanho": "300ml",
-                "preço": 5.99
+                "nome": "Coca-co",
+                "preço": 5.99,
+                "tamanho": "300ml"
             },
             {
                 "nome": "Guaraná",
-                "tamanho": "300ml",
-                "preço": 4.99
+                "preço": 4.99,
+                "tamanho": "300ml"
             },
             {
                 "nome": "Suco de laranja",
-                "tamanho": "500ml",
-                "preço": 6.5
+                "preço": 6.5,
+                "tamanho": "500ml"
             }
         ],
         "HorárioDeFuncionamento": "17h às 22h"

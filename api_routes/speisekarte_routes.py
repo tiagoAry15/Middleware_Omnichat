@@ -3,7 +3,7 @@ from api_config.object_factory import fs
 
 # Cria um objeto router para gerenciar as rotas
 speisekarte_routes = web.RouteTableDef()
-
+speisekarte_app = web.Application()
 
 # Funções assíncronas para lidar com as requisições
 
@@ -30,7 +30,7 @@ async def get_menu_by_author(request):
 async def update_menu_by_author(request):
     author = request.match_info['author']
     body_dict = await request.json()
-    result = fs.updateSpeisekarte(author=author, newData=body_dict)
+    result = fs.update_speisekarte(author=author, newData=body_dict)
     if not result:
         return web.json_response({"message": "Speisekarte not found"}, status=404)
     return web.json_response({"message": "Speisekarte updated successfully"}, status=200)
@@ -43,3 +43,5 @@ async def delete_menu_by_author(request):
     if not result:
         return web.json_response({"message": "Speisekarte not found"}, status=404)
     return web.json_response({"message": "Speisekarte deleted successfully"}, status=200)
+
+speisekarte_app.add_routes(speisekarte_routes)
