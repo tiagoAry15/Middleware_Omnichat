@@ -51,7 +51,7 @@ class FirebaseSpeisekarte(FirebaseWrapper):
         return True
 
     def _get_firebase_unique_id_by_author(self, author: str) -> str or None:
-        speisekarte_pool = list(self.data.keys())
+        speisekarte_pool = list(self.data)
         for unique_id in speisekarte_pool:
             item = self.data[unique_id]
             item_author = item["Autor"].lower()
