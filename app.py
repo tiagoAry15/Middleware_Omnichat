@@ -89,7 +89,7 @@ async def instagram(request):
                 metaData = extractMetadataFromInstagramDict(properMessage)
                 userMessage = str(properMessage["Body"][0])
                 botResponse = _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
-                appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
+                await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
             return web.json_response({'status': 'success', 'response': 'Message sent'}, status=400)
     except Exception as e:
         print(e)
@@ -123,11 +123,11 @@ async def sandbox(request):
         if not existing_user:
             return web.json_response({'message': handleNewWhatsappUser(metaData)})
         ip_address = request.transport.get_extra_info('peername')[0]
-        userMessage = str(data["Body"][0])
-        await sio.emit('message', {'message': userMessage})
+        userMessage = str(metaData["userMessage"])
+        await sio.emit('message', {'phoneNumber': metaData['phoneNumber']})
         botResponse = await _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
         await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
-        await sio.emit('message', {'message': botResponse})
+        await sio.emit('message', {'phoneNumber': metaData['phoneNumber']})
         return web.json_response({'message': botResponse})
     except Exception as e:
         print(e)

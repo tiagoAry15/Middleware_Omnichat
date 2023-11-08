@@ -1,6 +1,8 @@
 import datetime
 import json
 import logging
+import os
+
 import requests
 from firebaseFolder.firebase_conversation import FirebaseConversation
 from signupBot.intent_manager import IntentManager
@@ -94,7 +96,7 @@ def makeHttpCallToAppendMultipleMessagesToFirebaseServerlessFunction(userMessage
     headers = {
         "Content-Type": "application/json"
     }
-    url = "https://us-central1-pizzadobill-rpin.cloudfunctions.net/update_multiple_conversations"
+    url = os.environ["CLOUD_FUNCTION_BASE_URL"] + "/update_multiple_conversations"
     return requests.post(url=url, headers=headers, json=payload)
 
 
