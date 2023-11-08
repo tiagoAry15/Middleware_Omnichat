@@ -81,7 +81,7 @@ def __handleExistingUser(phoneNumber: str, receivedMessage: str):
     return output, botDialogflowResponseJSON
 
 
-def appendMultipleMessagesToFirebase(userMessage: str, botAnswer: str, metaData: dict):
+async def appendMultipleMessagesToFirebase(userMessage: str, botAnswer: str, metaData: dict):
     return makeHttpCallToAppendMultipleMessagesToFirebaseServerlessFunction(userMessage, botAnswer, metaData)
 
 
