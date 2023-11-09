@@ -153,11 +153,11 @@ async def webhookForIntent(request):
         return 'Erro no processamento de resposta do Bot, tente novamente em instantes!'
 
 @routes.post('/testDialogflow')
-def dialogflow_testing():
-    headers = get_anti_cors_headers()
+def dialogflow_testing(request):
+
     try:
         body: str = request.get_json()
-    except BadRequest:
+    except Exception as BadRequest:
         return "Message cannot be empty. Try sending a JSON object with any string message.", 400
     ip_address = request.remote_addr
     bot_answer = _get_bot_response_from_user_session(user_message=body, ip_address=ip_address)
@@ -165,7 +165,7 @@ def dialogflow_testing():
     if bot_answer == "":
         return (f"Could not find any response from Dialogflow for the message '{body}'."
                 f" Check if your message is valid."), 400
-    return bot_answer, 200, headers
+    return bot_answer, 200
 
 # speisekarte_app = Starlette(routes=sp_routes)
 # app.mount('/speisekarte', speisekarte_app)
