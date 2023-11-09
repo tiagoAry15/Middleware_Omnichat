@@ -12,6 +12,7 @@ from utils.helper_utils import sendWebhookCallback
 
 
 async def fulfillment_processing(requestContent):
+    from aiohttp import web
     print("FULFILLMENT ENDPOINT!")
     print(requestContent)
     outputContexts = requestContent['queryResult']['outputContexts']

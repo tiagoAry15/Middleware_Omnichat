@@ -4,6 +4,7 @@ import json
 import os
 from typing import List
 import google.cloud.dialogflow_v2 as dialogflow
+from aiohttp.web_response import Response
 
 from dotenv import load_dotenv
 from flask import request, make_response, Response
@@ -12,15 +13,13 @@ from twilio.twiml.messaging_response import MessagingResponse
 from api_config.object_factory import fu, fcm
 
 
-def __prepareOutputResponse(myResult) -> Response:
-    res = json.dumps(myResult, indent=4)
-    print(res)
-    r = make_response(res)
-    r.headers['Content-Type'] = 'application/json'
-    return r
+def __prepareOutputResponse(myResult) -> str:
+
+    return json.dumps(myResult, indent=4)
 
 
 def sendWebhookCallback(botMessage: str, nextContext: List = None) -> Response:
+
     myResult = {
         "source": "dialogFlow",
         "fulfillmentText": botMessage

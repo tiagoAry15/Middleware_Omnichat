@@ -144,7 +144,7 @@ async def sandbox(request):
 @routes.post('/webhookForIntent')
 async def webhookForIntent(request):
     try:
-        requestContent = request.get_json()
+        requestContent = await request.json()
         response = await fulfillment_processing(requestContent)
         return web.json_response({'message': response}, status=200)
     except Exception as e:
@@ -152,9 +152,9 @@ async def webhookForIntent(request):
         logging.error(e)
         return 'Erro no processamento de resposta do Bot, tente novamente em instantes!'
 
+
 @routes.post('/testDialogflow')
 def dialogflow_testing(request):
-
     try:
         body: str = request.get_json()
     except Exception as BadRequest:
@@ -166,6 +166,7 @@ def dialogflow_testing(request):
         return (f"Could not find any response from Dialogflow for the message '{body}'."
                 f" Check if your message is valid."), 400
     return bot_answer, 200
+
 
 # speisekarte_app = Starlette(routes=sp_routes)
 # app.mount('/speisekarte', speisekarte_app)
