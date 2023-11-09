@@ -65,3 +65,11 @@ def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
     totalPrice = orderInfo["totalPrice"]
     orderObject = format_order_data(orderItems, totalPrice)
     return sendWebhookCallback(finalMessage)
+
+
+def __main():
+    pass
+
+
+if __name__ == "__main__":
+    __main()

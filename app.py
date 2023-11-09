@@ -54,12 +54,17 @@ async def disconnect(sid):
     print('Client disconnected', sid)
 
 
-@routes.post('/')
+@routes.post('/test')
 async def post_endpoint(request):
     data = await request.json()
 
     await sio.emit('notification', {'message': 'Received POST data'})
     return web.json_response({'message': 'Data received', 'data': data})
+
+
+@routes.get('/')
+async def hello_world_endpoint(request):
+    return web.Response(text="Hello, world!")
 
 
 async def erase_session(request):
@@ -88,8 +93,9 @@ async def instagram(request):
                 properMessage: dict = instagram_utils.convertIncomingInstagramMessageToProperFormat(data)
                 metaData = extractMetadataFromInstagramDict(properMessage)
                 userMessage = str(properMessage["Body"][0])
-                botResponse = _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
-                await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
+                botResponse: str = _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
+                await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse,
+                                                       metaData=metaData)
             return web.json_response({'status': 'success', 'response': 'Message sent'}, status=400)
     except Exception as e:
         print(e)
@@ -97,7 +103,7 @@ async def instagram(request):
         return web.json_response({'status': 'failed', 'response': 'Message not sent'}, status=400)
 
 
-async def _get_bot_response_from_user_session(user_message: str, ip_address: str):
+async def _get_bot_response_from_user_session(user_message: str, ip_address: str) -> str:
     user_instance: DialogflowSession = dialogflowConnectionManager.get_instance_session(ip_address)
 
     # Inicializa a sessão, assumindo que 'initialize_session' não é uma coroutine
@@ -107,7 +113,7 @@ async def _get_bot_response_from_user_session(user_message: str, ip_address: str
     response = await user_instance.getDialogFlowResponse(message=user_message)
 
     # Extrai o texto da resposta
-    bot_answer = response.query_result.fulfillment_text
+    bot_answer: str = response.query_result.fulfillment_text
 
     return bot_answer
 
@@ -123,11 +129,11 @@ async def sandbox(request):
         if not existing_user:
             return web.json_response({'message': handleNewWhatsappUser(metaData)})
         ip_address = request.transport.get_extra_info('peername')[0]
-        userMessage = str(metaData["userMessage"])
-        await sio.emit('message', {'phoneNumber': metaData['phoneNumber']})
+        userMessage = str(data["Body"][0])
+        await sio.emit('message', {'message': userMessage})
         botResponse = await _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
         await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
-        await sio.emit('message', {'phoneNumber': metaData['phoneNumber']})
+        await sio.emit('message', {'message': botResponse})
         return web.json_response({'message': botResponse})
     except Exception as e:
         print(e)
@@ -165,7 +171,6 @@ def dialogflow_testing():
 # app.mount('/speisekarte', speisekarte_app)
 app.add_routes(routes)
 app.add_subapp('/speisekarte', speisekarte_app)
-
 
 # Aplicar o CORS em todas as rotas, exceto as gerenciadas pelo socket.io
 for route in list(app.router.routes()):
