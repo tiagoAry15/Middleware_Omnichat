@@ -174,8 +174,6 @@ def dialogflow_testing(request):
     return bot_answer, 200
 
 
-# speisekarte_app = Starlette(routes=sp_routes)
-# app.mount('/speisekarte', speisekarte_app)
 app.add_routes(routes)
 app.add_subapp('/speisekarte', speisekarte_app)
 
