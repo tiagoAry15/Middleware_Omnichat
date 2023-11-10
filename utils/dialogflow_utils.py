@@ -1,4 +1,5 @@
-from api_config.object_factory import menuHandler
+from api_config.object_factory import menuHandler, dialogflowConnectionManager
+from dialogflowFolder.dialogflow_session import DialogflowSession
 
 
 def structureNewDialogflowContext(contextName: str, lifespan: int = 5):
@@ -31,3 +32,18 @@ def structureNewDialogflowContext(contextName: str, lifespan: int = 5):
         "parameters": {}
     }
     return [newContext]
+
+
+async def _get_bot_response_from_user_session(user_message: str, ip_address: str) -> str:
+    user_instance: DialogflowSession = dialogflowConnectionManager.get_instance_session(ip_address)
+
+    # Inicializa a sessão, assumindo que 'initialize_session' não é uma coroutine
+    user_instance.initialize_session(ip_address)
+
+    # Aguarda a resposta da função assíncrona 'getDialogFlowResponse'
+    response = await user_instance.getDialogFlowResponse(message=user_message)
+
+    # Extrai o texto da resposta
+    bot_answer: str = response.query_result.fulfillment_text
+
+    return bot_answer

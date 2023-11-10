@@ -7,17 +7,15 @@ import socketio
 import logging
 
 from aiohttp import web
-from flask import jsonify
-from werkzeug.exceptions import BadRequest
 
 from api_config.object_factory import dialogflowConnectionManager
 from api_routes.speisekarte_routes import speisekarte_app
-from dialogflowFolder.dialogflow_session import DialogflowSession
 from intentProcessing.core_intent_processing import fulfillment_processing
 from signupBot.whatsapp_handle_new_user import handleNewWhatsappUser
 from signupBot.whatsapp_user_manager import check_existing_user_from_metadata
 from utils import instagram_utils
 from utils.core_utils import extractMetaDataFromTwilioCall, appendMultipleMessagesToFirebase
+from utils.dialogflow_utils import _get_bot_response_from_user_session
 
 from utils.instagram_utils import extractMetadataFromInstagramDict
 from utils.port_utils import get_ip_address_from_request
@@ -108,21 +106,6 @@ async def instagram(request):
         return web.json_response({'status': 'failed', 'response': 'Message not sent'}, status=400)
 
 
-async def _get_bot_response_from_user_session(user_message: str, ip_address: str) -> str:
-    user_instance: DialogflowSession = dialogflowConnectionManager.get_instance_session(ip_address)
-
-    # Inicializa a sessão, assumindo que 'initialize_session' não é uma coroutine
-    user_instance.initialize_session(ip_address)
-
-    # Aguarda a resposta da função assíncrona 'getDialogFlowResponse'
-    response = await user_instance.getDialogFlowResponse(message=user_message)
-
-    # Extrai o texto da resposta
-    bot_answer: str = response.query_result.fulfillment_text
-
-    return bot_answer
-
-
 @routes.post('/twilioSandbox')
 async def sandbox(request):
     try:
@@ -155,7 +138,7 @@ async def sandbox(request):
 async def webhookForIntent(request):
     try:
         requestContent = await request.json()
-        response_content = await fulfillment_processing(requestContent)
+        response_content = fulfillment_processing(requestContent)
         if isinstance(response_content, str):
             response_content = json.loads(response_content)
         print(f"fulfillment webhook response: {response_content}")

@@ -4,7 +4,7 @@ import json
 import os
 from typing import List
 import google.cloud.dialogflow_v2 as dialogflow
-from aiohttp.web_response import Response
+# from aiohttp.web_response import Response
 
 from dotenv import load_dotenv
 from flask import request, make_response, Response
@@ -14,22 +14,20 @@ from api_config.object_factory import fu, fcm
 
 
 def __prepareOutputResponse(myResult) -> str:
-
     return json.dumps(myResult, indent=4)
 
 
-def sendWebhookCallback(botMessage: str, nextContext: List = None) -> Response:
-
+def sendWebhookCallback(botMessage: str, nextContext: List = None):
     myResult = {
         "source": "dialogFlow",
         "fulfillmentText": botMessage
     }
     if nextContext is not None:
         myResult["outputContexts"] = nextContext
-    return __prepareOutputResponse(myResult)
+    return myResult
 
 
-def changeDialogflowIntent(newIntent: str = None, parameters: dict = None) -> Response:
+def changeDialogflowIntent(newIntent: str = None, parameters: dict = None):
     myResult = {
         "followupEventInput": {
             "name": newIntent,

@@ -11,7 +11,7 @@ from utils.dialogflow_utils import structureNewDialogflowContext
 from utils.helper_utils import sendWebhookCallback
 
 
-async def fulfillment_processing(requestContent):
+def fulfillment_processing(requestContent):
     outputContexts = requestContent['queryResult']['outputContexts']
     menuHandler.params["baseContextName"] = outputContexts[0]['name'].rsplit('/contexts/', 1)[0]
     queryText = requestContent['queryResult']['queryText']
