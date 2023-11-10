@@ -96,8 +96,11 @@ def makeHttpCallToAppendMultipleMessagesToFirebaseServerlessFunction(userMessage
     headers = {
         "Content-Type": "application/json"
     }
-    url = os.environ["CLOUD_FUNCTION_BASE_URL"] + "/update_multiple_conversations"
-    return requests.post(url=url, headers=headers, json=payload)
+    url = os.environ["CLOUD_FUNCTION_BASE_URL"] + "/conversation_handler/update_multiple_conversations"
+    response = requests.put(url=url, headers=headers, json=payload)
+    if response.status_code != 200:
+        raise Exception(f"Error while trying to append multiple messages to Firebase: {response.text}")
+    return
 
 
 def extractMetaDataFromTwilioCall(twilioDict: dict) -> dict:

@@ -1,4 +1,5 @@
 import os
+import datetime
 
 import aiohttp_cors
 import socketio
@@ -93,7 +94,7 @@ async def instagram(request):
                 properMessage: dict = instagram_utils.convertIncomingInstagramMessageToProperFormat(data)
                 metaData = extractMetadataFromInstagramDict(properMessage)
                 userMessage = str(properMessage["Body"][0])
-                botResponse: str = _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
+                botResponse = await _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
                 await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse,
                                                        metaData=metaData)
             return web.json_response({'status': 'success', 'response': 'Message sent'}, status=400)
@@ -130,10 +131,14 @@ async def sandbox(request):
             return web.json_response({'message': handleNewWhatsappUser(metaData)})
         ip_address = request.transport.get_extra_info('peername')[0]
         userMessage = str(data["Body"][0])
-        await sio.emit('message', {'message': userMessage})
+        userMessageJSON = {"body": userMessage, "timestamp": datetime.datetime.now().strftime('%d-%b-%Y %H:%M'),
+                           **metaData}
+        await sio.emit('message', {'message': userMessageJSON})
         botResponse = await _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
         await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
-        await sio.emit('message', {'message': botResponse})
+        BotResponseJSON = {"body": botResponse, "timestamp": datetime.datetime.now().strftime('%d-%b-%Y %H:%M'),**metaData,
+                           "sender": "Bot"}
+        await sio.emit('message', {'message': BotResponseJSON})
         return web.json_response({'message': botResponse})
     except Exception as e:
         print(e)
@@ -146,6 +151,7 @@ async def webhookForIntent(request):
     try:
         requestContent = await request.json()
         response = await fulfillment_processing(requestContent)
+        await sio.emit('message', {'message': response})
         return web.json_response({'message': response}, status=200)
     except Exception as e:
         print(e)
