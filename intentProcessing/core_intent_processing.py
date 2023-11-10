@@ -12,13 +12,9 @@ from utils.helper_utils import sendWebhookCallback
 
 
 async def fulfillment_processing(requestContent):
-    from aiohttp import web
-    print("FULFILLMENT ENDPOINT!")
-    print(requestContent)
     outputContexts = requestContent['queryResult']['outputContexts']
     menuHandler.params["baseContextName"] = outputContexts[0]['name'].rsplit('/contexts/', 1)[0]
     queryText = requestContent['queryResult']['queryText']
-    print("@@@ QUERY_TEXT → " + queryText)
     userMessage = [item["name"] for item in queryText] if isinstance(queryText, list) else queryText
     currentIntent = requestContent['queryResult']['intent']['displayName']
     logging.info(f"current Intent: {currentIntent}")

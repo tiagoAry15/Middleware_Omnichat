@@ -41,6 +41,13 @@ def get_service_details(pid):
     return 'Unknown', None
 
 
+def get_ip_address_from_request(request) -> str:
+    if request.transport:
+        return request.transport.get_extra_info('peername')[0] if request.transport else None
+    else:
+        return 'Unknown'
+
+
 def __main__():
     username = os.getlogin()  # Get the current logged-in username
 

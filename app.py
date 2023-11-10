@@ -1,3 +1,4 @@
+import json
 import os
 import datetime
 
@@ -6,6 +7,8 @@ import socketio
 import logging
 
 from aiohttp import web
+from flask import jsonify
+from werkzeug.exceptions import BadRequest
 
 from api_config.object_factory import dialogflowConnectionManager
 from api_routes.speisekarte_routes import speisekarte_app
@@ -17,6 +20,7 @@ from utils import instagram_utils
 from utils.core_utils import extractMetaDataFromTwilioCall, appendMultipleMessagesToFirebase
 
 from utils.instagram_utils import extractMetadataFromInstagramDict
+from utils.port_utils import get_ip_address_from_request
 
 sio = socketio.AsyncServer(async_mode='aiohttp', cors_allowed_origins='*')
 app = web.Application()
@@ -136,7 +140,8 @@ async def sandbox(request):
         await sio.emit('message', {'message': userMessageJSON})
         botResponse = await _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
         await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
-        BotResponseJSON = {"body": botResponse, "timestamp": datetime.datetime.now().strftime('%d-%b-%Y %H:%M'),**metaData,
+        BotResponseJSON = {"body": botResponse, "timestamp": datetime.datetime.now().strftime('%d-%b-%Y %H:%M'),
+                           **metaData,
                            "sender": "Bot"}
         await sio.emit('message', {'message': BotResponseJSON})
         return web.json_response({'message': botResponse})
@@ -150,28 +155,47 @@ async def sandbox(request):
 async def webhookForIntent(request):
     try:
         requestContent = await request.json()
-        response = await fulfillment_processing(requestContent)
-        await sio.emit('message', {'message': response})
-        return web.json_response({'message': response}, status=200)
+        response_content = await fulfillment_processing(requestContent)
+        if isinstance(response_content, str):
+            response_content = json.loads(response_content)
+        print(f"fulfillment webhook response: {response_content}")
+        return web.json_response(response_content)
     except Exception as e:
-        print(e)
         logging.error(e)
-        return 'Erro no processamento de resposta do Bot, tente novamente em instantes!'
+        return web.Response(text='Erro no processamento de resposta do Bot, tente novamente em instantes!', status=500)
 
 
 @routes.post('/testDialogflow')
-def dialogflow_testing(request):
+async def dialogflow_testing(request):
+    if request.method != "POST":
+        return web.Response(text=json.dumps({"message": "This endpoint only accepts POST requests"}), status=405,
+                            content_type='application/json')
     try:
-        body: str = request.get_json()
-    except Exception as BadRequest:
-        return "Message cannot be empty. Try sending a JSON object with any string message.", 400
-    ip_address = request.remote_addr
-    bot_answer = _get_bot_response_from_user_session(user_message=body, ip_address=ip_address)
-    print(bot_answer)
-    if bot_answer == "":
-        return (f"Could not find any response from Dialogflow for the message '{body}'."
-                f" Check if your message is valid."), 400
-    return bot_answer, 200
+        body = await request.json()
+        ip_address = get_ip_address_from_request(request)
+        bot_answer = await _get_bot_response_from_user_session(user_message=body, ip_address=ip_address)
+        # bot_answer = {
+        #     "source": "dialogFlow",
+        #     "fulfillmentText": "Olá! Bem-vindo à Pizza do Bill! Funcionamos das 17h às 22h.\n Cardápio de pizzas:"
+        #                        "\n- Calabresa - R$17.50\n- Frango - R$18.90\n- Portuguesa - R$13.99\n- Margherita -"
+        #                        " R$15.50\n- Quatro Queijos - R$16.90\n- Pepperoni - R$19.99\n. \nQual pizza você"
+        #                        " vai querer?",
+        #     "outputContexts": [
+        #         {
+        #             "name": "projects/catupirybase/locations/global/agent/sessions/859e5892-b2c2-6027-0334-00c"
+        #                     "272efcbf4/contexts/Start",
+        #             "lifespanCount": 1,
+        #             "parameters": {}
+        #         }
+        #     ]
+        # }
+        if bot_answer == "":
+            return web.Response(text=json.dumps({"message": f"Could not find any response from Dialogflow for the "
+                                                            f"message '{body}'. Check if your message is valid."}),
+                                status=400, content_type='application/json')
+        return web.Response(text=json.dumps(bot_answer), status=200, content_type='application/json')
+    except Exception as e:
+        return web.Response(text=json.dumps({"message": str(e)}), status=500, content_type='application/json')
 
 
 app.add_routes(routes)
