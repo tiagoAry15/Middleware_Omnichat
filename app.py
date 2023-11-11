@@ -21,6 +21,9 @@ from utils.dialogflow_utils import _get_bot_response_from_user_session
 from utils.instagram_utils import extractMetadataFromInstagramDict
 from utils.port_utils import get_ip_address_from_request
 
+logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(format='%(asctime)s %(levelname)s:%(name)s: %(message)s',
+                    level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S')
 sio = socketio.AsyncServer(async_mode='aiohttp', cors_allowed_origins='*')
 app = web.Application()
 sio.attach(app)
@@ -147,42 +150,31 @@ async def webhookForIntent(request):
         print(f"fulfillment webhook response: {response_content}")
         return web.json_response(response_content)
     except Exception as e:
-        logging.error(e)
+        logging.exception(e)
         return web.Response(text='Erro no processamento de resposta do Bot, tente novamente em instantes!', status=500)
 
 
 @routes.post('/testDialogflow')
 async def dialogflow_testing(request):
+    content_type = 'application/json;'
     if request.method != "POST":
         return web.Response(text=json.dumps({"message": "This endpoint only accepts POST requests"}), status=405,
-                            content_type='application/json')
+                            content_type=content_type)
     try:
         body = await request.json()
         ip_address = get_ip_address_from_request(request)
         loop = asyncio.get_running_loop()
-        bot_answer = await loop.run_in_executor(None, _get_bot_response_from_user_session,body, ip_address )
-        # bot_answer = {
-        #     "source": "dialogFlow",
-        #     "fulfillmentText": "Olá! Bem-vindo à Pizza do Bill! Funcionamos das 17h às 22h.\n Cardápio de pizzas:"
-        #                        "\n- Calabresa - R$17.50\n- Frango - R$18.90\n- Portuguesa - R$13.99\n- Margherita -"
-        #                        " R$15.50\n- Quatro Queijos - R$16.90\n- Pepperoni - R$19.99\n. \nQual pizza você"
-        #                        " vai querer?",
-        #     "outputContexts": [
-        #         {
-        #             "name": "projects/catupirybase/locations/global/agent/sessions/859e5892-b2c2-6027-0334-00c"
-        #                     "272efcbf4/contexts/Start",
-        #             "lifespanCount": 1,
-        #             "parameters": {}
-        #         }
-        #     ]
-        # }
+        bot_answer = await loop.run_in_executor(None,
+                                                _get_bot_response_from_user_session,
+                                                body, ip_address)
         if bot_answer == "":
             return web.Response(text=json.dumps({"message": f"Could not find any response from Dialogflow for the "
                                                             f"message '{body}'. Check if your message is valid."}),
-                                status=400, content_type='application/json')
-        return web.Response(text=json.dumps(bot_answer), status=200, content_type='application/json')
+                                status=400, content_type=content_type)
+        return web.Response(text=json.dumps(bot_answer, ensure_ascii=False), status=200, content_type=content_type)
     except Exception as e:
-        return web.Response(text=json.dumps({"message": str(e)}), status=500, content_type='application/json')
+        logging.exception(e)
+        return web.Response(text=json.dumps({"message": str(e)}), status=500, content_type=content_type)
 
 
 app.add_routes(routes)
