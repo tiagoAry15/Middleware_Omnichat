@@ -34,14 +34,14 @@ def structureNewDialogflowContext(contextName: str, lifespan: int = 5):
     return [newContext]
 
 
-async def _get_bot_response_from_user_session(user_message: str, ip_address: str) -> str:
+def _get_bot_response_from_user_session(user_message: str, ip_address: str) -> str:
     user_instance: DialogflowSession = dialogflowConnectionManager.get_instance_session(ip_address)
 
     # Inicializa a sessão, assumindo que 'initialize_session' não é uma coroutine
     user_instance.initialize_session(ip_address)
 
     # Aguarda a resposta da função assíncrona 'getDialogFlowResponse'
-    response = await user_instance.getDialogFlowResponse(message=user_message)
+    response = user_instance.getDialogFlowResponse(message=user_message)
 
     # Extrai o texto da resposta
     bot_answer: str = response.query_result.fulfillment_text

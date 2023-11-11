@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import datetime
@@ -96,7 +97,8 @@ async def instagram(request):
                 properMessage: dict = instagram_utils.convertIncomingInstagramMessageToProperFormat(data)
                 metaData = extractMetadataFromInstagramDict(properMessage)
                 userMessage = str(properMessage["Body"][0])
-                botResponse = await _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
+                loop = asyncio.get_running_loop()
+                botResponse = await loop.run_in_executor(None,_get_bot_response_from_user_session,userMessage, ip_address )
                 await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse,
                                                        metaData=metaData)
             return web.json_response({'status': 'success', 'response': 'Message sent'}, status=400)
@@ -121,7 +123,8 @@ async def sandbox(request):
         userMessageJSON = {"body": userMessage, "timestamp": datetime.datetime.now().strftime('%d-%b-%Y %H:%M'),
                            **metaData}
         await sio.emit('message', {'message': userMessageJSON})
-        botResponse = await _get_bot_response_from_user_session(user_message=userMessage, ip_address=ip_address)
+        loop = asyncio.get_running_loop()
+        botResponse = await loop.run_in_executor(None,_get_bot_response_from_user_session,userMessage, ip_address )
         await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
         BotResponseJSON = {"body": botResponse, "timestamp": datetime.datetime.now().strftime('%d-%b-%Y %H:%M'),
                            **metaData,
@@ -138,7 +141,7 @@ async def sandbox(request):
 async def webhookForIntent(request):
     try:
         requestContent = await request.json()
-        response_content = fulfillment_processing(requestContent)
+        response_content = await fulfillment_processing(requestContent)
         if isinstance(response_content, str):
             response_content = json.loads(response_content)
         print(f"fulfillment webhook response: {response_content}")
@@ -156,7 +159,8 @@ async def dialogflow_testing(request):
     try:
         body = await request.json()
         ip_address = get_ip_address_from_request(request)
-        bot_answer = await _get_bot_response_from_user_session(user_message=body, ip_address=ip_address)
+        loop = asyncio.get_running_loop()
+        bot_answer = await loop.run_in_executor(None, _get_bot_response_from_user_session,body, ip_address )
         # bot_answer = {
         #     "source": "dialogFlow",
         #     "fulfillmentText": "Olá! Bem-vindo à Pizza do Bill! Funcionamos das 17h às 22h.\n Cardápio de pizzas:"

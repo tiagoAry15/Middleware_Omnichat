@@ -16,7 +16,7 @@ class DialogflowSession:
             self.session = self.sessionClient.session_path(os.environ["SDK_PROJECT_ID"], user_id)
             self.agentName = self.session.split('/')[1]
 
-    async def getDialogFlowResponse(self, message: str, intent_name: str = None, user_number: str = None):
+    def getDialogFlowResponse(self, message: str, intent_name: str = None, user_number: str = None):
         session = self.session
         session_params = dialogflow.types.QueryParameters(payload={"phone-number": user_number})
         if intent_name:
