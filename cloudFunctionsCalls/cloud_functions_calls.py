@@ -17,6 +17,7 @@ async def fetch_all_users_from_cloud_function():
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
+
                 return await response.json()  # Retornar o JSON da resposta
     except Exception as e:
         print(e)

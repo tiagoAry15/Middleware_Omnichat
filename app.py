@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import datetime
+import uuid
 
 import aiohttp_cors
 import socketio
@@ -9,6 +10,7 @@ import logging
 
 from aiohttp import web
 
+from api_config.api_config import app
 from api_config.object_factory import dialogflowConnectionManager
 from api_routes.speisekarte_routes import speisekarte_app
 from intentProcessing.core_intent_processing import fulfillment_processing
@@ -22,10 +24,10 @@ from utils.instagram_utils import extractMetadataFromInstagramDict
 from utils.port_utils import get_ip_address_from_request
 
 sio = socketio.AsyncServer(async_mode='aiohttp', cors_allowed_origins='*')
-app = web.Application()
 sio.attach(app)
 routes = web.RouteTableDef()
-
+ACK_TIMEOUT = 10  # Tempo limite para aguardar confirmação (em segundos)
+MAX_RETRIES = 3
 cors = aiohttp_cors.setup(app, defaults={
     "*": aiohttp_cors.ResourceOptions(
         allow_credentials=True,
@@ -33,9 +35,47 @@ cors = aiohttp_cors.setup(app, defaults={
         allow_headers="*",
     )
 })
+app.add_subapp('/speisekarte', speisekarte_app)
+
+pending_messages = {}
+connected_users = {}  # Número máximo de tentativas de reenvio
 
 
-# redis = aioredis.from_url("redis://localhost")
+async def send_message(message):
+    message_id = str(uuid.uuid4())
+    message['id'] = message_id
+
+    # Armazenar informações da mensagem
+    pending_messages[message_id] = {
+        'message': message,
+        'timestamp': datetime.datetime.now(),
+        'attempts': 0
+    }
+
+    # Enviar a mensagem e iniciar o processo de verificação
+    await attempt_send_message(message_id)
+
+
+async def attempt_send_message(message_id):
+    if message_id in pending_messages:
+        msg_info = pending_messages[message_id]
+        if msg_info['attempts'] < MAX_RETRIES:
+            await sio.emit('message', msg_info['message'])
+            msg_info['attempts'] += 1
+            asyncio.create_task(wait_for_ack(message_id))
+
+
+async def wait_for_ack(message_id):
+    await asyncio.sleep(ACK_TIMEOUT)
+    if message_id in pending_messages:
+        await attempt_send_message(message_id)
+
+
+@sio.event
+async def message_ack(sid, data):
+    message_id = data['id']
+    if message_id in pending_messages:
+        del pending_messages[message_id]
 
 
 async def get_room_from_cache(room):
@@ -51,11 +91,14 @@ async def add_message_to_cache(room, message):
 @sio.event
 async def connect(sid, environ):
     print('Client connected', sid)
+    connected_users[sid] = sid
 
 
 @sio.event
 async def disconnect(sid):
     print('Client disconnected', sid)
+    if sid in connected_users:
+        del connected_users[sid]
 
 
 @routes.post('/test')
@@ -98,7 +141,8 @@ async def instagram(request):
                 metaData = extractMetadataFromInstagramDict(properMessage)
                 userMessage = str(properMessage["Body"][0])
                 loop = asyncio.get_running_loop()
-                botResponse = await loop.run_in_executor(None,_get_bot_response_from_user_session,userMessage, ip_address )
+                botResponse = await loop.run_in_executor(None, _get_bot_response_from_user_session, userMessage,
+                                                         ip_address)
                 await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse,
                                                        metaData=metaData)
             return web.json_response({'status': 'success', 'response': 'Message sent'}, status=400)
@@ -115,21 +159,35 @@ async def sandbox(request):
         profile_name = data['ProfileName']
         print("TWILIO SANDBOX ENDPOINT!")
         metaData = extractMetaDataFromTwilioCall(data)
-        existing_user = check_existing_user_from_metadata(metaData)
+        existing_user = await check_existing_user_from_metadata(metaData)
         if not existing_user:
             return web.json_response({'message': handleNewWhatsappUser(metaData)})
+
         ip_address = request.transport.get_extra_info('peername')[0]
-        userMessage = str(data["Body"][0])
-        userMessageJSON = {"body": userMessage, "timestamp": datetime.datetime.now().strftime('%d-%b-%Y %H:%M'),
-                           **metaData}
-        await sio.emit('message', {'message': userMessageJSON})
+        userMessage = str(data["Body"])
+        userMessageJSON = {
+            "body": userMessage,
+            "timestamp": datetime.datetime.now().strftime('%d-%b-%Y %H:%M'),
+            **metaData
+        }
+
+        # Enviar mensagem do usuário e aguardar confirmação
+        await send_message({'message': userMessageJSON})
+
         loop = asyncio.get_running_loop()
-        botResponse = await loop.run_in_executor(None,_get_bot_response_from_user_session,userMessage, ip_address )
+        botResponse = await loop.run_in_executor(None, _get_bot_response_from_user_session, userMessage, ip_address)
         await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
-        BotResponseJSON = {"body": botResponse, "timestamp": datetime.datetime.now().strftime('%d-%b-%Y %H:%M'),
-                           **metaData,
-                           "sender": "Bot"}
-        await sio.emit('message', {'message': BotResponseJSON})
+
+        BotResponseJSON = {
+            "body": botResponse,
+            "timestamp": datetime.datetime.now().strftime('%d-%b-%Y %H:%M'),
+            **metaData,
+            "sender": "Bot"
+        }
+
+        # Enviar resposta do bot e aguardar confirmação
+        await send_message({'message': BotResponseJSON})
+
         return web.json_response({'message': botResponse})
     except Exception as e:
         print(e)
@@ -160,7 +218,7 @@ async def dialogflow_testing(request):
         body = await request.json()
         ip_address = get_ip_address_from_request(request)
         loop = asyncio.get_running_loop()
-        bot_answer = await loop.run_in_executor(None, _get_bot_response_from_user_session,body, ip_address )
+        bot_answer = await loop.run_in_executor(None, _get_bot_response_from_user_session, body, ip_address)
         # bot_answer = {
         #     "source": "dialogFlow",
         #     "fulfillmentText": "Olá! Bem-vindo à Pizza do Bill! Funcionamos das 17h às 22h.\n Cardápio de pizzas:"
@@ -186,7 +244,7 @@ async def dialogflow_testing(request):
 
 
 app.add_routes(routes)
-app.add_subapp('/speisekarte', speisekarte_app)
+
 
 # Aplicar o CORS em todas as rotas, exceto as gerenciadas pelo socket.io
 for route in list(app.router.routes()):

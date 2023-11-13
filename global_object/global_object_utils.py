@@ -1,23 +1,22 @@
-from flask import g as global_object
-
-
+from api_config.api_config import app
 from cloudFunctionsCalls.cloud_functions_calls import fetch_all_users_from_cloud_function
 
 
 async def get_all_users_from_global_object():
-    from app import app
     try:
-
-        return app['users']
-    except KeyError:
-        # Se não existir, atualiza o cache (faz a chamada assíncrona)
+        if app['users']:
+            # Se já existir, retorna o cache
+            return app['users']
+        else:
+            await refresh_cache()
+            return app['users']
+    except KeyError as e:
         await refresh_cache()
         return app['users']
 
 
 async def refresh_cache():
     # Sua lógica para atualizar o cache vai aqui.
-    from app import app
     app['users'] = await fetch_all_users_from_cloud_function()
 
 
