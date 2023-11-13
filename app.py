@@ -183,7 +183,7 @@ async def sandbox(request):
     except Exception as e:
         print(e)
         logging.error(e)
-        return web.json_response({'message': 'Message not sent', 'error': e}, status=400)
+        return web.json_response({'message': 'Message not sent', 'error': str(e)}, status=400)
 
 
 @routes.post('/webhookForIntent')

@@ -123,7 +123,7 @@ async def process_bot_response(existing_user, userMessage, metaData, request):
     }
 
     if not existing_user:
-        botResponse = handleNewWhatsappUser(metaData)
+        botResponse = await handleNewWhatsappUser(metaData)
     else:
         ip_address = request.transport.get_extra_info('peername')[0]
         loop = asyncio.get_running_loop()
