@@ -163,8 +163,9 @@ async def sandbox(request):
         print("TWILIO SANDBOX ENDPOINT!")
 
         # Extrair metadados e mensagem do usuário
-        metaData = extractMetaDataFromTwilioCall(data)
-        userMessage = str(data["Body"])
+        dictData = {**dict(data), **dict(request.headers)}
+        metaData = extractMetaDataFromTwilioCall(dictData)
+        userMessage = str(dictData["Body"])
         userMessageJSON = create_message_json(userMessage, metaData)
 
         # Verificar se o usuário já existe
