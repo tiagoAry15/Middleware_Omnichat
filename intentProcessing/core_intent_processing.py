@@ -60,7 +60,7 @@ def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
     finalMessage = orderInfo["finalMessage"]
     orderItems = orderInfo["orderItems"]
     totalPrice = orderInfo["totalPrice"]
-    orderObject = format_order_data(orderItems, totalPrice)
+    orderObject = format_order_data(order_items=orderItems, structured_order=fullOrder)
     return sendWebhookCallback(finalMessage)
 
 

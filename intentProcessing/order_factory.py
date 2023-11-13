@@ -1,3 +1,6 @@
+from typing import List
+
+
 def get_order_mocked_data():
     mocked_order_items = [{'price': 16.5, 'tag': '1 x Pizza meio calabresa meio margherita (R$16.50)'},
                           {'price': 18.9, 'tag': '1 x Pizza de frango (R$18.90)'},
@@ -17,7 +20,7 @@ def get_order_mocked_data():
     return mocked_order_items, mocked_structured_order, mocket_price_note
 
 
-def format_order_data(order_items, structured_order):
+def format_order_data(order_items: List[dict], structured_order: dict):
     order_pool = []
 
     # Iterate through the structured order to construct the desired format
