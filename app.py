@@ -17,7 +17,8 @@ from intentProcessing.core_intent_processing import fulfillment_processing
 from signupBot.whatsapp_handle_new_user import handleNewWhatsappUser
 from signupBot.whatsapp_user_manager import check_existing_user_from_metadata
 from utils import instagram_utils
-from utils.core_utils import extractMetaDataFromTwilioCall, appendMultipleMessagesToFirebase
+from utils.core_utils import extractMetaDataFromTwilioCall, appendMultipleMessagesToFirebase, create_message_json, \
+    process_bot_response
 from utils.dialogflow_utils import _get_bot_response_from_user_session
 
 from utils.instagram_utils import extractMetadataFromInstagramDict
@@ -159,36 +160,22 @@ async def instagram(request):
 async def sandbox(request):
     try:
         data = await request.post()
-        profile_name = data['ProfileName']
         print("TWILIO SANDBOX ENDPOINT!")
+
+        # Extrair metadados e mensagem do usuário
         metaData = extractMetaDataFromTwilioCall(data)
-        existing_user = await check_existing_user_from_metadata(metaData)
-        if not existing_user:
-            return web.json_response({'message': handleNewWhatsappUser(metaData)})
-
-        ip_address = request.transport.get_extra_info('peername')[0]
         userMessage = str(data["Body"])
-        userMessageJSON = {
-            "body": userMessage,
-            "timestamp": datetime.datetime.now().strftime('%d-%b-%Y %H:%M'),
-            **metaData
-        }
+        userMessageJSON = create_message_json(userMessage, metaData)
 
-        # Enviar mensagem do usuário e aguardar confirmação
+        # Verificar se o usuário já existe
+        existing_user = await check_existing_user_from_metadata(metaData)
+
+        # Processar a resposta do bot
+        botResponse, BotResponseJSON = await process_bot_response(existing_user, userMessage, metaData, request)
+
+        # Enviar mensagens e salvar no Firebase
         await send_message({'message': userMessageJSON})
-
-        loop = asyncio.get_running_loop()
-        botResponse = await loop.run_in_executor(None, _get_bot_response_from_user_session, userMessage, ip_address)
         await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
-
-        BotResponseJSON = {
-            "body": botResponse,
-            "timestamp": datetime.datetime.now().strftime('%d-%b-%Y %H:%M'),
-            **metaData,
-            "sender": "Bot"
-        }
-
-        # Enviar resposta do bot e aguardar confirmação
         await send_message({'message': BotResponseJSON})
 
         return web.json_response({'message': botResponse})

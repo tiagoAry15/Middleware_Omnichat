@@ -3,10 +3,13 @@ import json
 import logging
 import os
 
+import asyncio
 import requests
 from firebaseFolder.firebase_conversation import FirebaseConversation
 from signupBot.intent_manager import IntentManager
 from api_config.object_factory import fcm
+from signupBot.whatsapp_handle_new_user import handleNewWhatsappUser
+from utils.dialogflow_utils import _get_bot_response_from_user_session
 from utils.helper_utils import sendTwilioResponse, extractTextFromDialogflowResponse
 from utils.message_utils import convert_dialogflow_message
 
@@ -101,6 +104,35 @@ def makeHttpCallToAppendMultipleMessagesToFirebaseServerlessFunction(userMessage
     if response.status_code != 200:
         raise Exception(f"Error while trying to append multiple messages to Firebase: {response.text}")
     return
+
+
+async def create_message_json(message, metaData):
+    return {
+        "body": message,
+        "timestamp": datetime.datetime.now().strftime('%d-%b-%Y %H:%M'),
+        **metaData
+    }
+
+
+async def process_bot_response(existing_user, userMessage, metaData, request):
+    BotResponseJSON = {
+        "body": '',
+        "timestamp": '',
+        **metaData,
+        "sender": "Bot"
+    }
+
+    if not existing_user:
+        botResponse = handleNewWhatsappUser(metaData)
+    else:
+        ip_address = request.transport.get_extra_info('peername')[0]
+        loop = asyncio.get_running_loop()
+        botResponse = await loop.run_in_executor(None, _get_bot_response_from_user_session, userMessage, ip_address)
+
+    BotResponseJSON["body"] = botResponse
+    BotResponseJSON["timestamp"] = datetime.datetime.now().strftime('%d-%b-%Y %H:%M')
+
+    return botResponse, BotResponseJSON
 
 
 def extractMetaDataFromTwilioCall(twilioDict: dict) -> dict:
