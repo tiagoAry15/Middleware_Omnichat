@@ -12,7 +12,7 @@ async def register_user_on_firebase(user_details: dict):
     url = f'{CLOUD_FUNCTION_BASE_URL}/user_handler/create'
     async with aiohttp.ClientSession() as session:
         async with session.post(url, json=user_details) as response:
-            return await response.json()  # Retornar o JSON da resposta
+            return await response.json()
 
 
 async def fetch_all_users_from_cloud_function():
