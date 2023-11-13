@@ -165,7 +165,7 @@ async def sandbox(request):
         unquoted_dict = {k: unquote(v) if isinstance(v, str) else v for k, v in request.headers.items()}
         dictData = {**dict(data), **unquoted_dict}
         metaData = extractMetaDataFromTwilioCall(dictData)
-        userMessage = str(dictData["body"])
+        userMessage = metaData["userMessage"]
         userMessageJSON = create_message_json(userMessage, metaData)
 
         # Verificar se o usuário já existe
