@@ -106,7 +106,7 @@ def makeHttpCallToAppendMultipleMessagesToFirebaseServerlessFunction(userMessage
     return
 
 
-async def create_message_json(message, metaData):
+def create_message_json(message, metaData):
     return {
         "body": message,
         "timestamp": datetime.datetime.now().strftime('%d-%b-%Y %H:%M'),
