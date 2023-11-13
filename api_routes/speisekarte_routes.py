@@ -33,7 +33,7 @@ async def update_menu_by_author(request):
     result = fs.update_speisekarte(author=author, newData=body_dict)
     if not result:
         return web.json_response({"message": "Speisekarte not found"}, status=404)
-    return web.json_response({"message": "Speisekarte updated successfully"}, status=200)
+    return web.json_response({"message": "Speisekarte updated successfully", "speisekarte": result}, status=200)
 
 
 @speisekarte_routes.delete('/delete_menu_by_author/{author}')
