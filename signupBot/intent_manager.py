@@ -113,7 +113,7 @@ class IntentManager:
             if self.finished:
                 break
 
-    def twilioSingleStep(self, userMessage: str):
+    async def twilioSingleStep(self, userMessage: str):
         self.count += 1
         self.userHistory.append(userMessage)
         botResponse = self.currentIntent.parseIncomingMessage(userMessage)
@@ -122,7 +122,7 @@ class IntentManager:
         if action != "ASSEMBLY_SIGNUP":
             return self._analyzeBotResponse(botResponse)
         self.finished = True
-        self.registerWhatsapp(self.extractedParameters)
+        await self.registerWhatsapp(self.extractedParameters)
         return "Usuário cadastrado com sucesso!"
 
     def existingWhatsapp(self, whatsappNumber: str) -> bool:
@@ -130,7 +130,7 @@ class IntentManager:
 
     async def registerWhatsapp(self, userDetails: dict):
         self.existingUser = True
-        result = register_user_on_firebase(userDetails)
+        result = await register_user_on_firebase(userDetails)
         unique_id = re.search(r'UniqueID = (\S+)', result.text).group(1)
         await append_user_to_global_object(user_data=userDetails, unique_id=unique_id)
         return result
