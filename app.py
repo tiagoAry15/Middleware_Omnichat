@@ -7,7 +7,7 @@ import uuid
 import aiohttp_cors
 import socketio
 import logging
-
+from urllib.parse import unquote
 from aiohttp import web
 
 from api_config.api_config import app
@@ -161,11 +161,10 @@ async def sandbox(request):
     try:
         data = await request.post()
         print("TWILIO SANDBOX ENDPOINT!")
-
-        # Extrair metadados e mensagem do usuário
-        dictData = {**dict(data), **dict(request.headers)}
+        unquoted_dict = {k: unquote(v) if isinstance(v, str) else v for k, v in request.headers.items()}
+        dictData = {**dict(data), **unquoted_dict}
         metaData = extractMetaDataFromTwilioCall(dictData)
-        userMessage = str(dictData["Body"])
+        userMessage = str(dictData["body"])
         userMessageJSON = create_message_json(userMessage, metaData)
 
         # Verificar se o usuário já existe

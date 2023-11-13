@@ -136,12 +136,20 @@ async def process_bot_response(existing_user, userMessage, metaData, request):
 
 
 def extractMetaDataFromTwilioCall(twilioDict: dict) -> dict:
-    sender = twilioDict["ProfileName"]
-    rawFrom = twilioDict["From"]
+    # Convert all keys to lowercase
+    lower_twilioDict = {k.lower(): v for k, v in twilioDict.items()}
+
+    # Accessing values using lowercase keys
+    sender = lower_twilioDict.get("profilename")
+    rawFrom = lower_twilioDict.get("from")
+    phoneNumber = lower_twilioDict.get("waid")
+    userMessage = lower_twilioDict.get("body")
+
+    # Processing the 'from' value
     _from = rawFrom.split(':') if rawFrom and ':' in rawFrom else None
-    phoneNumber = twilioDict["WaId"]
-    userMessage = twilioDict["Body"]
+
     return {"sender": sender, "from": _from, "phoneNumber": phoneNumber, "userMessage": userMessage}
+
 
 
 def __main():
