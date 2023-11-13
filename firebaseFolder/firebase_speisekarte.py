@@ -24,7 +24,7 @@ class FirebaseSpeisekarte(FirebaseWrapper):
         all_data = self.firebaseConnection.readData()
         if all_data is None:
             template = get_current_speisekarte()
-            unique_id = self.firebaseConnection.writeData(data=template)
+            unique_id = self.firebaseConnection.writeData(path='Bill/',data=template)
             all_data = {unique_id: template}
         save_cache_json(filename="speisekarte_cache.json", data=all_data)
         self.data = all_data
@@ -53,9 +53,7 @@ class FirebaseSpeisekarte(FirebaseWrapper):
     def _get_firebase_unique_id_by_author(self, author: str) -> str or None:
         speisekarte_pool = list(self.data)
         for unique_id in speisekarte_pool:
-            item = self.data[unique_id]
-            item_author = item["Autor"].lower()
-            if item_author == author.lower():
+            if unique_id.lower() == author.lower():
                 return unique_id
         return None
 

@@ -123,7 +123,7 @@ class IntentManager:
             return self._analyzeBotResponse(botResponse)
         self.finished = True
         await self.registerWhatsapp(self.extractedParameters)
-        return "Usuário cadastrado com sucesso!"
+        return "Usuário cadastrado com sucesso!, digite 'ok' para continuar"
 
     def existingWhatsapp(self, whatsappNumber: str) -> bool:
         return self.fu.existingUser({"phoneNumber": whatsappNumber})

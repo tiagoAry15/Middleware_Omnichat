@@ -75,8 +75,9 @@ async def wait_for_ack(message_id):
         await attempt_send_message(message_id)
 
 
-@sio.event
+@sio.on
 async def message_ack(sid, data):
+    print('Message ack', data)
     message_id = data['id']
     if message_id in pending_messages:
         del pending_messages[message_id]

@@ -87,10 +87,11 @@ def __handleExistingUser(phoneNumber: str, receivedMessage: str):
 
 
 async def appendMultipleMessagesToFirebase(userMessage: str, botAnswer: str, metaData: dict):
-    return makeHttpCallToAppendMultipleMessagesToFirebaseServerlessFunction(userMessage, botAnswer, metaData)
+    return await makeHttpCallToAppendMultipleMessagesToFirebaseServerlessFunction(userMessage, botAnswer, metaData)
 
 
-def makeHttpCallToAppendMultipleMessagesToFirebaseServerlessFunction(userMessage: str, botAnswer: str, metaData: dict):
+async def makeHttpCallToAppendMultipleMessagesToFirebaseServerlessFunction(userMessage: str, botAnswer: str,
+                                                                           metaData: dict):
     payload = {
         "userMessage": userMessage,
         "botAnswer": botAnswer,
