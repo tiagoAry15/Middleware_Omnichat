@@ -2,21 +2,18 @@ import asyncio
 import json
 import os
 
-import aiohttp_cors
-import socketio
 import logging
 from urllib.parse import unquote
 from aiohttp import web
 
-from api_config.api_config import app
+from api_config.api_config import app, sio, cors, send_message
 from api_config.object_factory import dialogflowConnectionManager
-from api_routes.speisekarte_routes import speisekarte_app
+
 from intentProcessing.core_intent_processing import fulfillment_processing
 from signupBot.whatsapp_user_manager import check_existing_user_from_metadata
-from socketEmissions.socket_emissor import send_message
 from utils import instagram_utils
 from utils.core_utils import extractMetaDataFromTwilioCall, appendMultipleMessagesToFirebase, create_message_json, \
-    process_bot_response
+    process_bot_response, sendMessageToUser
 from utils.dialogflow_utils import get_bot_response_from_session, create_session
 
 from utils.instagram_utils import extractMetadataFromInstagramDict
@@ -25,45 +22,11 @@ from utils.port_utils import get_ip_address_from_request
 logging.basicConfig(level=logging.DEBUG)
 logging.basicConfig(format='%(asctime)s %(levelname)s:%(name)s: %(message)s',
                     level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S')
-sio = socketio.AsyncServer(async_mode='aiohttp', cors_allowed_origins='*')
-sio.attach(app)
+
 routes = web.RouteTableDef()
-ACK_TIMEOUT = 10  # Tempo limite para aguardar confirmação (em segundos)
-MAX_RETRIES = 3
-cors = aiohttp_cors.setup(app, defaults={
-    "*": aiohttp_cors.ResourceOptions(
-        allow_credentials=True,
-        expose_headers="*",
-        allow_headers="*",
-    )
-})
-app.add_subapp('/speisekarte', speisekarte_app)
-
-pending_messages = {}
-connected_users = {}  # Número máximo de tentativas de reenvio
 
 
-async def attempt_send_message(message_id):
-    if message_id in pending_messages:
-        msg_info = pending_messages[message_id]
-        if msg_info['attempts'] < MAX_RETRIES:
-            await sio.emit('message', msg_info['message'])
-            msg_info['attempts'] += 1
-            asyncio.create_task(wait_for_ack(message_id))
-
-
-async def wait_for_ack(message_id):
-    await asyncio.sleep(ACK_TIMEOUT)
-    if message_id in pending_messages:
-        await attempt_send_message(message_id)
-
-
-@sio.on
-async def message_ack(sid, data):
-    print('Message ack', data)
-    message_id = data['id']
-    if message_id in pending_messages:
-        del pending_messages[message_id]
+# Número máximo de tentativas de reenvio
 
 
 async def get_room_from_cache(room):
@@ -76,19 +39,6 @@ async def add_message_to_cache(room, message):
     pass
 
 
-@sio.event
-async def connect(sid, environ):
-    print('Client connected', sid)
-    connected_users[sid] = sid
-
-
-@sio.event
-async def disconnect(sid):
-    print('Client disconnected', sid)
-    if sid in connected_users:
-        del connected_users[sid]
-
-
 @routes.post('/test')
 async def post_endpoint(request):
     data = await request.json()
@@ -98,7 +48,7 @@ async def post_endpoint(request):
 
 
 @routes.get('/')
-async def hello_world_endpoint(request):
+async def hello_world_endpoint():
     return web.Response(text="Hello, world!")
 
 
@@ -187,6 +137,33 @@ async def webhookForIntent(request):
         return web.Response(text='Erro no processamento de resposta do Bot, tente novamente em instantes!', status=500)
 
 
+@routes.post('/send_message_to_user/{user_number}')
+async def send_message_to_user(request):
+    try:
+        if request.method == 'OPTIONS':
+            headers = {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "POST",
+                "Access-Control-Allow-Headers": "Content-Type",
+                "Access-Control-Max-Age": "3600",
+            }
+
+            return '', 204, headers
+        user_number = request.match_info['user_number']
+        message = await request.json()
+
+        if not user_number:
+            return web.json_response(data={'error': "Field user_number cannot be empty"}, status=400)
+
+        if not message:
+            return web.json_response(data={'error': "Message cannot be empty"}, status=400)
+        response = await sendMessageToUser(message, user_number)
+        return web.json_response(data=response, status=200)
+
+    except Exception as e:
+        return web.json_response(data={'error': str(e)}, status=500)
+
+
 @routes.post('/testDialogflow')
 async def dialogflow_testing(request):
     content_type = 'application/json;'
@@ -199,8 +176,8 @@ async def dialogflow_testing(request):
         loop = asyncio.get_running_loop()
         session = create_session(ip_address)
         bot_answer = await loop.run_in_executor(None,
-                                                 get_bot_response_from_session,
-                                                 session, body)
+                                                get_bot_response_from_session,
+                                                session, body)
         if bot_answer == "":
             return web.Response(text=json.dumps({"message": f"Could not find any response from Dialogflow for the "
                                                             f"message '{body}'. Check if your message is valid."}),
@@ -212,7 +189,6 @@ async def dialogflow_testing(request):
 
 
 app.add_routes(routes)
-
 
 # Aplicar o CORS em todas as rotas, exceto as gerenciadas pelo socket.io
 for route in list(app.router.routes()):

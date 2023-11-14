@@ -44,17 +44,30 @@ class FirebaseConversation(FirebaseWrapper):
 
     def writeToFirebase(self, uniqueId, conversationData):
         if uniqueId:
-            self.firebaseConnection.overWriteData(path=uniqueId, data=conversationData)
+            return self.firebaseConnection.overWriteData(path=uniqueId, data=conversationData)
         else:
-            self.createConversation(conversationData)
+            return self.createConversation(conversationData)
 
-    def appendMessageToWhatsappNumber(self, messageData: dict, whatsappNumber: str):
+    def appendMessageToWhatsappNumber(self, messageData, whatsappNumber: str):
         all_conversations = self.getAllConversations()
-        uniqueId, conversationData = self._organizeSingleMessageData(messageData, whatsappNumber, all_conversations)
-        self.writeToFirebase(uniqueId, conversationData)
 
-    def appendMultipleMessagesToWhatsappNumber(self, messagesData: List[dict], whatsappNumber: str):
+        # Converte messageData em uma lista se for um di
+
+        # Procura pela conversa com o número de WhatsApp correspondente
+        for uid, conversation in all_conversations.items():
+            if conversation.get("phoneNumber") == whatsappNumber:
+                messageData["timestamp"] = datetime.datetime.now().strftime('%d-%b-%Y %H:%M')
+                conversation["messagePot"].append(messageData)
+                self.writeToFirebase(uid, conversation)
+                messageData["id"] = str(uuid.uuid4())
+                return messageData
+
+        raise Exception("No conversation found for this whatsapp number.")
+
+    def appendMultipleMessagesToWhatsappNumber(self, messagesData, whatsappNumber):
         all_conversations = self.getAllConversations()
+        if isinstance(messagesData, dict):
+            messagesData = [messagesData]
         uniqueId, conversationData = organizeSingleMessageData(messagesData[0], whatsappNumber, all_conversations)
         conversationData["messagePot"] = conversationData["messagePot"] + messagesData[1:]
         self.writeToFirebase(uniqueId, conversationData)

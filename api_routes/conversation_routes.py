@@ -78,23 +78,3 @@ def push_new_message_by_whatsapp_number():
     message = {"content": data.get("message")}
     fcm.appendMessageToWhatsappNumber(messageData=message, whatsappNumber=whatsapp_number)
     return jsonify({"Success": f"New message pushed for user with whatsapp {whatsapp_number}"}), 200
-
-
-@conversation_blueprint.route("/send_message_to_user/<user_number>", methods=['POST'])
-def send_message_to_user(user_number):
-    data = json.loads(request.data.decode("utf-8"))
-    message = data.get("body")
-    print(twilio_phone_number)
-    if not user_number or not message:
-        return jsonify({"error": "recipient and message fields are required!"}), 400
-
-    response_message = fcm.appendMessageToWhatsappNumber(messageData=data, whatsappNumber=user_number)
-    try:
-        msg = twilioClient.messages.create(
-            body=message,
-            from_=twilio_phone_number,
-            to=f'whatsapp:+{user_number}'
-        )
-        return jsonify(response_message), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500

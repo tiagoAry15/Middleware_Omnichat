@@ -5,6 +5,8 @@ import os
 
 import asyncio
 import requests
+
+from api_config.api_config import twilioClient, twilio_phone_number
 from firebaseFolder.firebase_conversation import FirebaseConversation
 from signupBot.intent_manager import IntentManager
 from api_config.object_factory import fcm
@@ -36,6 +38,15 @@ def __transformTwilioDataIntoStructuredFirebaseData(data: dict) -> dict:
         }
     }
 
+
+async def sendMessageToUser(message: str, phoneNumber: str):
+    response = fcm.appendMessageToWhatsappNumber(messageData=message, whatsappNumber=phoneNumber)
+    # msg = await twilioClient.messages.create(
+    #     body=message,
+    #     from_=twilio_phone_number,
+    #     to=f'whatsapp:+{phoneNumber}'
+    # )
+    return response
 
 def __checkUserRegistration(phoneNumber: str):
     im = IntentManager()
@@ -153,7 +164,6 @@ def extractMetaDataFromTwilioCall(twilioDict: dict) -> dict:
     _from = rawFrom.split(':') if rawFrom and ':' in rawFrom else None
 
     return {"sender": sender, "from": _from, "phoneNumber": phoneNumber, "userMessage": userMessage}
-
 
 
 def __main():

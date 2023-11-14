@@ -1,6 +1,6 @@
 import logging
 
-from flask import request, Response
+from flask import Response
 
 from api_config.object_factory import menuHandler
 from global_object.global_object_utils import get_all_users_from_global_object
@@ -8,7 +8,7 @@ from intentProcessing.order_factory import format_order_data, build_socket_objec
 from orderProcessing.drink_processor import structureDrink
 from orderProcessing.order_builder import buildFullOrder
 from orderProcessing.pizza_processor import parsePizzaOrder, convertMultiplePizzaOrderToText
-from socketEmissions.socket_emissor import send_message
+from api_config.api_config import send_message
 from utils.dialogflow_utils import structureNewDialogflowContext, create_session
 from utils.helper_utils import sendWebhookCallback
 

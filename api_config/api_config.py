@@ -1,8 +1,15 @@
+import datetime
 import os
 
+import asyncio
+import uuid
+
+import aiohttp_cors
+import socketio
 from aiohttp import web
 from dotenv import load_dotenv
 from twilio.rest import Client
+from api_routes.speisekarte_routes import speisekarte_app
 
 load_dotenv()
 twilio_account_ssid = os.environ["TWILIO_ACCOUNT_SID"]
@@ -11,3 +18,70 @@ twilio_phone_number = f'whatsapp:{os.environ["TWILIO_PHONE_NUMBER"]}'
 twilioClient = Client(twilio_account_ssid, twilio_auth_token)
 
 app = web.Application()
+sio = socketio.AsyncServer(async_mode='aiohttp', cors_allowed_origins='*')
+sio.attach(app)
+pending_messages = {}
+connected_users = {}
+
+ACK_TIMEOUT = 10  # Tempo limite para aguardar confirmação (em segundos)
+MAX_RETRIES = 3
+
+cors = aiohttp_cors.setup(app, defaults={
+    "*": aiohttp_cors.ResourceOptions(
+        allow_credentials=True,
+        expose_headers="*",
+        allow_headers="*",
+    )
+})
+app.add_subapp('/speisekarte', speisekarte_app)
+
+
+@sio.event
+async def connect(sid, environ):
+    print('Client connected', sid)
+    connected_users[sid] = sid
+
+
+@sio.event
+async def disconnect(sid):
+    print('Client disconnected', sid)
+    if sid in connected_users:
+        del connected_users[sid]
+
+
+async def send_message(message):
+    message_id = str(uuid.uuid4())
+    message['id'] = message_id
+
+    # Armazenar informações da mensagem
+    pending_messages[message_id] = {
+        'message': message,
+        'timestamp': datetime.datetime.now(),
+        'attempts': 0
+    }
+
+    # Enviar a mensagem e iniciar o processo de verificação
+    await attempt_send_message(message_id)
+
+
+async def attempt_send_message(message_id):
+    if message_id in pending_messages:
+        msg_info = pending_messages[message_id]
+        if msg_info['attempts'] < MAX_RETRIES:
+            await sio.emit('message', msg_info['message'])
+            msg_info['attempts'] += 1
+            asyncio.create_task(wait_for_ack(message_id))
+
+
+async def wait_for_ack(message_id):
+    await asyncio.sleep(ACK_TIMEOUT)
+    if message_id in pending_messages:
+        await attempt_send_message(message_id)
+
+
+@sio.on('message_ack')
+async def message_ack(sid, data):
+    print('Message ack', data)
+    message_id = data['id']
+    if message_id in pending_messages:
+        del pending_messages[message_id]
