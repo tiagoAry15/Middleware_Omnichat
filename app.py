@@ -167,6 +167,7 @@ async def sandbox(request):
         unquoted_dict = {k: unquote(v) if isinstance(v, str) else v for k, v in request.headers.items()}
         dictData = {**dict(data), **unquoted_dict}
         metaData = extractMetaDataFromTwilioCall(dictData)
+        metaData["ip"] = request.transport.get_extra_info('peername')[0]
         userMessage = metaData["userMessage"]
         userMessageJSON = create_message_json(userMessage, metaData)
 
@@ -192,6 +193,7 @@ async def sandbox(request):
 async def webhookForIntent(request):
     try:
         requestContent = await request.json()
+        requestContent["ip"] = request.transport.get_extra_info('peername')[0]
         response_content = await fulfillment_processing(requestContent)
         if isinstance(response_content, str):
             response_content = json.loads(response_content)

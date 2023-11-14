@@ -1,4 +1,6 @@
+from dialogflowFolder.dialogflow_session import DialogflowSession
 from global_object.global_object_utils import get_all_users_from_global_object
+from utils.dialogflow_utils import create_session
 
 
 async def check_existing_user_from_metadata(metadata: dict):
@@ -6,6 +8,8 @@ async def check_existing_user_from_metadata(metadata: dict):
     if user is None:
         return False
     else:
+        session: DialogflowSession = create_session(metadata["ip"])
+        session.metaData = metadata
         return True
 
 async def get_user_from_metadata(metadata: dict):

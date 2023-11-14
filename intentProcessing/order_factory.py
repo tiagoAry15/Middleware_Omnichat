@@ -1,3 +1,4 @@
+import datetime
 from typing import List
 
 
@@ -49,17 +50,40 @@ def format_order_data(order_items: List[dict], structured_order: dict):
 
     return {"orderItems": order_pool}
 
-def build_socket_object(order_data: dict, all_users: dict):
-    all_users = {'-NjDJb4BSR7j18WCi537':
-                     {'address': 'Avenida da Paz 2845',
-                      'cpf': '12345678910',
-                      'name': 'Clark Kent',
-                      'phoneNumber': '558599171902'}}
+def build_socket_object(all_users: dict, order_object: dict, session_metadata: dict) -> dict:
+    # all_users = {'-NjDJb4BSR7j18WCi537':
+    #                  {'address': 'Avenida da Paz 2845',
+    #                   'cpf': '12345678910',
+    #                   'name': 'Clark Kent',
+    #                   'phoneNumber': '558599171902'},
+    #              '-NjDJb4BSR7j18WCi538':
+    #                     {'address': 'Avenida da Saudade 2945',
+    #                     'cpf': '12345678910',
+    #                     'name': 'Bruce Wayne',
+    #                     'phoneNumber': '558599171901'}}
+    # order_object = {'orderItems': [{'type': 'drink', 'flavors': ['Guaraná'], 'quantity': 1.0, 'price': 4.99},
+    #                                {'type': 'drink', 'flavors': ['Suco de laranja'], 'quantity': 2.0, 'price': 13.0},
+    #                                {'type': 'pizza', 'flavors': ['Calabresa', 'Margherita'], 'quantity': 1.0},
+    #                                {'type': 'pizza', 'flavors': ['Frango'], 'quantity': 1.0}]}
+    # session_metadata = {'from': ['whatsapp', '+558599171902'], 'ip': '127.0.0.1', 'phoneNumber': '558599171902',
+    #                     'sender': 'Mateus', 'userMessage': 'Vou querer um guaraná e dois sucos de laranja'}
+    # user_phone_number = session_metadata['phoneNumber']
+    user_details = next((details for key, details in all_users.items() if details['phoneNumber'] == user_phone_number),
+                        None)
+    return {"address": user_details['address'],
+            "communication": user_phone_number,
+            "customerName": user_details['name'],
+            "observation": "None",
+            "platform": session_metadata["from"][0],
+            "status": "Em preparação",
+            "timestamp": datetime.datetime.now().strftime("%d_%b_%Y_%H_%M_%S_%f")[:-3],
+            "orderItems": order_object["orderItems"]}
 
 
 def __main():
     mocked_order_items, mocked_structured_order, mocket_price_note = get_order_mocked_data()
     formatted_order_data = format_order_data(mocked_order_items, mocked_structured_order)
+    aux = build_socket_object()
     return
 
 

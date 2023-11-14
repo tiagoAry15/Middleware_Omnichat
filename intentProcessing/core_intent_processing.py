@@ -4,11 +4,11 @@ from flask import request, Response
 
 from api_config.object_factory import menuHandler
 from global_object.global_object_utils import get_all_users_from_global_object
-from intentProcessing.order_factory import format_order_data
+from intentProcessing.order_factory import format_order_data, build_socket_object
 from orderProcessing.drink_processor import structureDrink
 from orderProcessing.order_builder import buildFullOrder
 from orderProcessing.pizza_processor import parsePizzaOrder, convertMultiplePizzaOrderToText
-from utils.dialogflow_utils import structureNewDialogflowContext
+from utils.dialogflow_utils import structureNewDialogflowContext, create_session
 from utils.helper_utils import sendWebhookCallback
 
 
@@ -20,6 +20,7 @@ async def fulfillment_processing(requestContent):
     currentIntent = requestContent['queryResult']['intent']['displayName']
     logging.info(f"current Intent: {currentIntent}")
     params = requestContent['queryResult']['parameters']
+    params["ip"] = requestContent["ip"]
     if currentIntent == "Order.drink":
         return await __handleOrderDrinkIntent(params, userMessage)
     elif currentIntent == "Order.pizza - drink no":
@@ -53,6 +54,8 @@ def __handleOrderPizzaIntent(queryText: str, requestContent: dict) -> Response:
 
 
 async def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
+    ip_address = params["ip"]
+    session = create_session(ip_address)
     drink = structureDrink(params, userMessage)
     menuHandler.params["drinks"].append(drink)
     parameters = menuHandler.params
@@ -62,7 +65,11 @@ async def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
     orderItems = orderInfo["orderItems"]
     totalPrice = orderInfo["totalPrice"]
     orderObject = format_order_data(order_items=orderItems, structured_order=fullOrder)
+    session_metadata = session.metaData
     user = await get_all_users_from_global_object()
+    finalOrderObject = build_socket_object(all_users=user, order_object=orderObject,
+                                             session_metadata=session_metadata)
+    finalOrderObject["totalPrice"] = totalPrice
     return sendWebhookCallback(finalMessage)
 
 
