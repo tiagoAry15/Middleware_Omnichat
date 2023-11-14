@@ -9,7 +9,7 @@ from firebaseFolder.firebase_conversation import FirebaseConversation
 from signupBot.intent_manager import IntentManager
 from api_config.object_factory import fcm
 from signupBot.whatsapp_handle_new_user import handleNewWhatsappUser
-from utils.dialogflow_utils import _get_bot_response_from_user_session
+from utils.dialogflow_utils import create_session, get_bot_response_from_session
 from utils.helper_utils import sendTwilioResponse, extractTextFromDialogflowResponse
 from utils.message_utils import convert_dialogflow_message
 
@@ -128,7 +128,10 @@ async def process_bot_response(existing_user, userMessage, metaData, request):
     else:
         ip_address = request.transport.get_extra_info('peername')[0]
         loop = asyncio.get_running_loop()
-        botResponse = await loop.run_in_executor(None, _get_bot_response_from_user_session, userMessage, ip_address)
+        session = create_session(ip_address)
+        botResponse = await loop.run_in_executor(None,
+                                                 get_bot_response_from_session,
+                                                 session, userMessage)
 
     BotResponseJSON["body"] = botResponse
     BotResponseJSON["timestamp"] = datetime.datetime.now().strftime('%d-%b-%Y %H:%M')

@@ -3,6 +3,7 @@ import logging
 from flask import request, Response
 
 from api_config.object_factory import menuHandler
+from global_object.global_object_utils import get_all_users_from_global_object
 from intentProcessing.order_factory import format_order_data
 from orderProcessing.drink_processor import structureDrink
 from orderProcessing.order_builder import buildFullOrder
@@ -20,7 +21,7 @@ async def fulfillment_processing(requestContent):
     logging.info(f"current Intent: {currentIntent}")
     params = requestContent['queryResult']['parameters']
     if currentIntent == "Order.drink":
-        return __handleOrderDrinkIntent(params, userMessage)
+        return await __handleOrderDrinkIntent(params, userMessage)
     elif currentIntent == "Order.pizza - drink no":
         params = menuHandler.params
         fullOrder = buildFullOrder(params)
@@ -51,7 +52,7 @@ def __handleOrderPizzaIntent(queryText: str, requestContent: dict) -> Response:
                                           f"Você vai querer alguma bebida?", nextContext=followUpContext)
 
 
-def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
+async def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
     drink = structureDrink(params, userMessage)
     menuHandler.params["drinks"].append(drink)
     parameters = menuHandler.params
@@ -61,6 +62,7 @@ def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
     orderItems = orderInfo["orderItems"]
     totalPrice = orderInfo["totalPrice"]
     orderObject = format_order_data(order_items=orderItems, structured_order=fullOrder)
+    user = await get_all_users_from_global_object()
     return sendWebhookCallback(finalMessage)
 
 

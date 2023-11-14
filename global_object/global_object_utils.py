@@ -5,7 +5,6 @@ from cloudFunctionsCalls.cloud_functions_calls import fetch_all_users_from_cloud
 async def get_all_users_from_global_object():
     try:
         if app['users']:
-            # Se já existir, retorna o cache
             return app['users']
         else:
             await refresh_cache()

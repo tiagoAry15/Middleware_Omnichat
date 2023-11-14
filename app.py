@@ -19,7 +19,7 @@ from signupBot.whatsapp_user_manager import check_existing_user_from_metadata
 from utils import instagram_utils
 from utils.core_utils import extractMetaDataFromTwilioCall, appendMultipleMessagesToFirebase, create_message_json, \
     process_bot_response
-from utils.dialogflow_utils import _get_bot_response_from_user_session
+from utils.dialogflow_utils import get_bot_response_from_session, create_session
 
 from utils.instagram_utils import extractMetadataFromInstagramDict
 from utils.port_utils import get_ip_address_from_request
@@ -146,8 +146,10 @@ async def instagram(request):
                 metaData = extractMetadataFromInstagramDict(properMessage)
                 userMessage = str(properMessage["Body"][0])
                 loop = asyncio.get_running_loop()
-                botResponse = await loop.run_in_executor(None, _get_bot_response_from_user_session, userMessage,
-                                                         ip_address)
+                session = create_session(ip_address)
+                botResponse = await loop.run_in_executor(None,
+                                                         get_bot_response_from_session,
+                                                         session, userMessage)
                 await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse,
                                                        metaData=metaData)
             return web.json_response({'status': 'success', 'response': 'Message sent'}, status=400)
@@ -210,9 +212,10 @@ async def dialogflow_testing(request):
         body = await request.json()
         ip_address = get_ip_address_from_request(request)
         loop = asyncio.get_running_loop()
+        session = create_session(ip_address)
         bot_answer = await loop.run_in_executor(None,
-                                                _get_bot_response_from_user_session,
-                                                body, ip_address)
+                                                 get_bot_response_from_session,
+                                                 session, body)
         if bot_answer == "":
             return web.Response(text=json.dumps({"message": f"Could not find any response from Dialogflow for the "
                                                             f"message '{body}'. Check if your message is valid."}),

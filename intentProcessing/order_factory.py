@@ -49,6 +49,13 @@ def format_order_data(order_items: List[dict], structured_order: dict):
 
     return {"orderItems": order_pool}
 
+def build_socket_object(order_data: dict, all_users: dict):
+    all_users = {'-NjDJb4BSR7j18WCi537':
+                     {'address': 'Avenida da Paz 2845',
+                      'cpf': '12345678910',
+                      'name': 'Clark Kent',
+                      'phoneNumber': '558599171902'}}
+
 
 def __main():
     mocked_order_items, mocked_structured_order, mocket_price_note = get_order_mocked_data()

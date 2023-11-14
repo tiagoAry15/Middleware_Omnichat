@@ -34,16 +34,32 @@ def structureNewDialogflowContext(contextName: str, lifespan: int = 5):
     return [newContext]
 
 
-def _get_bot_response_from_user_session(user_message: str, ip_address: str) -> str:
+def create_session(ip_address: str) -> DialogflowSession:
+    """
+    Creates and initializes a Dialogflow session.
+
+    Args:
+    - ip_address: The IP address to create a session for.
+
+    Returns:
+    - A DialogflowSession instance.
+    """
     user_instance: DialogflowSession = dialogflowConnectionManager.get_instance_session(ip_address)
-
-    # Inicializa a sessão, assumindo que 'initialize_session' não é uma coroutine
     user_instance.initialize_session(ip_address)
+    return user_instance
 
-    # Aguarda a resposta da função assíncrona 'getDialogFlowResponse'
-    response = user_instance.getDialogFlowResponse(message=user_message)
 
-    # Extrai o texto da resposta
+def get_bot_response_from_session(session: DialogflowSession, user_message: str) -> str:
+    """
+    Gets the bot response for a given message using an existing Dialogflow session.
+
+    Args:
+    - session: An instance of DialogflowSession.
+    - user_message: The message from the user.
+
+    Returns:
+    - A string containing the bot's response.
+    """
+    response = session.getDialogFlowResponse(message=user_message)
     bot_answer: str = response.query_result.fulfillment_text
-
     return bot_answer

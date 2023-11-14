@@ -10,6 +10,7 @@ class DialogflowSession:
         self.sessionClient = dialogflow.SessionsClient(credentials=creds)
         self.session = None
         self.agentName = None
+        self.metaData = {}
 
     def initialize_session(self, user_id: str):
         if self.session is None and self.agentName is None:
