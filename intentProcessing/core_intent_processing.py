@@ -8,6 +8,7 @@ from intentProcessing.order_factory import format_order_data, build_socket_objec
 from orderProcessing.drink_processor import structureDrink
 from orderProcessing.order_builder import buildFullOrder
 from orderProcessing.pizza_processor import parsePizzaOrder, convertMultiplePizzaOrderToText
+from socketEmissions.socket_emissor import send_message
 from utils.dialogflow_utils import structureNewDialogflowContext, create_session
 from utils.helper_utils import sendWebhookCallback
 
@@ -70,6 +71,7 @@ async def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
     finalOrderObject = build_socket_object(all_users=user, order_object=orderObject,
                                              session_metadata=session_metadata)
     finalOrderObject["totalPrice"] = totalPrice
+    await send_message({'message': finalOrderObject})
     return sendWebhookCallback(finalMessage)
 
 

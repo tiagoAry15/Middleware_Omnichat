@@ -1,8 +1,6 @@
 import asyncio
 import json
 import os
-import datetime
-import uuid
 
 import aiohttp_cors
 import socketio
@@ -14,8 +12,8 @@ from api_config.api_config import app
 from api_config.object_factory import dialogflowConnectionManager
 from api_routes.speisekarte_routes import speisekarte_app
 from intentProcessing.core_intent_processing import fulfillment_processing
-from signupBot.whatsapp_handle_new_user import handleNewWhatsappUser
 from signupBot.whatsapp_user_manager import check_existing_user_from_metadata
+from socketEmissions.socket_emissor import send_message
 from utils import instagram_utils
 from utils.core_utils import extractMetaDataFromTwilioCall, appendMultipleMessagesToFirebase, create_message_json, \
     process_bot_response
@@ -43,21 +41,6 @@ app.add_subapp('/speisekarte', speisekarte_app)
 
 pending_messages = {}
 connected_users = {}  # Número máximo de tentativas de reenvio
-
-
-async def send_message(message):
-    message_id = str(uuid.uuid4())
-    message['id'] = message_id
-
-    # Armazenar informações da mensagem
-    pending_messages[message_id] = {
-        'message': message,
-        'timestamp': datetime.datetime.now(),
-        'attempts': 0
-    }
-
-    # Enviar a mensagem e iniciar o processo de verificação
-    await attempt_send_message(message_id)
 
 
 async def attempt_send_message(message_id):
