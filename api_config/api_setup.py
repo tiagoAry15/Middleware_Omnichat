@@ -9,6 +9,8 @@ import socketio
 from aiohttp import web
 from dotenv import load_dotenv
 from twilio.rest import Client
+
+from api_config.api_core_app import core_app
 from api_routes.speisekarte_routes import speisekarte_app
 
 load_dotenv()
@@ -17,23 +19,22 @@ twilio_auth_token = os.environ["TWILIO_AUTH_TOKEN"]
 twilio_phone_number = f'whatsapp:{os.environ["TWILIO_PHONE_NUMBER"]}'
 twilioClient = Client(twilio_account_ssid, twilio_auth_token)
 
-app = web.Application()
 sio = socketio.AsyncServer(async_mode='aiohttp', cors_allowed_origins='*')
-sio.attach(app)
+sio.attach(core_app)
 pending_messages = {}
 connected_users = {}
 
 ACK_TIMEOUT = 10  # Tempo limite para aguardar confirmação (em segundos)
 MAX_RETRIES = 3
 
-cors = aiohttp_cors.setup(app, defaults={
+cors = aiohttp_cors.setup(core_app, defaults={
     "*": aiohttp_cors.ResourceOptions(
         allow_credentials=True,
         expose_headers="*",
         allow_headers="*",
     )
 })
-app.add_subapp('/speisekarte', speisekarte_app)
+core_app.add_subapp('/speisekarte', speisekarte_app)
 
 
 @sio.event
@@ -92,4 +93,4 @@ async def message_ack(sid, data):
 if __name__ == '__main__':
     if os.name == 'nt':
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    web.run_app(app, port=5000)
+    web.run_app(core_app, port=5000)

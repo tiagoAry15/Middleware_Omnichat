@@ -8,7 +8,7 @@ from intentProcessing.order_factory import format_order_data, build_socket_objec
 from orderProcessing.drink_processor import structureDrink
 from orderProcessing.order_builder import buildFullOrder
 from orderProcessing.pizza_processor import parsePizzaOrder, convertMultiplePizzaOrderToText
-from api_config.api_config import send_message
+from api_config.api_setup import send_message
 from utils.dialogflow_utils import structureNewDialogflowContext, create_session
 from utils.helper_utils import sendWebhookCallback
 

@@ -1,36 +1,36 @@
 import asyncio
 import os
 
-from api_config.api_config import app
+from api_config.api_core_app import core_app
 from cloudFunctionsCalls.cloud_functions_calls import fetch_all_users_from_cloud_function
 
 
 async def initialize_cache():
     """Initial cache loading at the start of the application."""
     print("Initializing cache")
-    app['users'] = await fetch_all_users_from_cloud_function()
+    core_app['users'] = await fetch_all_users_from_cloud_function()
 
 
 async def get_all_users_from_global_object():
     """Fetch all users from the cache, refreshing if necessary."""
     try:
-        if app['users']:
-            return app['users']
+        if core_app['users']:
+            return core_app['users']
         else:
             await refresh_cache()
-            return app['users']
+            return core_app['users']
     except KeyError as e:
         await refresh_cache()
-        return app['users']
+        return core_app['users']
 
 
 async def get_single_user_from_global_object(address: str, cpf: str, name: str, phoneNumber: str):
     desired_user_data = {"address": address, "cpf": cpf, "name": name, "phoneNumber": phoneNumber}
     try:
-        all_users = app["users"]
+        all_users = core_app["users"]
     except KeyError as e:
         await refresh_cache()
-        all_users = app["users"]
+        all_users = core_app["users"]
     for unique_id, user_data in all_users.items():
         if user_data == desired_user_data:
             return user_data
@@ -38,7 +38,7 @@ async def get_single_user_from_global_object(address: str, cpf: str, name: str, 
 
 async def refresh_cache():
     """Logic to refresh cache."""
-    app['users'] = await fetch_all_users_from_cloud_function()
+    core_app['users'] = await fetch_all_users_from_cloud_function()
 
 
 async def append_user_to_global_object(user_data: dict, unique_id: str):

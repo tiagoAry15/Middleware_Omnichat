@@ -6,7 +6,7 @@ import os
 import asyncio
 import requests
 
-from api_config.api_config import twilioClient, twilio_phone_number
+from api_config.api_setup import twilioClient, twilio_phone_number
 from firebaseFolder.firebase_conversation import FirebaseConversation
 from signupBot.intent_manager import IntentManager
 from api_config.object_factory import fcm

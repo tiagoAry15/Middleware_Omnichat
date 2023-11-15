@@ -1,6 +1,8 @@
 import asyncio
 import os
 import time
+
+from api_config.api_core_app import core_app
 from cloudFunctionsCalls.cloud_functions_calls import fetch_all_users_from_cloud_function
 
 
@@ -26,8 +28,8 @@ class UserCacheManager:
             await self.refresh_cache()
             return self.app['users']
 
-    async def get_single_user(self, address: str, cpf: str, name: str, phoneNumber: str):
-        desired_user_data = {"address": address, "cpf": cpf, "name": name, "phoneNumber": phoneNumber}
+    async def get_single_user(self, metaData: dict):
+        desired_phone_number = metaData["phoneNumber"]
         if not self.app["users"]:
             await self.refresh_cache()
         try:
@@ -37,8 +39,14 @@ class UserCacheManager:
             all_users = self.app["users"]
 
         for unique_id, user_data in all_users.items():
-            if user_data == desired_user_data:
+            user_phone_number = user_data["phoneNumber"]
+            if user_phone_number == desired_phone_number:
                 return user_data
+        return None
+
+    async def check_existing_user_from_metadata(self, metaData: dict) -> bool:
+        user = await self.get_single_user(metaData)
+        return True if user else False
 
     async def refresh_cache(self):
         """Logic to refresh cache."""
@@ -51,24 +59,20 @@ class UserCacheManager:
 
 
 async def main():
-    user_cache_manager = UserCacheManager()
+    user_cache_manager = UserCacheManager(core_app)
+    session_metadata = {'from': ['whatsapp', '+558599171902'], 'ip': '127.0.0.1', 'phoneNumber': '558599171902',
+                        'sender': 'Mateus', 'userMessage': 'Vou querer um guaraná e dois sucos de laranja'}
 
     # Timing the first user fetch
     start_time = time.time()
-    user = await user_cache_manager.get_single_user(address="rua marcos macedo 700",
-                                                    cpf='06354761345',
-                                                    name='Tiago',
-                                                    phoneNumber='558599663533')
+    user = await user_cache_manager.check_existing_user_from_metadata(session_metadata)
     end_time = time.time()
     print(f"First user fetch took {end_time - start_time} seconds")
     print(user)
 
     # Timing the second user fetch
     start_time = time.time()
-    user2 = await user_cache_manager.get_single_user(address="rua marcos macedo 700",
-                                                     cpf='06354761345',
-                                                     name='Tiago',
-                                                     phoneNumber='558599663533')
+    user2 = await user_cache_manager.check_existing_user_from_metadata(session_metadata)
     end_time = time.time()
     print(f"Second user fetch took {end_time - start_time} seconds")
     print(user2)

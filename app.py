@@ -6,11 +6,12 @@ import logging
 from urllib.parse import unquote
 from aiohttp import web
 
-from api_config.api_config import app, sio, cors, send_message
-from api_config.object_factory import dialogflowConnectionManager
+from api_config.api_setup import sio, cors, send_message
+from api_config.api_core_app import core_app
+from api_config.object_factory import dialogflowConnectionManager, ucm
 
 from intentProcessing.core_intent_processing import fulfillment_processing
-from signupBot.whatsapp_user_manager import check_existing_user_from_metadata
+# from signupBot.whatsapp_user_manager import check_existing_user_from_metadata
 from utils import instagram_utils
 from utils.core_utils import extractMetaDataFromTwilioCall, appendMultipleMessagesToFirebase, create_message_json, \
     process_bot_response, sendMessageToUser
@@ -105,7 +106,7 @@ async def sandbox(request):
         userMessageJSON = create_message_json(userMessage, metaData)
 
         # Verificar se o usuário já existe
-        existing_user = await check_existing_user_from_metadata(metaData)
+        existing_user = await ucm.check_existing_user_from_metadata(metaData=metaData)
 
         # Processar a resposta do bot
         botResponse, BotResponseJSON = await process_bot_response(existing_user, userMessage, metaData, request)
@@ -188,10 +189,10 @@ async def dialogflow_testing(request):
         return web.Response(text=json.dumps({"message": str(e)}), status=500, content_type=content_type)
 
 
-app.add_routes(routes)
+core_app.add_routes(routes)
 
 # Aplicar o CORS em todas as rotas, exceto as gerenciadas pelo socket.io
-for route in list(app.router.routes()):
+for route in list(core_app.router.routes()):
 
     path = route.resource.canonical
     if "/socket.io/" not in path:  # Exclui rotas do socket.io.
@@ -199,4 +200,4 @@ for route in list(app.router.routes()):
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
-    web.run_app(app, host='0.0.0.0', port=port, shutdown_timeout=180)
+    web.run_app(core_app, host='0.0.0.0', port=port, shutdown_timeout=180)
