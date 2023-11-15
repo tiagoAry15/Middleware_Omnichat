@@ -55,8 +55,9 @@ async def send_message(message):
 
     # Armazenar informações da mensagem
     pending_messages[message_id] = {
-        'message': message,
-        'timestamp': datetime.datetime.now(),
+        'type': message['type'],
+        'body': message['body'],
+        'timestamp': str(datetime.datetime.now()),
         'attempts': 0
     }
 
@@ -67,8 +68,9 @@ async def send_message(message):
 async def attempt_send_message(message_id):
     if message_id in pending_messages:
         msg_info = pending_messages[message_id]
+        msg_info['id'] = message_id
         if msg_info['attempts'] < MAX_RETRIES:
-            await sio.emit('message', msg_info['message'])
+            await sio.emit(msg_info['type'], msg_info)
             msg_info['attempts'] += 1
             asyncio.create_task(wait_for_ack(message_id))
 
@@ -85,3 +87,9 @@ async def message_ack(sid, data):
     message_id = data['id']
     if message_id in pending_messages:
         del pending_messages[message_id]
+
+
+if __name__ == '__main__':
+    if os.name == 'nt':
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    web.run_app(app, port=5000)

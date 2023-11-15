@@ -111,9 +111,9 @@ async def sandbox(request):
         botResponse, BotResponseJSON = await process_bot_response(existing_user, userMessage, metaData, request)
 
         # Enviar mensagens e salvar no Firebase
-        await send_message({'message': userMessageJSON})
+        await send_message({'type': 'message', 'body': userMessageJSON})
         await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
-        await send_message({'message': BotResponseJSON})
+        await send_message({'type': 'message', 'body': BotResponseJSON})
 
         return web.json_response({'message': botResponse})
     except Exception as e:

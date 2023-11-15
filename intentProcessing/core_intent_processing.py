@@ -71,7 +71,7 @@ async def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
     finalOrderObject = build_socket_object(all_users=user, order_object=orderObject,
                                              session_metadata=session_metadata)
     finalOrderObject["totalPrice"] = totalPrice
-    await send_message({'order': finalOrderObject})
+    await send_message({'type': 'order', 'body': finalOrderObject})
     return sendWebhookCallback(finalMessage)
 
 

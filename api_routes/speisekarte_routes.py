@@ -1,5 +1,5 @@
 from aiohttp import web
-from api_config.object_factory import fs
+
 
 # Cria um objeto encaminhador para gerenciar as rotas
 speisekarte_routes = web.RouteTableDef()
@@ -9,7 +9,9 @@ speisekarte_app = web.Application()
 # Funções assíncronas para lidar com as requisições
 
 @speisekarte_routes.post('/create_menu')
+
 async def create_menu(request):
+    from api_config.object_factory import fs
     body_dict = await request.json()
     result = fs.createSpeisekarte(speisekarte_data=body_dict)
     if result:
@@ -19,7 +21,9 @@ async def create_menu(request):
 
 
 @speisekarte_routes.get('/get_menu_by_author/{author}')
+
 async def get_menu_by_author(request):
+    from api_config.object_factory import fs
     author = request.match_info['author']
     speisekarte_data = fs.read_speisekarte(author=author)
     if not speisekarte_data:
@@ -29,6 +33,7 @@ async def get_menu_by_author(request):
 
 @speisekarte_routes.put('/update_menu_by_author/{author}')
 async def update_menu_by_author(request):
+    from api_config.object_factory import fs
     author = request.match_info['author']
     body_dict = await request.json()
     result = fs.update_speisekarte(author=author, newData=body_dict)
@@ -39,6 +44,7 @@ async def update_menu_by_author(request):
 
 @speisekarte_routes.delete('/delete_menu_by_author/{author}')
 async def delete_menu_by_author(request):
+    from api_config.object_factory import fs
     author = request.match_info['author']
     result = fs.deleteSpeisekarte(author=author)
     if not result:

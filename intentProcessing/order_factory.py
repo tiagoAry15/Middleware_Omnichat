@@ -26,7 +26,10 @@ def format_order_data(order_items: List[dict], structured_order: dict):
 
     # Iterate through the structured order to construct the desired format
     for category, items in structured_order.items():
+        if not items:
+            continue
         for item in items:
+
             formatted_item = {}
 
             # Determine the type of item
@@ -67,7 +70,7 @@ def build_socket_object(all_users: dict, order_object: dict, session_metadata: d
     #                                {'type': 'pizza', 'flavors': ['Frango'], 'quantity': 1.0}]}
     # session_metadata = {'from': ['whatsapp', '+558599171902'], 'ip': '127.0.0.1', 'phoneNumber': '558599171902',
     #                     'sender': 'Mateus', 'userMessage': 'Vou querer um guaraná e dois sucos de laranja'}
-    # user_phone_number = session_metadata['phoneNumber']
+    user_phone_number = session_metadata['phoneNumber']
     user_details = next((details for key, details in all_users.items() if details['phoneNumber'] == user_phone_number),
                         None)
     return {"address": user_details['address'],
@@ -76,7 +79,7 @@ def build_socket_object(all_users: dict, order_object: dict, session_metadata: d
             "observation": "None",
             "platform": session_metadata["from"][0],
             "status": "Em preparação",
-            "timestamp": datetime.datetime.now().strftime("%d_%b_%Y_%H_%M_%S_%f")[:-3],
+            "timestamp": str(datetime.datetime.now().strftime("%d_%b_%Y_%H_%M_%S_%f")[:-3]),
             "orderItems": order_object["orderItems"]}
 
 
