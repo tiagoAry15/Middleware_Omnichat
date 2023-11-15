@@ -49,8 +49,6 @@ async def disconnect(sid):
         del connected_users[sid]
 
 
-
-
 async def send_message(message):
     message_id = str(uuid.uuid4())
     message['id'] = message_id

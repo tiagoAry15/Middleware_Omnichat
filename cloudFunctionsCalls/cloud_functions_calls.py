@@ -16,6 +16,7 @@ async def register_user_on_firebase(user_details: dict):
 
 
 async def fetch_all_users_from_cloud_function():
+    print("Fetching all users from cloud function")
     url = f'{CLOUD_FUNCTION_BASE_URL}/user_handler/read'
     try:
         async with aiohttp.ClientSession() as session:
