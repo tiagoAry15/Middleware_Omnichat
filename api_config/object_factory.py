@@ -7,6 +7,7 @@ from firebaseFolder.firebase_speisekarte import FirebaseSpeisekarte
 from firebaseFolder.firebase_user import FirebaseUser
 from utils.insomnia_examples import MessageConverter
 
+
 menuHandler = MenuItemHandler()
 dialogflowConnectionManager = SessionManager()
 fc = FirebaseConnection()

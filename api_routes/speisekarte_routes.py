@@ -1,9 +1,10 @@
 from aiohttp import web
 from api_config.object_factory import fs
 
-# Cria um objeto router para gerenciar as rotas
+# Cria um objeto encaminhador para gerenciar as rotas
 speisekarte_routes = web.RouteTableDef()
 speisekarte_app = web.Application()
+
 
 # Funções assíncronas para lidar com as requisições
 
@@ -43,5 +44,6 @@ async def delete_menu_by_author(request):
     if not result:
         return web.json_response({"message": "Speisekarte not found"}, status=404)
     return web.json_response({"message": "Speisekarte deleted successfully"}, status=200)
+
 
 speisekarte_app.add_routes(speisekarte_routes)
