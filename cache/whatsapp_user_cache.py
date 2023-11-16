@@ -11,11 +11,6 @@ class UserCacheManager:
         self.app = app_instance
         self.app['users'] = {}
 
-    async def initialize_cache(self):
-        """Initial cache loading at the start of the application."""
-        print("Initializing cache")
-        self.app['users'] = await fetch_all_users_from_cloud_function()
-
     async def get_all_users(self):
         """Fetch all users from the cache, refreshing if necessary."""
         try:
@@ -28,7 +23,7 @@ class UserCacheManager:
             await self.refresh_cache()
             return self.app['users']
 
-    async def get_single_user(self, metaData: dict):
+    async def get_single_user(self, metaData: dict) -> dict or None:
         desired_phone_number = metaData["phoneNumber"]
         if not self.app["users"]:
             await self.refresh_cache()
@@ -54,8 +49,7 @@ class UserCacheManager:
 
     async def append_user(self, user_data: dict, unique_id: str):
         """Append a user to the global object."""
-        users = await self.get_all_users()
-        users[unique_id] = user_data
+        self.app["users"][unique_id] = user_data
 
 
 async def main():
