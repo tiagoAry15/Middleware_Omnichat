@@ -10,7 +10,7 @@ import socketio
 from aiohttp import web
 from dotenv import load_dotenv
 from twilio.rest import Client
-from api_config.api_core_app import core_app
+from api_config.api_core_app_instance import core_app
 
 
 load_dotenv()
