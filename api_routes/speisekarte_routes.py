@@ -21,7 +21,6 @@ async def create_menu(request):
 
 
 @speisekarte_routes.get('/get_menu_by_author/{author}')
-
 async def get_menu_by_author(request):
     from api_config.object_factory import fs
     author = request.match_info['author']

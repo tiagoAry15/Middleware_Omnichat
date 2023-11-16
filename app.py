@@ -9,8 +9,10 @@ from aiohttp import web
 from api_config.api_setup import sio, cors, send_message
 from api_config.api_core_app_instance import core_app
 from api_config.object_factory import dialogflowConnectionManager, ucm
+from api_routes.speisekarte_routes import speisekarte_app
 
 from intentProcessing.core_intent_processing import fulfillment_processing
+# from signupBot.whatsapp_user_manager import check_existing_user_from_metadata
 from utils import instagram_utils
 from utils.core_utils import extractMetaDataFromTwilioCall, appendMultipleMessagesToFirebase, create_message_json, \
     process_bot_response, sendMessageToUser
@@ -24,7 +26,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s:%(name)s: %(message)s',
                     level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S')
 
 routes = web.RouteTableDef()
-
+core_app.add_subapp('/speisekarte', speisekarte_app)
 
 # Número máximo de tentativas de reenvio
 
@@ -158,6 +160,27 @@ async def send_message_to_user(request):
         if not message:
             return web.json_response(data={'error': "Message cannot be empty"}, status=400)
         response = await sendMessageToUser(message, user_number)
+        return web.json_response(data=response, status=200)
+
+    except Exception as e:
+        return web.json_response(data={'error': str(e)}, status=500)
+
+
+@routes.post('/socket_sending_order')
+async def socket_sending_order(request):
+    try:
+        if request.method == 'OPTIONS':
+            headers = {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "POST",
+                "Access-Control-Allow-Headers": "Content-Type",
+                "Access-Control-Max-Age": "3600",
+            }
+
+            return '', 204, headers
+
+        orderObject = await request.json()
+        response = await send_message({'type': 'order', 'body': orderObject})
         return web.json_response(data=response, status=200)
 
     except Exception as e:
