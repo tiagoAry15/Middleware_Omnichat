@@ -1,11 +1,11 @@
 import threading
 import uuid
 
-from dialogflowFolder.session_manager import SessionManager
+from dialogflowFolder.session_manager import DialogflowSessionManager
 
 
 def user_simulation(user_id: str, message_pool: list):
-    manager = SessionManager()
+    manager = DialogflowSessionManager()
     ds = manager.get_instance_session(user_id)
     ds.initialize_session(user_id)
 

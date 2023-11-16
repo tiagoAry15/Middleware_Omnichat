@@ -8,7 +8,7 @@ from orderProcessing.drink_processor import structureDrink
 from orderProcessing.order_builder import buildFullOrder
 from orderProcessing.pizza_processor import parsePizzaOrder, convertMultiplePizzaOrderToText
 from api_config.api_setup import send_message
-from utils.dialogflow_utils import structureNewDialogflowContext, create_session
+from utils.dialogflow_utils import structureNewDialogflowContext, create_dialogflow_session
 from utils.helper_utils import sendWebhookCallback
 
 
@@ -55,7 +55,7 @@ def __handleOrderPizzaIntent(queryText: str, requestContent: dict) -> Response:
 
 async def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
     ip_address = params["ip"]
-    session = create_session(ip_address)
+    session = create_dialogflow_session(ip_address)
     drink = structureDrink(params, userMessage)
     menuHandler.params["drinks"].append(drink)
     parameters = menuHandler.params

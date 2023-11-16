@@ -4,7 +4,7 @@ import uuid
 from dialogflowFolder.dialogflow_session import DialogflowSession
 
 
-class SessionManager:
+class DialogflowSessionManager:
     def __init__(self):
         self.sessions = {}
         self.lock = threading.Lock()
@@ -12,7 +12,7 @@ class SessionManager:
     def get_instance_session(self, user_id: str) -> DialogflowSession:
         with self.lock:
             if user_id not in self.sessions:
-                print("Creating new session for user: ", user_id)
+                print("Creating new dialogflow session for user: ", user_id)
                 self.sessions[user_id] = DialogflowSession()
             return self.sessions[user_id]
 
@@ -23,7 +23,7 @@ class SessionManager:
 
 
 def __main():
-    manager = SessionManager()
+    manager = DialogflowSessionManager()
     unique_id = str(uuid.uuid4())
     user_instance: DialogflowSession = manager.get_instance_session(unique_id)
     user_instance.initialize_session(unique_id)

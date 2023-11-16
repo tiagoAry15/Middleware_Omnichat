@@ -34,7 +34,7 @@ def structureNewDialogflowContext(contextName: str, lifespan: int = 5):
     return [newContext]
 
 
-def create_session(ip_address: str) -> DialogflowSession:
+def create_dialogflow_session(ip_address: str) -> DialogflowSession:
     """
     Creates and initializes a Dialogflow session.
 
