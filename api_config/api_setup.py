@@ -1,3 +1,4 @@
+import time
 import datetime
 import os
 
@@ -9,7 +10,7 @@ import socketio
 from aiohttp import web
 from dotenv import load_dotenv
 from twilio.rest import Client
-
+from zoneinfo import ZoneInfo
 from api_config.api_core_app import core_app
 from api_routes.speisekarte_routes import speisekarte_app
 
@@ -26,6 +27,8 @@ connected_users = {}
 
 ACK_TIMEOUT = 10  # Tempo limite para aguardar confirmação (em segundos)
 MAX_RETRIES = 3
+os. environ['TZ'] = 'America/Sao_Paulo'
+time.tzset()
 
 cors = aiohttp_cors.setup(core_app, defaults={
     "*": aiohttp_cors.ResourceOptions(
