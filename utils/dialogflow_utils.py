@@ -44,7 +44,7 @@ def create_dialogflow_session(ip_address: str) -> DialogflowSession:
     Returns:
     - A DialogflowSession instance.
     """
-    user_instance: DialogflowSession = dialogflowConnectionManager.get_instance_session(ip_address)
+    user_instance: DialogflowSession = dialogflowConnectionManager.get_dialogflow_instance(ip_address)
     user_instance.initialize_session(ip_address)
     return user_instance
 
