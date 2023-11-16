@@ -2,8 +2,7 @@ import logging
 
 from flask import Response
 
-from api_config.object_factory import menuHandler
-from global_object.global_object_utils import get_all_users_from_global_object
+from api_config.object_factory import menuHandler, ucm
 from intentProcessing.order_factory import format_order_data, build_socket_object
 from orderProcessing.drink_processor import structureDrink
 from orderProcessing.order_builder import buildFullOrder
@@ -67,9 +66,9 @@ async def __handleOrderDrinkIntent(params: dict, userMessage: str) -> Response:
     totalPrice = orderInfo["totalPrice"]
     orderObject = format_order_data(order_items=orderItems, structured_order=fullOrder)
     session_metadata = session.metaData
-    user = await get_all_users_from_global_object()
-    finalOrderObject = build_socket_object(all_users=user, order_object=orderObject,
-                                             session_metadata=session_metadata)
+    users = await ucm.get_all_users()
+    finalOrderObject = build_socket_object(all_users=users, order_object=orderObject,
+                                           session_metadata=session_metadata)
     finalOrderObject["totalPrice"] = totalPrice
     await send_message({'type': 'order', 'body': finalOrderObject})
     return sendWebhookCallback(finalMessage)

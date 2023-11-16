@@ -50,7 +50,7 @@ This module is generally imported in other modules to access the initialized ins
 
 ```python
 from api_config.api_setup import socketio
-from api_config.api_core_app import core_app
+from api_config.api_core_app_instance import core_app
 from api_config.object_factory import menuHandler
 ```
 

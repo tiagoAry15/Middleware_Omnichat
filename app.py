@@ -7,7 +7,7 @@ from urllib.parse import unquote
 from aiohttp import web
 
 from api_config.api_setup import sio, cors, send_message
-from api_config.api_core_app import core_app
+from api_config.api_core_app_instance import core_app
 from api_config.object_factory import dialogflowConnectionManager, ucm
 
 from intentProcessing.core_intent_processing import fulfillment_processing

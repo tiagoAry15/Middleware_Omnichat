@@ -2,6 +2,7 @@ import re
 
 from colorama import Fore, Style
 
+from api_config.object_factory import ucm
 from cloudFunctionsCalls.cloud_functions_calls import register_user_on_firebase
 from utils.decorators.singleton_decorator import singleton
 from firebaseFolder.firebase_user import FirebaseUser
@@ -9,7 +10,6 @@ from firebaseFolder.firebase_connection import FirebaseConnection
 from signupBot.intentTypes.intent_entry_text import EntryTextIntent
 from signupBot.intentTypes.intent_fallback import InstantFallbackIntent
 from signupBot.intentTypes.replies import Replies
-from global_object.global_object_utils import append_user_to_global_object
 
 
 class IntentNotFoundException(Exception):
@@ -133,7 +133,7 @@ class IntentManager:
         result = await register_user_on_firebase(userDetails)
         resultContent = result.text if isinstance(result, dict) else result
         unique_id = re.search(r'UniqueID = (\S+)', resultContent).group(1)
-        await append_user_to_global_object(user_data=userDetails, unique_id=unique_id)
+        await ucm.append_user(user_data=userDetails, unique_id=unique_id)
         return result
 
     def __checkUserExistence(self):
