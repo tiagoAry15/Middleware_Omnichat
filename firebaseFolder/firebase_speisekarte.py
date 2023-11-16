@@ -66,8 +66,8 @@ class FirebaseSpeisekarte(FirebaseWrapper):
         cache_unique_id = self._get_firebase_unique_id_by_author(author)
         if cache_unique_id:
             return True
-        firebase_unique_id = self.firebaseConnection.writeData(data=speisekarte_data)
-        self.data[firebase_unique_id] = speisekarte_data
+        self.firebaseConnection.writeDataWithoutUniqueId(path=author, data=speisekarte_data)
+        self.data[author] = speisekarte_data
         self._save_cache()
         return False
 
@@ -85,7 +85,7 @@ class FirebaseSpeisekarte(FirebaseWrapper):
         for key, value in newData.items():
             speisekarte[key] = value
         speisekarte['Versão'] = datetime.datetime.now().strftime("%d-%b-%Y")
-        self.firebaseConnection.overWriteData(data=speisekarte)
+        self.firebaseConnection.overWriteData(path=author, data=speisekarte)
         self._save_cache()
         return speisekarte
 

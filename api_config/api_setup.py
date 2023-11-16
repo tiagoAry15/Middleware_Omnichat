@@ -10,9 +10,8 @@ import socketio
 from aiohttp import web
 from dotenv import load_dotenv
 from twilio.rest import Client
-from zoneinfo import ZoneInfo
 from api_config.api_core_app import core_app
-from api_routes.speisekarte_routes import speisekarte_app
+
 
 load_dotenv()
 twilio_account_ssid = os.environ["TWILIO_ACCOUNT_SID"]
@@ -27,8 +26,7 @@ connected_users = {}
 
 ACK_TIMEOUT = 10  # Tempo limite para aguardar confirmação (em segundos)
 MAX_RETRIES = 3
-os. environ['TZ'] = 'America/Sao_Paulo'
-time.tzset()
+
 
 cors = aiohttp_cors.setup(core_app, defaults={
     "*": aiohttp_cors.ResourceOptions(
@@ -37,7 +35,7 @@ cors = aiohttp_cors.setup(core_app, defaults={
         allow_headers="*",
     )
 })
-core_app.add_subapp('/speisekarte', speisekarte_app)
+
 
 
 @sio.event
