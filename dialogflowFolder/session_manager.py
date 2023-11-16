@@ -12,6 +12,7 @@ class SessionManager:
     def get_instance_session(self, user_id: str) -> DialogflowSession:
         with self.lock:
             if user_id not in self.sessions:
+                print("Creating new session for user: ", user_id)
                 self.sessions[user_id] = DialogflowSession()
             return self.sessions[user_id]
 

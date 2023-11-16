@@ -53,6 +53,7 @@ def format_order_data(order_items: List[dict], structured_order: dict):
 
     return {"orderItems": order_pool}
 
+
 def build_socket_object(all_users: dict, order_object: dict, session_metadata: dict) -> dict:
     # all_users = {'-NjDJb4BSR7j18WCi537':
     #                  {'address': 'Avenida da Paz 2845',

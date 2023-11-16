@@ -140,6 +140,7 @@ async def process_bot_response(existing_user, userMessage, metaData, request):
         ip_address = request.transport.get_extra_info('peername')[0]
         loop = asyncio.get_running_loop()
         session = create_session(ip_address)
+        session.metaData = metaData
         botResponse = await loop.run_in_executor(None,
                                                  get_bot_response_from_session,
                                                  session, userMessage)
