@@ -58,6 +58,7 @@ class UserCacheManager:
 
     async def append_user(self, user_data: dict, unique_id: str):
         """Append a user to the global object."""
+        self.no_users_in_firebase = False
         self.app["users"][unique_id] = user_data
 
 
