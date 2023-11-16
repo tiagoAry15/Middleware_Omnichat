@@ -7,12 +7,12 @@ from urllib.parse import unquote
 from aiohttp import web
 
 from api_config.api_setup import sio, cors, send_message
-from api_config.api_core_app import core_app
+from api_config.api_core_app_instance import core_app
 from api_config.object_factory import dialogflowConnectionManager, ucm
 from api_routes.speisekarte_routes import speisekarte_app
 
 from intentProcessing.core_intent_processing import fulfillment_processing
-from mocks import mock_order_1
+# from signupBot.whatsapp_user_manager import check_existing_user_from_metadata
 from utils import instagram_utils
 from utils.core_utils import extractMetaDataFromTwilioCall, appendMultipleMessagesToFirebase, create_message_json, \
     process_bot_response, sendMessageToUser
@@ -215,7 +215,7 @@ core_app.add_routes(routes)
 
 # Aplicar o CORS em todas as rotas, exceto as gerenciadas pelo socket.io
 for route in list(core_app.router.routes()):
-    print(route)
+
     path = route.resource.canonical
     if "/socket.io/" not in path:  # Exclui rotas do socket.io.
         cors.add(route)
