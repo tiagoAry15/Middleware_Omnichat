@@ -11,7 +11,6 @@ from api_config.api_core_app_instance import core_app
 from api_config.object_factory import dialogflowConnectionManager, ucm
 
 from intentProcessing.core_intent_processing import fulfillment_processing
-# from signupBot.whatsapp_user_manager import check_existing_user_from_metadata
 from utils import instagram_utils
 from utils.core_utils import extractMetaDataFromTwilioCall, appendMultipleMessagesToFirebase, create_message_json, \
     process_bot_response, sendMessageToUser
