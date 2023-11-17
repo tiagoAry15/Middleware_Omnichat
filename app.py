@@ -28,6 +28,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s:%(name)s: %(message)s',
 routes = web.RouteTableDef()
 core_app.add_subapp('/speisekarte', speisekarte_app)
 
+
 # Número máximo de tentativas de reenvio
 
 
@@ -209,6 +210,29 @@ async def dialogflow_testing(request):
     except Exception as e:
         logging.exception(e)
         return web.Response(text=json.dumps({"message": str(e)}), status=500, content_type=content_type)
+
+
+@routes.post('/final_test')
+async def final_test(request):
+    data = await request.post()
+    unquoted_dict = {k: unquote(v) if isinstance(v, str) else v for k, v in request.headers.items()}
+    dictData = {**dict(data), **unquoted_dict}
+    metaData = extractMetaDataFromTwilioCall(dictData)
+    metaData["ip"] = request.transport.get_extra_info('peername')[0]
+    userMessage = metaData["userMessage"]
+    userMessageJSON = create_message_json(userMessage, metaData)
+
+    # Verificar se o usuário já existe
+    existing_user = await ucm.check_existing_user_from_metadata(metaData=metaData)
+
+    # Processar a resposta do bot
+    botResponse, BotResponseJSON = await process_bot_response(existing_user, userMessage, metaData, request)
+    # Enviar mensagens e salvar no Firebase
+    await send_message({'type': 'message', 'body': userMessageJSON})
+    await asyncio.sleep(0.5)
+    await send_message({'type': 'message', 'body': BotResponseJSON})
+
+    return web.json_response({'message': botResponse}, status=200)
 
 
 core_app.add_routes(routes)
