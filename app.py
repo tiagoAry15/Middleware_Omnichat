@@ -3,7 +3,7 @@ import json
 import os
 
 import logging
-from urllib.parse import unquote
+
 from aiohttp import web
 
 from api_config.api_setup import sio, cors, send_message
@@ -12,13 +12,13 @@ from api_config.object_factory import dialogflowConnectionManager, ucm
 from api_routes.speisekarte_routes import speisekarte_app
 
 from intentProcessing.core_intent_processing import fulfillment_processing
-# from signupBot.whatsapp_user_manager import check_existing_user_from_metadata
+
 from utils import instagram_utils
-from utils.core_utils import extractMetaDataFromTwilioCall, appendMultipleMessagesToFirebase, create_message_json, \
-    process_bot_response, sendMessageToUser
+from utils import core_utils
+from utils.core_utils import create_message_json, process_bot_response, appendMultipleMessagesToFirebase, \
+    sendMessageToUser
 from utils.dialogflow_utils import get_bot_response_from_session, create_dialogflow_session
 
-from utils.instagram_utils import extractMetadataFromInstagramDict
 from utils.port_utils import get_ip_address_from_request
 
 logging.basicConfig(level=logging.DEBUG)
@@ -72,23 +72,18 @@ async def instagram(request):
             else:
                 return 'Invalid Request', 403
         if request.method == 'POST':
-            # Handle POST requests here (i.e. updates from Instagram)
-            data = request.get_json()
-            headers = list(request.headers)
-            ip_address = request.remote_addr
-            is_echo = data['entry'][0]['messaging'][0]['message'].get('is_echo')
-            if not is_echo:
-                properMessage: dict = instagram_utils.convertIncomingInstagramMessageToProperFormat(data)
-                metaData = extractMetadataFromInstagramDict(properMessage)
-                userMessage = str(properMessage["Body"][0])
-                loop = asyncio.get_running_loop()
-                session = create_dialogflow_session(ip_address)
-                botResponse = await loop.run_in_executor(None,
-                                                         get_bot_response_from_session,
-                                                         session, userMessage)
-                await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse,
-                                                       metaData=metaData)
-            return web.json_response({'status': 'success', 'response': 'Message sent'}, status=400)
+
+            userMessage, metaData = await instagram_utils.extract_data_from_request(request)
+
+            userMessageJSON = create_message_json(userMessage, metaData)
+            existing_user = await ucm.check_existing_user_from_metadata(metaData=metaData)
+
+            botResponse, BotResponseJSON = await core_utils.process_bot_response(existing_user, userMessage, metaData)
+            await send_message({'type': 'message', 'body': userMessageJSON})
+            await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
+            await send_message({'type': 'message', 'body': BotResponseJSON})
+
+            return web.json_response({'status': 'success', 'response': 'Message sent'}, status=200)
     except Exception as e:
         print(e)
         logging.error(e)
@@ -98,27 +93,18 @@ async def instagram(request):
 @routes.post('/twilioSandbox')
 async def sandbox(request):
     try:
-        data = await request.post()
-        print("TWILIO SANDBOX ENDPOINT!")
-        unquoted_dict = {k: unquote(v) if isinstance(v, str) else v for k, v in request.headers.items()}
-        dictData = {**dict(data), **unquoted_dict}
-        metaData = extractMetaDataFromTwilioCall(dictData)
-        metaData["ip"] = request.transport.get_extra_info('peername')[0]
-        userMessage = metaData["userMessage"]
-        userMessageJSON = create_message_json(userMessage, metaData)
+        userMessage, metaData = await core_utils.extract_data_fro_request(request)
 
-        # Verificar se o usuário já existe
+        userMessageJSON = create_message_json(userMessage, metaData)
         existing_user = await ucm.check_existing_user_from_metadata(metaData=metaData)
 
-        # Processar a resposta do bot
-        botResponse, BotResponseJSON = await process_bot_response(existing_user, userMessage, metaData, request)
+        botResponse, BotResponseJSON = await process_bot_response(existing_user, userMessage, metaData)
 
-        # Enviar mensagens e salvar no Firebase
         await send_message({'type': 'message', 'body': userMessageJSON})
         await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
         await send_message({'type': 'message', 'body': BotResponseJSON})
-
         return web.json_response({'message': botResponse})
+
     except Exception as e:
         print(e)
         logging.error(e)
@@ -214,12 +200,7 @@ async def dialogflow_testing(request):
 
 @routes.post('/final_test')
 async def final_test(request):
-    data = await request.post()
-    unquoted_dict = {k: unquote(v) if isinstance(v, str) else v for k, v in request.headers.items()}
-    dictData = {**dict(data), **unquoted_dict}
-    metaData = extractMetaDataFromTwilioCall(dictData)
-    metaData["ip"] = request.transport.get_extra_info('peername')[0]
-    userMessage = metaData["userMessage"]
+    userMessage, metaData = await core_utils.extract_data_fro_request(request)
     userMessageJSON = create_message_json(userMessage, metaData)
 
     # Verificar se o usuário já existe

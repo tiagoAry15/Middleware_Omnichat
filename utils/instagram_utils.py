@@ -4,6 +4,21 @@ import os
 from utils.core_utils import updateFirebaseWithUserMessage, processDialogFlowMessage
 import requests
 
+from utils.port_utils import get_ip_address_from_request
+
+
+async def extract_data_from_request(request):
+    data = await request.json()
+    headers = list(request.headers)
+    ip_address = get_ip_address_from_request(request)
+
+    is_echo = data['entry'][0]['messaging'][0]['message'].get('is_echo')
+    if not is_echo:
+        properMessage: dict = convertIncomingInstagramMessageToProperFormat(data)
+        metaData = extractMetadataFromInstagramDict(properMessage)
+        userMessage = str(properMessage["Body"][0])
+        metaData["ip"] = ip_address
+        return userMessage, metaData
 
 def convertIncomingInstagramMessageToProperFormat(data):
     messageContent = data['entry'][0]['messaging'][0]['message']['text']

@@ -2,7 +2,7 @@ import datetime
 import json
 import logging
 import os
-
+from urllib.parse import unquote
 import asyncio
 import requests
 
@@ -14,6 +14,7 @@ from signupBot.whatsapp_handle_new_user import handleNewWhatsappUser
 from utils.dialogflow_utils import create_dialogflow_session, get_bot_response_from_session
 from utils.helper_utils import sendTwilioResponse, extractTextFromDialogflowResponse
 from utils.message_utils import convert_dialogflow_message
+from utils.port_utils import get_ip_address_from_request
 
 
 def updateFirebaseWithUserMessage(data: dict):
@@ -22,6 +23,17 @@ def updateFirebaseWithUserMessage(data: dict):
                                                      processedData["receivedMessage"])
     conversation = fcm.appendMessageToWhatsappNumber(messageData=userMessageJSON, whatsappNumber=phoneNumber)
     return userMessageJSON
+
+
+async def extract_data_fro_request(request):
+    data = await request.post()
+    print("TWILIO SANDBOX ENDPOINT!")
+    unquoted_dict = {k: unquote(v) if isinstance(v, str) else v for k, v in request.headers.items()}
+    dictData = {**dict(data), **unquoted_dict}
+    metaData = extractMetaDataFromTwilioCall(dictData)
+    metaData["ip"] = get_ip_address_from_request(request)
+    userMessage = metaData["userMessage"]
+    return userMessage, metaData
 
 
 def __transformTwilioDataIntoStructuredFirebaseData(data: dict) -> dict:
@@ -47,6 +59,7 @@ async def sendMessageToUser(message: str, phoneNumber: str):
     #     to=f'whatsapp:+{phoneNumber}'
     # )
     return response
+
 
 def __checkUserRegistration(phoneNumber: str):
     im = IntentManager()
@@ -126,14 +139,15 @@ def create_message_json(message, metaData):
     }
 
 
-async def process_bot_response(existing_user, userMessage, metaData, request):
+async def process_bot_response(existing_user, userMessage, metaData):
     BotResponseJSON = {
         "body": '',
         "timestamp": '',
         **metaData,
         "sender": "Bot"
     }
-    ip_address = request.transport.get_extra_info('peername')[0]
+    ip_address = metaData["ip"]
+    metaData['userMessage'] = userMessage
     if not existing_user:
         botResponse = await handleNewWhatsappUser(user_meta_data=metaData, ip_address=ip_address)
     else:
