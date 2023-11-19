@@ -1,13 +1,30 @@
 import uuid
 from typing import List
 import asyncio
+
+from ipAddressSessions.dialogflow_session_manager import DialogflowSessionFactory
 from ipAddressSessions.signupBot_session_manager import SignupBotFactory
 from signupBot.intent_manager import SignupBot
 
+dialogManager = DialogflowSessionFactory()
+signupManager = SignupBotFactory()
 
+
+async def single_dialogflow_user_simulation(user_id: str, message_pool: list):
+    ds = dialogManager.get_session(user_id)
+    ds.initialize_session(user_id)
+
+    response_dict = {}
+    for message in message_pool:
+        response = await ds.getDialogFlowResponse(message=message)  # assuming this is an async method
+        bot_answer = response.query_result.fulfillment_text
+        response_dict[message] = bot_answer
+    return response_dict
+
+
+# Adjust the run_simulation a
 async def single_signup_bot_user_simulation(user_id: str, message_pool: list):
-    manager = SignupBotFactory()
-    ds: SignupBot = manager.get_session(user_id)
+    ds: SignupBot = signupManager.get_session(user_id)
 
     response_dict = {}
     for message in message_pool:
@@ -33,8 +50,8 @@ async def run_simulation(user1_messages: List[str], user2_messages: List[str], s
 async def __main():
     user_1_messages = ["Oii", "Clark Kent", "Avenida da Paz 2845"]
     user_2_messages = ["Oii", "Bruce Wayne", "Rua das Flores 4874"]
-    await run_simulation(user_1_messages, user_2_messages, single_signup_bot_user_simulation)  # await the function call
+    await run_simulation(user_1_messages, user_2_messages, single_signup_bot_user_simulation)
 
 
 if __name__ == "__main__":
-    asyncio.run(__main())  # Use asyncio.run for Python 3.7+
+    asyncio.run(__main())

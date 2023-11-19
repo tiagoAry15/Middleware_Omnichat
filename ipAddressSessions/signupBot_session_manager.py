@@ -3,8 +3,10 @@ import uuid
 
 from ipAddressSessions.session_manager import SessionManager
 from signupBot.intent_manager import SignupBot
+from utils.decorators.singleton_decorator import singleton
 
 
+@singleton
 class SignupBotFactory(SessionManager):
     def __init__(self):
         self.intentManagers = {}

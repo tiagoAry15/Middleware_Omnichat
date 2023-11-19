@@ -23,7 +23,6 @@ def getIntentPot():
             EntryTextIntent(Replies.SIGNUP_ADDRESS), EntryTextIntent(Replies.SIGNUP_CPF)]
 
 
-@singleton
 class SignupBot:
     def __init__(self):
         self.numberPot = []
