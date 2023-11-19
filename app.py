@@ -59,7 +59,7 @@ async def erase_session(request):
     if request.method != "PUT":
         return "This endpoint only accepts PUT requests", 405
     ip_address = request.remote_addr
-    dialogflowConnectionManager.erase_session(ip_address)
+    dialogflowConnectionManager.erase_dialogflow_session(ip_address)
     return "Session erased", 200
 
 
@@ -98,7 +98,7 @@ async def sandbox(request):
         userMessageJSON = create_message_json(userMessage, metaData)
         existing_user = await ucm.check_existing_user_from_metadata(metaData=metaData)
 
-        botResponse, BotResponseJSON = await process_bot_response(existing_user, userMessage, metaData)
+        botResponse, BotResponseJSON = await process_bot_response(existing_user, userMessage, metaData, request)
 
         await send_message({'type': 'message', 'body': userMessageJSON})
         await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)

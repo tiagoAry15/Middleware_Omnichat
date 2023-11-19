@@ -139,14 +139,14 @@ def create_message_json(message, metaData):
     }
 
 
-async def process_bot_response(existing_user, userMessage, metaData):
+async def process_bot_response(existing_user, userMessage, metaData, request):
     BotResponseJSON = {
         "body": '',
         "timestamp": '',
         **metaData,
         "sender": "Bot"
     }
-    ip_address = metaData["ip"]
+    ip_address = get_ip_address_from_request(request)
     metaData['userMessage'] = userMessage
     if not existing_user:
         botResponse = await handleNewWhatsappUser(user_meta_data=metaData, ip_address=ip_address)
