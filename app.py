@@ -8,7 +8,8 @@ from aiohttp import web
 
 from api_config.api_setup import sio, cors, send_message
 from api_config.core_factory import core_app
-from api_config.object_factory import dialogflowConnectionManager, ucm
+from api_config.object_factory import dialogflowConnectionManager
+from api_config.cache_updater import ucm
 from api_routes.speisekarte_routes import speisekarte_app
 
 from intentProcessing.core_intent_processing import fulfillment_processing

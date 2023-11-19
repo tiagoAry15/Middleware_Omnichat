@@ -2,7 +2,7 @@ import re
 
 from colorama import Fore, Style
 
-from api_config.object_factory import ucm
+from api_config.cache_updater import ucm
 from cloudFunctionsCalls.cloud_functions_calls import register_user_on_firebase
 from utils.decorators.singleton_decorator import singleton
 from firebaseFolder.firebase_user import FirebaseUser

@@ -2,7 +2,8 @@ import logging
 
 from flask import Response
 
-from api_config.object_factory import menuHandler, ucm
+from api_config.object_factory import menuHandler
+from api_config.cache_updater import ucm
 from intentProcessing.order_factory import format_order_data, build_socket_object
 from orderProcessing.drink_processor import structureDrink
 from orderProcessing.order_builder import buildFullOrder

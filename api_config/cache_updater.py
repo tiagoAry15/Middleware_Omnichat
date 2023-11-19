@@ -1,6 +1,10 @@
 import os
 import asyncio
-from api_config.object_factory import ucm
+
+from api_config.core_factory import core_app
+from cache.whatsapp_user_cache import UserCacheManager
+
+ucm = UserCacheManager(core_app)
 
 
 async def update_user_cache():
