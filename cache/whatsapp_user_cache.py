@@ -2,7 +2,7 @@ import asyncio
 import os
 import time
 
-from api_config.api_core_app_instance import core_app
+from api_config.core_factory import core_app
 from cloudFunctionsCalls.cloud_functions_calls import fetch_all_users_from_cloud_function
 
 

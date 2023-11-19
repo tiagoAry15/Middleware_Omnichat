@@ -1,4 +1,4 @@
-from api_config.api_core_app_instance import core_app
+from api_config.core_factory import core_app
 from data.menu_item_handler import MenuItemHandler
 from dialogflowFolder.session_manager import SessionFactory
 from firebaseFolder.firebase_connection import FirebaseConnection

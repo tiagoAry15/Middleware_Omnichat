@@ -2,13 +2,11 @@ import threading
 import uuid
 
 from dialogflowFolder.dialogflow_session import DialogflowSession
-from signupBot.intent_manager import IntentManager
 
 
 class SessionFactory:
     def __init__(self):
         self.dialogflowSessions = {}
-        self.intentManagerSessions = {}
         self.lock = threading.Lock()
 
     def get_dialogflow_instance(self, ip_address: str) -> DialogflowSession:
@@ -18,19 +16,10 @@ class SessionFactory:
                 self.dialogflowSessions[ip_address] = DialogflowSession()
             return self.dialogflowSessions[ip_address]
 
-    def get_intent_manager_instance(self, ip_address: str) -> IntentManager:
-        with self.lock:
-            if ip_address not in self.intentManagerSessions:
-                print("Creating new Intent Manager for user: ", ip_address)
-                self.intentManagerSessions[ip_address] = IntentManager()
-            return self.intentManagerSessions[ip_address]
-
     def erase_dialogflow_session(self, ip_address: str):
         with self.lock:
             if ip_address in self.dialogflowSessions:
                 del self.dialogflowSessions[ip_address]
-            if ip_address in self.intentManagerSessions:
-                del self.intentManagerSessions[ip_address]
 
 
 def __main():
