@@ -139,10 +139,6 @@ def create_message_json(message, metaData):
     }
 
 
-def get_custom_ip_address(request):
-    return request.headers.get("CustomIp")
-
-
 async def process_bot_response(existing_user, userMessage, metaData):
     BotResponseJSON = {
         "body": '',

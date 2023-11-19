@@ -42,10 +42,18 @@ def get_service_details(pid):
 
 
 def get_ip_address_from_request(request) -> str:
+    # Verificar se o cabeçalho 'CustomIp' está presente
+    custom_ip = request.headers.get('CustomIp')
+    if custom_ip:
+        return custom_ip
+    if request.sessions:
+        return request.sessions.get('ip')
+    # Lógica existente para obter o endereço IP
     if request.transport:
-        return request.transport.get_extra_info('peername')[0] if request.transport else None
+        return request.transport.get_extra_info('peername')[0]
     else:
         return 'Unknown'
+
 
 
 def __main__():

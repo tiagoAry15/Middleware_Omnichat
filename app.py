@@ -115,7 +115,7 @@ async def sandbox(request):
 async def webhookForIntent(request):
     try:
         requestContent = await request.json()
-        requestContent["ip"] = request.transport.get_extra_info('peername')[0]
+        requestContent["ip"] = requestContent['session'].split('/')[-1]
         response_content = await fulfillment_processing(requestContent)
         if isinstance(response_content, str):
             response_content = json.loads(response_content)
@@ -207,7 +207,7 @@ async def final_test(request):
     existing_user = await ucm.check_existing_user_from_metadata(metaData=metaData)
 
     # Processar a resposta do bot
-    botResponse, BotResponseJSON = await process_bot_response(existing_user, userMessage, metaData, request)
+    botResponse, BotResponseJSON = await process_bot_response(existing_user, userMessage, metaData)
     # Enviar mensagens e salvar no Firebase
     await send_message({'type': 'message', 'body': userMessageJSON})
     await asyncio.sleep(0.5)
