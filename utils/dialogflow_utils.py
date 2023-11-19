@@ -1,5 +1,6 @@
-from api_config.object_factory import menuHandler, dialogflowConnectionManager
+from api_config.object_factory import menuHandler, dialogflowConnectionManager, signupBotConnectionManager
 from dialogflowFolder.dialogflow_session import DialogflowSession
+from signupBot.intent_manager import SignupBot
 
 
 def structureNewDialogflowContext(contextName: str, lifespan: int = 5):
@@ -46,6 +47,20 @@ def create_dialogflow_session(ip_address: str) -> DialogflowSession:
     """
     user_instance: DialogflowSession = dialogflowConnectionManager.get_session(ip_address)
     user_instance.initialize_session(ip_address)
+    return user_instance
+
+
+def create_signup_bot_session(ip_address: str) -> SignupBot:
+    """
+    Creates and initializes a SignupBot session.
+
+    Args:
+    - ip_address: The IP address to create a session for.
+
+    Returns:
+    - A SignupBot instance.
+    """
+    user_instance: SignupBot = signupBotConnectionManager.get_session(ip_address)
     return user_instance
 
 

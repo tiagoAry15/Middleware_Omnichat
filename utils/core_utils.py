@@ -11,7 +11,7 @@ from firebaseFolder.firebase_conversation import FirebaseConversation
 from signupBot.intent_manager import SignupBot
 from api_config.object_factory import fcm
 from signupBot.whatsapp_handle_new_user import handleNewWhatsappUser
-from utils.dialogflow_utils import create_dialogflow_session, get_bot_response_from_session
+from utils.dialogflow_utils import create_dialogflow_session, get_bot_response_from_session, create_signup_bot_session
 from utils.helper_utils import sendTwilioResponse, extractTextFromDialogflowResponse
 from utils.message_utils import convert_dialogflow_message
 from utils.port_utils import get_ip_address_from_request
@@ -149,11 +149,8 @@ async def process_bot_response(existing_user, userMessage, metaData, request):
     ip_address = get_ip_address_from_request(request)
     metaData['userMessage'] = userMessage
     if not existing_user:
-        im = SignupBot()
-        userMessage = metaData["userMessage"]
-        phoneNumber = metaData["phoneNumber"]
-        im.extractedParameters["phoneNumber"] = phoneNumber
-        botResponse = await im.twilioSingleStep(userMessage)
+        im = create_signup_bot_session(ip_address)
+        botResponse = await handleNewWhatsappUser(metaData=metaData, signupBotInstance=im)
     else:
         loop = asyncio.get_running_loop()
         session = create_dialogflow_session(ip_address)

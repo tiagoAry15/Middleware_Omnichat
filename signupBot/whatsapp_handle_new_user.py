@@ -4,7 +4,9 @@ from signupBot.intent_manager import SignupBot
 import asyncio
 
 
-async def handleNewWhatsappUser(userMessage: str, phoneNumber: str, signupBotInstance: SignupBot):
+async def handleNewWhatsappUser(metaData: dict, signupBotInstance: SignupBot):
+    userMessage = metaData["userMessage"]
+    phoneNumber = metaData["phoneNumber"]
     signupBotInstance.extractedParameters["phoneNumber"] = phoneNumber
     return await signupBotInstance.twilioSingleStep(userMessage)
 
