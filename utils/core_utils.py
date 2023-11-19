@@ -8,7 +8,7 @@ import requests
 
 from api_config.api_setup import twilioClient, twilio_phone_number
 from firebaseFolder.firebase_conversation import FirebaseConversation
-from signupBot.intent_manager import IntentManager
+from signupBot.intent_manager import SignupBot
 from api_config.object_factory import fcm
 from signupBot.whatsapp_handle_new_user import handleNewWhatsappUser
 from utils.dialogflow_utils import create_dialogflow_session, get_bot_response_from_session
@@ -62,7 +62,7 @@ async def sendMessageToUser(message: str, phoneNumber: str):
 
 
 def __checkUserRegistration(phoneNumber: str):
-    im = IntentManager()
+    im = SignupBot()
     needsToSignUp = not im.existingWhatsapp(phoneNumber)
     return needsToSignUp
 
@@ -85,7 +85,7 @@ def storeMessageInFirebase(firebase_instance: FirebaseConversation, message_data
 
 def __handleNewUser(phoneNumber: str, receivedMessage: str):
     logging.info("Needs to sign up!")
-    im = IntentManager()
+    im = SignupBot()
     im.extractedParameters["phoneNumber"] = phoneNumber
     botAnswer = im.twilioSingleStep(receivedMessage)
     dialogflowResponseJSON = convert_dialogflow_message(botAnswer, phoneNumber)

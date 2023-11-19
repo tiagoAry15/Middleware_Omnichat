@@ -24,7 +24,7 @@ def getIntentPot():
 
 
 @singleton
-class IntentManager:
+class SignupBot:
     def __init__(self):
         self.fc = FirebaseConnection()
         self.fu = FirebaseUser(self.fc)
@@ -155,7 +155,7 @@ class IntentManager:
 
 
 def __main():
-    im = IntentManager()
+    im = SignupBot()
     # existingUser = im.existingWhatsapp("+19574430239")
     existingUser = False
     if not existingUser:
