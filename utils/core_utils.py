@@ -149,7 +149,11 @@ async def process_bot_response(existing_user, userMessage, metaData, request):
     ip_address = get_ip_address_from_request(request)
     metaData['userMessage'] = userMessage
     if not existing_user:
-        botResponse = await handleNewWhatsappUser(user_meta_data=metaData, ip_address=ip_address)
+        im = SignupBot()
+        userMessage = metaData["userMessage"]
+        phoneNumber = metaData["phoneNumber"]
+        im.extractedParameters["phoneNumber"] = phoneNumber
+        botResponse = await im.twilioSingleStep(userMessage)
     else:
         loop = asyncio.get_running_loop()
         session = create_dialogflow_session(ip_address)
