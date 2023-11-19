@@ -1,6 +1,6 @@
 from api_config.core_factory import core_app
 from data.menu_item_handler import MenuItemHandler
-from dialogflowFolder.session_manager import SessionFactory
+from dialogflowFolder.dialogflow_session_manager import DialogflowSessionFactory
 from firebaseFolder.firebase_connection import FirebaseConnection
 from firebaseFolder.firebase_conversation import FirebaseConversation
 from firebaseFolder.firebase_order import FirebaseOrder
@@ -11,7 +11,7 @@ from utils.insomnia_examples import MessageConverter
 
 
 menuHandler = MenuItemHandler()
-dialogflowConnectionManager = SessionFactory()
+dialogflowConnectionManager = DialogflowSessionFactory()
 fc = FirebaseConnection()
 fu = FirebaseUser(fc)
 fcm = FirebaseConversation(fc)

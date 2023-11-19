@@ -59,7 +59,7 @@ async def erase_session(request):
     if request.method != "PUT":
         return "This endpoint only accepts PUT requests", 405
     ip_address = request.remote_addr
-    dialogflowConnectionManager.erase_dialogflow_session(ip_address)
+    dialogflowConnectionManager.delete_session(ip_address)
     return "Session erased", 200
 
 
