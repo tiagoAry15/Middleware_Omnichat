@@ -1,7 +1,7 @@
 import threading
 import uuid
 
-from dialogflowFolder.dialogflow_session_manager import DialogflowSessionFactory
+from ipAddressSessions.dialogflow_session_manager import DialogflowSessionFactory
 
 
 def user_simulation(user_id: str, message_pool: list):

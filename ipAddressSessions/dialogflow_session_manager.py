@@ -2,7 +2,7 @@ import threading
 import uuid
 
 from dialogflowFolder.dialogflow_session import DialogflowSession
-from dialogflowFolder.session_manager import SessionManager
+from ipAddressSessions.session_manager import SessionManager
 
 
 class DialogflowSessionFactory(SessionManager):

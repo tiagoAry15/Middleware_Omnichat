@@ -1,6 +1,6 @@
 from api_config.core_factory import core_app
 from data.menu_item_handler import MenuItemHandler
-from dialogflowFolder.dialogflow_session_manager import DialogflowSessionFactory
+from ipAddressSessions.dialogflow_session_manager import DialogflowSessionFactory
 from firebaseFolder.firebase_connection import FirebaseConnection
 from firebaseFolder.firebase_conversation import FirebaseConversation
 from firebaseFolder.firebase_order import FirebaseOrder
