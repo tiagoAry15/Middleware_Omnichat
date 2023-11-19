@@ -26,8 +26,6 @@ def getIntentPot():
 @singleton
 class SignupBot:
     def __init__(self):
-        self.fc = FirebaseConnection()
-        self.fu = FirebaseUser(self.fc)
         self.numberPot = []
         self.whatsappNumber = ""
         self.existingUser = False
@@ -124,9 +122,6 @@ class SignupBot:
         self.finished = True
         await self.registerWhatsapp(self.extractedParameters)
         return "Usuário cadastrado com sucesso!, digite 'ok' para continuar"
-
-    def existingWhatsapp(self, whatsappNumber: str) -> bool:
-        return self.fu.existingUser({"phoneNumber": whatsappNumber})
 
     async def registerWhatsapp(self, userDetails: dict):
         self.existingUser = True
