@@ -74,9 +74,10 @@ def build_socket_object(all_users: dict, order_object: dict, session_metadata: d
     user_phone_number = session_metadata['phoneNumber']
     user_details = next((details for key, details in all_users.items() if details['phoneNumber'] == user_phone_number),
                         None)
-    return {"address": user_details['address'],
+    details = user_details or session_metadata
+    return {"address": details['address'],
             "communication": user_phone_number,
-            "customerName": user_details['name'],
+            "customerName": details['name'],
             "observation": "None",
             "platform": session_metadata["from"][0],
             "status": "Em preparação",
