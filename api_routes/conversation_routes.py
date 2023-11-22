@@ -76,5 +76,5 @@ def push_new_message_by_whatsapp_number():
     # if not conversations:
     #     return jsonify({"Error": f"Could not find conversations for the user with whatsapp {whatsapp_number}"}), 404
     message = {"content": data.get("message")}
-    fcm.appendMessageToWhatsappNumber(messageData=message, whatsappNumber=whatsapp_number)
+    fcm.appendMessageToConversation(messageData=message, whatsappNumber=whatsapp_number)
     return jsonify({"Success": f"New message pushed for user with whatsapp {whatsapp_number}"}), 200
