@@ -1,4 +1,3 @@
-
 import json
 import os
 
@@ -28,6 +27,7 @@ routes = web.RouteTableDef()
 core_app.add_subapp('/speisekarte', speisekarte_app)
 core_app.add_subapp('/test', test_app)
 
+
 # Número máximo de tentativas de reenvio
 
 
@@ -53,7 +53,6 @@ async def instagram(request):
             else:
                 return 'Invalid Request', 403
         if request.method == 'POST':
-
             userMessage, metaData = await instagram_utils.extract_data_from_request(request)
 
             userMessageJSON = create_message_json(userMessage, metaData)
@@ -64,11 +63,11 @@ async def instagram(request):
             await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
             await send_message({'type': 'message', 'body': BotResponseJSON})
 
-            return web.json_response({'status': 'success', 'response': 'Message sent'}, status=200)
+            return web.Response(text=botResponse, content_type='text/plain')
     except Exception as e:
         print(e)
         logging.error(e)
-        return web.json_response({'status': 'failed', 'response': 'Message not sent'}, status=400)
+        return web.Response(text=str(e), status=500, content_type='text/plain')
 
 
 @routes.post('/twilioSandbox')
@@ -84,12 +83,12 @@ async def sandbox(request):
         await send_message({'type': 'message', 'body': userMessageJSON})
         await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
         await send_message({'type': 'message', 'body': BotResponseJSON})
-        return web.json_response({'message': botResponse})
+        return web.Response(text=botResponse, content_type='text/plain')
 
     except Exception as e:
         print(e)
         logging.error(e)
-        return web.json_response({'message': 'Message not sent', 'error': str(e)}, status=400)
+        return web.Response(text=str(e), status=500, content_type='text/plain')
 
 
 @routes.post('/webhookForIntent')

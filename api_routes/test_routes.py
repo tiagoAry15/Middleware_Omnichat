@@ -56,7 +56,7 @@ async def dialogflow_testing(request):
         session.metaData = {
             "from": request.headers.get("From"),
             "name": request.headers.get("ProfileName"),
-            "phoneNumber":request.headers.get("From").split(":")[1],
+            "phoneNumber": request.headers.get("From").split(":")[1],
             "address": request.headers.get("Address"),
         }
         bot_answer = await loop.run_in_executor(None,
@@ -88,5 +88,12 @@ async def final_test(request):
     await send_message({'type': 'message', 'body': BotResponseJSON})
 
     return web.json_response({'message': botResponse}, status=200)
+
+
+@test_routes.get('/instagram_test')
+async def instagram_test(request):
+    print(request)
+    return web.Response(text="Hello from Instagram test")
+
 
 test_app.add_routes(test_routes)

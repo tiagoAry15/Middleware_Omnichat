@@ -48,7 +48,7 @@ class FirebaseConversation(FirebaseWrapper):
         else:
             return self.createConversation(conversationData)
 
-    def appendMessageToWhatsappNumber(self, messageData, whatsappNumber: str):
+    def appendMessageToConversation(self, messageData, whatsappNumber: str):
         all_conversations = self.getAllConversations()
 
         # Converte messageData em uma lista se for um di
@@ -168,7 +168,7 @@ def __main():
     phoneNumber = '558599171902'
     msgDict = {'body': 'Oii', 'from': 'whatsapp', 'phoneNumber': phoneNumber, 'sender': 'Mateus',
                'time': datetime.datetime.now().strftime('%H:%M')}
-    fcm.appendMessageToWhatsappNumber(msgDict, phoneNumber)
+    fcm.appendMessageToConversation(msgDict, phoneNumber)
     # msgDict = {"phoneNumber": "+5585994875485", "body": "Olá, tudo bem?", "name": "Maria", "from": "facebook"}
     # fcm.createFirstDummyConversationByWhatsappNumber(msgDict)
     # createDummyConversations()

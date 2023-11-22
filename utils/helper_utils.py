@@ -90,7 +90,7 @@ def __getUserByWhatsappNumber(whatsappNumber: str) -> dict or None:
 def __addBotMessageToFirebase(phoneNumber, userMessageJSON):
     msgDict = copy.deepcopy(userMessageJSON)
     msgDict["sender"] = "ChatBot"
-    fcm.appendMessageToWhatsappNumber(msgDict, phoneNumber)
+    fcm.appendMessageToConversation(msgDict, phoneNumber)
 
 
 def sendTwilioResponse(body: str, media: str = None) -> str:

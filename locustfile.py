@@ -31,6 +31,7 @@ class MyUser(HttpUser):
         headers = {'Content-Type': 'application/json'}
         payload = 'teste'
         self.client.post("/testDialogflow", json=payload, headers=headers)
+
     @task
     def post_final_test(self):
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}

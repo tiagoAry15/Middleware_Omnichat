@@ -17,6 +17,7 @@ load_dotenv()
 twilio_account_ssid = os.environ["TWILIO_ACCOUNT_SID"]
 twilio_auth_token = os.environ["TWILIO_AUTH_TOKEN"]
 twilio_phone_number = f'whatsapp:{os.environ["TWILIO_PHONE_NUMBER"]}'
+twilio_fb_page_id = f'messenger:{os.environ["TWILIO_FB_PAGE_ID"]}'
 twilioClient = Client(twilio_account_ssid, twilio_auth_token)
 
 sio = socketio.AsyncServer(async_mode='aiohttp', cors_allowed_origins='*')

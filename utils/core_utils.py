@@ -6,7 +6,7 @@ from urllib.parse import unquote
 import asyncio
 import requests
 
-from api_config.api_setup import twilioClient, twilio_phone_number
+from api_config.api_setup import twilioClient, twilio_phone_number, twilio_fb_page_id
 from firebaseFolder.firebase_conversation import FirebaseConversation
 from signupBot.intent_manager import SignupBot
 from api_config.object_factory import fcm
@@ -21,7 +21,7 @@ def updateFirebaseWithUserMessage(data: dict):
     processedData: dict = __transformTwilioDataIntoStructuredFirebaseData(data)
     userMessageJSON, phoneNumber, receivedMessage = (processedData["userMessageJSON"], processedData["phoneNumber"],
                                                      processedData["receivedMessage"])
-    conversation = fcm.appendMessageToWhatsappNumber(messageData=userMessageJSON, whatsappNumber=phoneNumber)
+    conversation = fcm.appendMessageToConversation(messageData=userMessageJSON, whatsappNumber=phoneNumber)
     return userMessageJSON
 
 
@@ -51,13 +51,30 @@ def __transformTwilioDataIntoStructuredFirebaseData(data: dict) -> dict:
     }
 
 
-async def sendMessageToUser(message: str, phoneNumber: str):
-    response = fcm.appendMessageToWhatsappNumber(messageData=message, whatsappNumber=phoneNumber)
-    # msg = await twilioClient.messages.create(
-    #     body=message,
-    #     from_=twilio_phone_number,
-    #     to=f'whatsapp:+{phoneNumber}'
-    # )
+async def sendMessageToUser(message, phoneNumber: str):
+    # Adiciona a mensagem ao seu sistema de gerenciamento de mensagens
+    response = fcm.appendMessageToConversation(messageData=message, whatsappNumber=phoneNumber)
+
+    # Determina o destino e a origem da mensagem com base no campo 'from'
+    if message['from'] == 'whatsapp':
+        destination = f'whatsapp:+{phoneNumber}'
+        from_ = twilio_phone_number  # O número do Twilio para WhatsApp
+    elif message['from'] == 'messenger':
+        destination = f'messenger:{phoneNumber}'
+        from_ = twilio_fb_page_id  # O ID da página do Twilio para o Messenger
+    else:
+        raise ValueError("Origem da mensagem desconhecida ou não suportada.")
+
+    # Envia a mensagem através do Twilio
+    try:
+        msg = twilioClient.messages.create(
+            body=message['body'],  # Assume-se que 'body' é a chave correta para o conteúdo da mensagem
+            from_=from_,  # A origem da mensagem, definida acima com base no canal
+            to=destination
+        )
+    except Exception as e:
+        print(e)
+        logging.error(e)
     return response
 
 
@@ -80,7 +97,7 @@ def processDialogFlowMessage(messageData: dict):
 
 
 def storeMessageInFirebase(firebase_instance: FirebaseConversation, message_data: dict, phone_number: str):
-    firebase_instance.appendMessageToWhatsappNumber(messageData=message_data, whatsappNumber=phone_number)
+    firebase_instance.appendMessageToConversation(messageData=message_data, whatsappNumber=phone_number)
 
 
 def __handleNewUser(phoneNumber: str, receivedMessage: str):
@@ -170,9 +187,9 @@ def extractMetaDataFromTwilioCall(twilioDict: dict) -> dict:
     lower_twilioDict = {k.lower(): v for k, v in twilioDict.items()}
 
     # Accessing values using lowercase keys
-    sender = lower_twilioDict.get("profilename")
     rawFrom = lower_twilioDict.get("from")
-    phoneNumber = lower_twilioDict.get("waid")
+    sender = lower_twilioDict.get("profilename") or rawFrom.split(':')[1]
+    phoneNumber = lower_twilioDict.get("waid") or rawFrom.split(':')[1]
     userMessage = lower_twilioDict.get("body")
 
     # Processing the 'from' value
