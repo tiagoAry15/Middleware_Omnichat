@@ -103,6 +103,7 @@ jobs:
           --image gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }} \
           --platform managed \
           --allow-unauthenticated \
+        --clear-vpc-connector \
           --timeout 3600 \
           --region us-central1 \
           --set-env-vars "$UPDATE_ENV_VARS_ARG"
