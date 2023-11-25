@@ -101,7 +101,6 @@ jobs:
       run: |
         gcloud run deploy ${{ env.IMAGE_NAME }} \
           --image gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }} \
-          --vpc-connector serverless-connector \
           --platform managed \
           --allow-unauthenticated \
           --timeout 3600 \
