@@ -44,8 +44,28 @@ async def erase_session(request):
     return "Session erased", 200
 
 
+@routes.get('/instagram')
+async def instagram_get(request):
+    try:
+        # Com aiohttp, você acessa os parâmetros da query com request.rel_url.query
+        hub_mode = request.rel_url.query.get('hub.mode')
+        hub_challenge = request.rel_url.query.get('hub.challenge')
+
+        if hub_mode == 'subscribe' and hub_challenge:
+            # O desafio enviado pelo Instagram deve ser retornado na resposta
+            return web.Response(text=hub_challenge)
+        else:
+            # Em caso de requisição inválida, retorna-se o status 403
+            return web.Response(text='Invalid Request', status=403)
+    except Exception as e:
+        # Em caso de exceção, imprime o erro e retorna status 500
+        print(e)
+        # Aqui se estiver usando logging, substitua por logging.error(str(e))
+        return web.Response(text=str(e), status=500)
+
+
 @routes.post('/instagram')
-async def instagram(request):
+async def instagram_post(request):
     try:
         if request.method == 'GET':
             if request.args.get('hub.mode') == 'subscribe':
@@ -143,5 +163,5 @@ for route in list(core_app.router.routes()):
         cors.add(route)
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 3000))
+    port = int(os.environ.get('PORT', 8080))
     web.run_app(core_app, host='0.0.0.0', port=port, shutdown_timeout=180)
