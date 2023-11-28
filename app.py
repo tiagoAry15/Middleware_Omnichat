@@ -86,7 +86,7 @@ async def instagram_post(request):
             return web.Response(text=botResponse, content_type='text/plain')
     except Exception as e:
         print(e)
-        logging.error(e)
+        logging.exception(f'Erro ocorrido no endpoint /instagram: {e} ')
         return web.Response(text=str(e), status=500, content_type='text/plain')
 
 
@@ -103,11 +103,12 @@ async def sandbox(request):
         await send_message({'type': 'message', 'body': userMessageJSON})
         await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
         await send_message({'type': 'message', 'body': BotResponseJSON})
+
         return web.Response(text=botResponse, content_type='text/plain')
 
     except Exception as e:
-        print(e)
-        logging.error(e)
+
+        logging.exception(f'Erro ocorrido no endpoint /twilioSandbox: {e} ')
         return web.Response(text=str(e), status=500, content_type='text/plain')
 
 
