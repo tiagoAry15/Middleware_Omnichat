@@ -35,6 +35,7 @@ class UserCacheManager:
         if not self.app["users"]:
             await self.refresh_cache()
         all_users = self.app["users"]
+        print(f"all users: {all_users}")
         if not all_users:
             return None
         for unique_id, user_data in all_users.items():
