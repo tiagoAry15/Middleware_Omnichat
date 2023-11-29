@@ -78,7 +78,8 @@ async def instagram_post(request):
             userMessageJSON = create_message_json(userMessage, metaData)
             existing_user = await ucm.check_existing_user_from_metadata(metaData=metaData)
 
-            botResponse, BotResponseJSON = await core_utils.process_bot_response(existing_user, userMessage, metaData)
+            botResponse, BotResponseJSON = await core_utils.process_bot_response(existing_user, userMessage, metaData,
+                                                                                 request)
             await send_message({'type': 'message', 'body': userMessageJSON})
             await appendMultipleMessagesToFirebase(userMessage=userMessage, botAnswer=botResponse, metaData=metaData)
             await send_message({'type': 'message', 'body': BotResponseJSON})
