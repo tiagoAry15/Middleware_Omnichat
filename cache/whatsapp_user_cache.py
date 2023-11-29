@@ -35,9 +35,10 @@ class UserCacheManager:
         if not self.app["users"]:
             await self.refresh_cache()
         all_users = self.app["users"]
-        print(f"all users: {all_users}")
+
         if not all_users:
             return None
+        print(f"ALL USERS: {all_users}")
         for unique_id, user_data in all_users.items():
             user_phone_number = user_data["phoneNumber"]
             if user_phone_number == desired_phone_number:
