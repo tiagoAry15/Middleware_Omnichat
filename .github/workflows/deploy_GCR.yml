@@ -24,6 +24,7 @@ env:
   INSTAGRAM_EMAIL: ${{ secrets.INSTAGRAM_EMAIL }}
   INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
   TWILIO_FB_PAGE_ID: ${{ secrets.TWILIO_FB_PAGE_ID }}
+  CLOUD_FUNCTION_BASE_URL: ${{ secrets.CLOUD_FUNCTION_BASE_URL }}
   IMAGE_NAME: aiohttp-omnichat
 
 jobs:
@@ -86,6 +87,7 @@ jobs:
           "INSTAGRAM_EMAIL=${INSTAGRAM_EMAIL}"
           "INSTAGRAM_PASSWORD=${INSTAGRAM_PASSWORD}"
             "TWILIO_FB_PAGE_ID=${TWILIO_FB_PAGE_ID}"
+            "CLOUD_FUNCTION_BASE_URL=${CLOUD_FUNCTION_BASE_URL}"
         
         )
 
