@@ -44,6 +44,15 @@ async def erase_session(request):
     return "Session erased", 200
 
 
+@routes.get('/erase_all_sessions')
+async def erase_all_sessions(request):
+    if request.method != "PUT":
+        return "This endpoint only accepts PUT requests", 405
+    dialogflowConnectionManager.delete_all_sessions()
+    await ucm.refresh_cache()
+    return "All sessions erased", 200
+
+
 @routes.get('/instagram')
 async def instagram_get(request):
     try:

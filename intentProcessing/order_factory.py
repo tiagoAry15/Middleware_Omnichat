@@ -36,9 +36,12 @@ def format_order_data(order_items: List[dict], structured_order: dict):
             if category == 'Pizza':
                 formatted_item['type'] = 'pizza'
                 formatted_item['flavors'] = [flavor.capitalize() for flavor in item.keys()]
+                formatted_item['size'] = 'Large'
             elif category == 'Bebida':
                 formatted_item['type'] = 'drink'
                 formatted_item['flavors'] = [flavor.capitalize() for flavor in item.keys()]
+                formatted_item['size'] = '500ml'
+
 
             # Extract the quantity and price
             formatted_item['quantity'] = sum(item.values())
@@ -80,7 +83,7 @@ def build_socket_object(all_users: dict, order_object: dict, session_metadata: d
             "customerName": details['name'],
             "observation": "None",
             "platform": session_metadata["from"][0],
-            "status": "Em preparação",
+            "status": "Confirmado",
             "timestamp": str(datetime.datetime.now().strftime("%d_%b_%Y_%H_%M_%S_%f")[:-3]),
             "orderItems": order_object["orderItems"]}
 

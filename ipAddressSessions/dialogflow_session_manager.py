@@ -22,6 +22,10 @@ class DialogflowSessionFactory(SessionManager):
             if ip_address in self.dialogflowSessions:
                 del self.dialogflowSessions[ip_address]
 
+    def delete_all_sessions(self):
+        with self.lock:
+            self.dialogflowSessions = {}
+
 
 def __main():
     manager = DialogflowSessionFactory()
