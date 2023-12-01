@@ -2,7 +2,6 @@ from data.speisekarte_extraction import createMenuString, loadSpeisekarte, getTo
 from utils.decorators.singleton_decorator import singleton
 
 
-@singleton
 class MenuItemHandler:
     def __init__(self):
         self.speisekarte = loadSpeisekarte()
