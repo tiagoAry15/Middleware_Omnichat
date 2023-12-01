@@ -44,7 +44,7 @@ async def erase_session(request):
     return "Session erased", 200
 
 
-@routes.get('/erase_all_sessions')
+@routes.put('/erase_all_sessions')
 async def erase_all_sessions(request):
     if request.method != "PUT":
         return "This endpoint only accepts PUT requests", 405
